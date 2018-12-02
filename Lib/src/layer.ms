@@ -1,0 +1,80 @@
+struct _Layer (
+    fn reset_layer = (
+        local defaultLayer = layerManager.getLayer 0
+        local layerNameArray = #()
+        defaultLayer.current  = true
+
+        if LayerManager.count > 1 then (
+            for i = 1 to layerManager.count-1 do (
+                ilayer = layerManager.getLayer i
+                layerName = ilayer.name
+                append layerNameArray layerName
+
+                layer = ILayerManager.getLayerObject i
+                layerNodes = refs.dependents layer
+
+                for item in layerNodes do (
+                    if (isValidNode item) then defaultLayer.addNode item
+                )
+            )
+            for item in layerNameArray do LayerManager.deleteLayerByName item
+        )
+    ),
+
+    fn get_nodes_from_layer inLayerNum = (
+        if inLayerNum != false then (
+            layer = layermanager.getLayer inLayerNum
+            layer.nodes &theNodes
+            return theNodes
+        )
+        else (
+            local emptyArray = #()
+            return emptyArray
+        )
+    ),
+
+    fn get_layer_number inLayerName = (
+        for i = 0 to (LayerManager.count - 1) do (
+            ilayer = layerManager.getLayer i
+            if ilayer.name == inLayerName then return i
+        )
+
+        return false
+    ),
+
+    fn get_nodes_by_layername inLayerName = (
+        get_nodes_from_layer (get_layer_number inLayerName)
+    ),
+
+    fn del_empty_layer showLog:false = (
+        DeletedLayerCount = 0
+        local deflayer = layermanager.getlayer 0
+        deflayer.current = true
+        for i = Layermanager.count-1 to 1 by-1 do (
+            layer = layermanager.getLayer i
+            local thislayername = layer.name
+            layer.nodes &theNodes
+            if thenodes.count== 0 then (
+                LayerManager.deleteLayerbyname thislayername
+                DeletedLayerCount +=1
+            )
+        )
+
+        if showLog then (
+            if not DeletedLayerCount == 0 then Messagebox ("Number of layers removed - " + DeletedLayerCount as string) title:"Layer Manager"
+        )
+    ),
+
+    fn create_layer_from_array inArray inLayerName = (
+        local newLayer = undefined
+        local layerIndex = get_layer_number inLayerName
+        if layerIndex == false then (
+            newLayer = LayerManager.newLayer()
+            newLayer.setName inLayerName
+        )
+        else newLayer = layerManager.getLayer layerIndex
+        for item in inArray do newLayer.addNode item
+
+        return newLayer
+    )
+)

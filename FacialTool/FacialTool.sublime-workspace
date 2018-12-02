@@ -1,0 +1,925 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"installI",
+				"installIniFile"
+			],
+			[
+				"exterded",
+				"externalDestDirTxt"
+			],
+			[
+				"Inst",
+				"Install"
+			],
+			[
+				"scrip",
+				"scriptStr"
+			],
+			[
+				"callb",
+				"callbacks.addScript"
+			],
+			[
+				"scriptF",
+				"scriptFileName"
+			],
+			[
+				"getFilena",
+				"getFilenameFile"
+			],
+			[
+				"listviewp",
+				"ListViewOps.AddLvItem"
+			],
+			[
+				"listvie",
+				"ListViewOps.initListView"
+			],
+			[
+				"clumping",
+				"clumpingGroupColor"
+			],
+			[
+				"meshopsetvertco",
+				"meshop.setVertColor"
+			],
+			[
+				"snapshot",
+				"snapshotAsMesh"
+			],
+			[
+				"polyopgetnum",
+				"polyop.getNumVerts"
+			],
+			[
+				"getface",
+				"getface"
+			],
+			[
+				"setvert",
+				"setVertColor"
+			],
+			[
+				"hairPlane",
+				"hairPlanes"
+			],
+			[
+				"getVertCo",
+				"getvertcolor"
+			],
+			[
+				"verte",
+				"VertexPaint"
+			],
+			[
+				"hairplane",
+				"hairPlanes"
+			],
+			[
+				"vertexp",
+				"VertexPaintTool"
+			],
+			[
+				"leftRightcob",
+				"leftRightColObj"
+			],
+			[
+				"update_progr",
+				"update_progress"
+			],
+			[
+				"stri",
+				"String"
+			],
+			[
+				"inputCurrentS",
+				"inputCurrentStepText"
+			],
+			[
+				"Edit",
+				"Editable_Poly"
+			],
+			[
+				"isVal",
+				"isValidNode"
+			],
+			[
+				"hairPlan",
+				"hairPlane"
+			],
+			[
+				"hairBon",
+				"hairBones"
+			],
+			[
+				"boneGroud",
+				"boneGroupDdlItems"
+			],
+			[
+				"boneGroupD",
+				"boneGroupDdlItems"
+			],
+			[
+				"standardm",
+				"Standardmaterial"
+			],
+			[
+				"hairBone",
+				"hairBonesArray"
+			],
+			[
+				"weightGroup",
+				"weightGroupNum"
+			],
+			[
+				"opzweighro",
+				"optimizedWeightGroup"
+			],
+			[
+				"isWeightedb",
+				"isWeightedByBottomBone"
+			],
+			[
+				"isweighteby",
+				"isWeightedByUpBone"
+			],
+			[
+				"dummyPos",
+				"dummyPosArray"
+			],
+			[
+				"compareHair",
+				"compareHairPlanePos"
+			],
+			[
+				"baseHairPl",
+				"baseHairPlanePos"
+			],
+			[
+				"setVertColor",
+				"meshop.setVertColor"
+			],
+			[
+				"weightGrou",
+				"weightGroupNum"
+			],
+			[
+				"weightGr",
+				"weightGroupArray"
+			],
+			[
+				"gen_ave",
+				"gen_average_pos_from_verts_index"
+			],
+			[
+				"meshopgetver",
+				"meshop.getVert"
+			],
+			[
+				"convert",
+				"convertToPoly"
+			],
+			[
+				"getFilen",
+				"getFilenamePath"
+			],
+			[
+				"setWeightGroup",
+				"setWeightGroupNum"
+			],
+			[
+				"init",
+				"initWindow\tfunction"
+			],
+			[
+				"class",
+				"classOf"
+			],
+			[
+				"def",
+				"defs\tMethod"
+			],
+			[
+				"if",
+				"ifmain\tif __name__ == '__main__'"
+			],
+			[
+				"de",
+				"defs\tMethod"
+			],
+			[
+				"font",
+				"font-family"
+			],
+			[
+				"Edita",
+				"Editable_mesh"
+			],
+			[
+				"filetyp",
+				"getFilenameType"
+			],
+			[
+				"optimized",
+				"optimizedTotalSplineNumOfDuplicatedSp"
+			],
+			[
+				"del",
+				"delete"
+			],
+			[
+				"sid",
+				"splineSideNum"
+			],
+			[
+				"detach",
+				"detachNum"
+			],
+			[
+				"to",
+				"totalSplineNum"
+			],
+			[
+				"ax",
+				"axisY"
+			],
+			[
+				"rotat",
+				"rotationpart"
+			],
+			[
+				"axi",
+				"axisY"
+			],
+			[
+				"comparemp",
+				"compareMapVertIndex"
+			],
+			[
+				"resul",
+				"resultArray"
+			],
+			[
+				"sameumpv",
+				"sameUMapVertsData"
+			],
+			[
+				"inputmapv",
+				"inputMapVertPos2"
+			],
+			[
+				"inputMap",
+				"inputMapVertPos1"
+			],
+			[
+				"high",
+				"higherVMapVerts"
+			],
+			[
+				"same",
+				"sameUMapVertsIndexes"
+			],
+			[
+				"inputob",
+				"inputObjUVPos"
+			],
+			[
+				"inputo",
+				"inputObjUPos"
+			],
+			[
+				"inputOb",
+				"inputObjUVPos"
+			],
+			[
+				"getnum",
+				"getNumMapVerts"
+			],
+			[
+				"numMap",
+				"numMapVerts"
+			],
+			[
+				"wra",
+				"wrapObj"
+			],
+			[
+				"fla",
+				"flatObj"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/test.ms",
+			"settings":
+			{
+				"buffer_size": 103,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 104.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"instp",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"syn max",
+				"Set Syntax: MaxScript"
+			],
+			[
+				"pac",
+				"Package Control: List Packages"
+			],
+			[
+				"synhsl",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"synhls",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"synma",
+				"Set Syntax: MaxScript"
+			],
+			[
+				"packagecoin",
+				"Package Control: Install Package"
+			],
+			[
+				"syntcg",
+				"Set Syntax: Cg"
+			],
+			[
+				"synhlsl",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"synthls",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"synmax",
+				"Set Syntax: MaxScript"
+			],
+			[
+				"syncg",
+				"Set Syntax: Cg"
+			],
+			[
+				"synhl",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"syn hls",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"synta html",
+				"Set Syntax: HTML"
+			],
+			[
+				"syn html",
+				"Set Syntax: HTML"
+			],
+			[
+				"synta ht",
+				"Set Syntax: HTML"
+			],
+			[
+				"syn hl",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"packli",
+				"Package Control: List Packages"
+			],
+			[
+				"packagi",
+				"Package Control: Install Package"
+			],
+			[
+				"pacin",
+				"Package Control: Install Package"
+			],
+			[
+				"syntahl",
+				"Set Syntax: High Level SL"
+			],
+			[
+				"syntacg",
+				"Set Syntax: Cg"
+			],
+			[
+				"packin",
+				"Package Control: Install Package"
+			],
+			[
+				"packain",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Package Control: List Packages"
+			],
+			[
+				"packagein",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 400.0
+	},
+	"console":
+	{
+		"height": 167.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'df21e130d211cfc94d9b0905775a7c0f' + '1e3d39e33b79698005270310898eea76'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/D/JalDev/Maxscript/FacialTool/src"
+	],
+	"file_history":
+	[
+		"/D/Download/JalScriptInstaller/src/mzp.run",
+		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/ini/scriptPath.ini",
+		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/macroscripts/jal_align_macro.mcr",
+		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/macroscripts/jalScriptLauncher.mcr",
+		"/D/Download/JalScriptInstaller/src/jalInstall.ms",
+		"/D/Download/JalScriptInstaller/src/test.ms",
+		"/D/Download/JalScriptInstaller/src/installINI.ini",
+		"/C/Users/dongseokKim/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/usermacros/jalScriptLauncher/ini/scriptPath.ini",
+		"/C/Users/dongseokKim/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/usermacros/jalScriptLauncher/jalScriptLauncher.mcr",
+		"/C/Users/dongseokKim/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/usermacros/jalScriptLauncher/jal_align_macro.mcr",
+		"/C/Users/dongseokKim/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/scripts/startup/jalScriptLauncher/jalLoadLib.ms",
+		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/startupScript/jalLoadLib.ms",
+		"/D/JalTool/JalTools/HandyTool/HandyTool.ms",
+		"/D/JalTool/JalLib/JalLib.ms",
+		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/macroscripts/jal_align_macro.ms",
+		"/D/Dropbox/Download/JalScriptInstaller/src/jalScriptLauncher/externalScript/JalTools/NameTool/NameTool.ms",
+		"/D/Dropbox/Download/JalScriptInstaller/src/jalScriptLauncher/externalScript/JalTools/HandyTool/HandyTool.ms",
+		"/D/Dropbox/Download/JalScriptInstaller/src/jalScriptLauncher/macroscripts/jalScriptLauncher.mcr",
+		"/D/Dropbox/Download/JalScriptInstaller/src/installINI.ini",
+		"/D/Dropbox/Download/JalScriptInstaller/src/jalScriptLauncher/startupScript/jalLoadLib.ms",
+		"/D/Dropbox/Download/JalScriptInstaller/src/jalScriptLauncher/ini/scriptPath.ini",
+		"/D/JalTool/JalMacro/jal_helper_macro.ms",
+		"/D/JalTool/JalMacro/jal_constraint_macro.ms",
+		"/D/JalTool/JalMacro/jal_align_macro.ms",
+		"/D/Dropbox/Download/JalScriptInstaller/src/mzp.run",
+		"/D/Dropbox/Download/JalScriptInstaller/src/ini/test.text",
+		"/D/Dropbox/Download/JalScriptInstaller/src/ini/scriptPath.ini",
+		"/C/Users/jalnaga/AppData/Roaming/Sublime Text 3/Packages/User/Anaconda.sublime-settings",
+		"/D/JalDev/MaxScript/JalScript/JalScriptInstaller/src/startupScript/jalLoadLib.ms",
+		"/D/JalDev/MaxScript/JalScript/JalScriptInstaller/src/macroscripts/jalScriptLauncher.mcr",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/preventUnwantedScriptRun.ms",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/vrdematcleanbeta.mse",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/macroscripts/jalScriptLauncher.mcr",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/jalToolLauncher_install.ms",
+		"//172.20.80.191/art_shared_new/RnD_share/JalTools/JalScript/JalScript.ms",
+		"/C/Users/dongseokKim/AppData/Local/Autodesk/3dsMax/2017 - 64bit/ENU/usermacros/jalTools-jalScriptLauncher.mcr",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/templateGenerator.ms",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/startupScript/jalLoadLib.ms",
+		"//172.20.80.191/art_shared_new/R&D팀/김동석/JalTools/HandyTool/HandyTool.ms",
+		"//172.20.80.191/art_shared_new/R&D팀/김동석/JalTools/JalScript/JalScript.ms",
+		"/D/JalDev/MaxScript/JalScriptInstaller/src/mzp.run",
+		"/D/JalDev/MaxScript/ScriptInstaller/src/mzp.run",
+		"/D/JalDev/MaxScript/ScriptInstaller/src/templateGenerator.ms",
+		"/E/09.작업 가이드/html/몬스터 가죽 재질 사용 가이드.html",
+		"/E/09.작업 가이드/html/가죽 재질 사용 가이드.html",
+		"/E/09.작업 가이드/html/털 재질 사용 가이드.html",
+		"/E/Dropbox/Programing/MaxScript/B6MaxTools/B6Lib/B6_GlobalLib.ms",
+		"/E/Dropbox/Programing/MaxScript/B6MaxTools/B6BipTool/B6BipTool.ms",
+		"/E/Dropbox/Programing/MaxScript/B6MaxTools/B6MapBakingTool/B6MapBakingTool.ms",
+		"/E/Dropbox/Programing/MaxScript/ScriptInstaller/src/mzp.run",
+		"/E/Dropbox/Programing/MaxScript/ScriptInstaller/src/ScriptInstaller/macroscripts/jalCharacterExportToolMacro.mcr",
+		"/C/Program Files/Autodesk/3ds Max 2015/stdplugs/stdscripts/NET_ListViewWrapper.ms",
+		"/C/Users/dongseok-kim/Desktop/thumnailviewtest.ms",
+		"/E/Dropbox/Programing/MaxScript/ScriptInstaller/src/templateGenerator.ms",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/E/Dropbox/Programing/MaxScript/ScriptInstaller/src/macroscripts/jalCharacterExportToolMacro.mcr",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/User/MaxScript.sublime-settings",
+		"/E/Dropbox/Programing/MaxScript/ScriptInstaller/src/jalToolLauncher_install.ms",
+		"/e/dorpbox/programing/maxscirpt/listviewTest/listviewTest.ms",
+		"/E/09.작업 가이드/html/레이어드 몬스터 매테리얼 사용 가이드.html",
+		"//vfs01/Victoria_Art/09.작업 가이드/index.md",
+		"//vfs01/Victoria_Art/09.작업 가이드/html/AO맵 가이드.html",
+		"//vfs01/Victoria_Art/09.작업 가이드/md/식생 작업 가이드.md",
+		"//vfs01/Victoria_Art/09.작업 가이드/max_script/SLscripts-indexshow.mcr",
+		"/E/Dropbox/Programing/MaxScript/HairTool/Hairtool.sublime-project",
+		"/E/Dropbox/Programing/MaxScript/HairTool/Hairtool.sublime-workspace",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/progress.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_boneByHandRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_boneRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/layer.ms",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/User/ConvertToUTF8.sublime-settings",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/ConvertToUTF8/ConvertToUTF8.sublime-settings",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/material.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_export.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_tipMovementRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_vertexPaintRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_clumpingRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_boneRename.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_prepareRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_progressRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/detachElement.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/hairPlane.ms",
+		"/E/Downloads/SlideTools-SlideNormalThief.mcr",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/ui_mainRollout.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/test.ms",
+		"/E/Dropbox/Custom Data/Sublime Text Settings/Preferences.sublime-settings",
+		"/E/Dropbox/Custom Data/Sublime Text Settings/Python.sublime-settings",
+		"/E/Dropbox/Programing/PyPixiv/test.py",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/dongseok-kim/AppData/Roaming/Sublime Text 2/Packages/User/Python.sublime-settings",
+		"/C/Users/dongseok-kim/Desktop/vertexPaintTest.ms",
+		"/E/Downloads/Invert_VC_v2.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/vertMatchWithMapVert.ms",
+		"/E/Downloads/Invert_VC.ms",
+		"/C/Program Files/Autodesk/3ds Max 2015/MacroScripts/Macro_VertexPaint.mcr",
+		"/E/Downloads/skinslicer.ms",
+		"/E/Downloads/skin_slice_skin_v09_dev.ms",
+		"/C/Users/dongseok-kim/Desktop/MacroScripts/AwStart.mcr",
+		"/C/Users/dongseok-kim/Desktop/listViewTest.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/hair.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/final/hairtool.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/fbx.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/bip.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/boneCreate.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/detachElement.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/fbx.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/export.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/material.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/progress.ms",
+		"/E/Dropbox/Programing/MaxScript/Lib/rolloutResize.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_test.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_Compile_Compile_test.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_test.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/main.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/final/hairTool.ms",
+		"/E/Dropbox/Programing/MaxScript/JalTools/FastNamer.ms",
+		"/E/Dropbox/Programing/MaxScript/JalTools/BoneTool2.ms",
+		"/E/Dropbox/Programing/MaxScript/JalTools/BoneTool.ms",
+		"/C/Users/dongseok-kim/Desktop/Detach_Elements.ms",
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6Lib/B6_AnimLib.ms",
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6Lib/B6_DefaultLib.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/hairTool.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/boneCreate.ms",
+		"/E/Dropbox/Programing/MaxScript/HairTool/src/bip.ms",
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6BipCOMFilter/B6BipCOMFilter.ms",
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6Lib/B6_BipLib.ms",
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6BipTool/B6BipTool.ms"
+	],
+	"find":
+	{
+		"height": 36.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"jalToolLauncher_install",
+			"userMacroDir",
+			"tool_path",
+			"instalDestDir",
+			"tempDir",
+			"mcrName",
+			"tempDir",
+			"jalToolLauncher",
+			"\\\\jalToolLauncher",
+			"\"\\\\jalToolLauncher\"",
+			"installedScriptName",
+			"print_exception",
+			"item",
+			"iconFiles",
+			"profile",
+			"E:\\09.작업 가이드\\md\\Character/",
+			"profilecolor",
+			"E:\\09.작업 가이드\\md\\Character/",
+			"toolbarBtnArray",
+			"toolbarArray",
+			"load_dll",
+			"remove_toolbars",
+			"create_toolbars",
+			"listviewTestRollout",
+			"colorman",
+			"imgArray",
+			"imageList",
+			"imglist_obj",
+			"theLv",
+			"init_imagelist",
+			"maxFile",
+			"myScenes",
+			"file",
+			"bitmap_size",
+			"filenames",
+			"initView",
+			"toolPath",
+			"ListViewOps",
+			"E:\\09.작업 가이드\\md\\Character/",
+			"inputLabel",
+			"inputProgressBar",
+			"inputLabel",
+			"inputProgressBar",
+			"(",
+			"progressVal",
+			"progress.start_progress",
+			"inputProgressBar",
+			"currentStep",
+			"inputProgressBar",
+			"totalStep",
+			"inputStepIndex",
+			"inputProgressBar",
+			"inputMax",
+			"_Progress",
+			"nextStepIndex",
+			"boneGroupArray",
+			"finalizingBtn",
+			"boneGroupArray",
+			"()",
+			"assign_left_right_color",
+			"leftRightColor",
+			"clumpingGroupColor",
+			"initHairBtn",
+			"objs",
+			"add_vertex_color_modifier",
+			"hairPlane.obj.",
+			"snapShotMesh",
+			"snapshotm",
+			"sMesh",
+			"tempfaceVertPoint3",
+			"selMesh",
+			"m",
+			"mapVertIndex",
+			"theMesh",
+			"For",
+			"hairPlane",
+			"inputHairPlane",
+			"update_checkbtn",
+			"movementVertexPaint",
+			"offset:[-85, 0]",
+			"across:2",
+			"btn",
+			"inputBtn",
+			"-5",
+			"across:2",
+			"-70",
+			"[-70",
+			"-60",
+			"-50",
+			"40",
+			"-20",
+			"align:#left",
+			"200",
+			"120",
+			"25",
+			"25 25",
+			"200",
+			"50",
+			"50 50",
+			"clumpingGroupColor",
+			"PaintBtn pressed",
+			"button",
+			"add_vertex_color_modifier",
+			"add_vertex_color",
+			"버텍스 페인트",
+			"칠하기",
+			"modeIndex",
+			"local",
+			"movementVertexPaint",
+			"skin",
+			"skinMod",
+			"movementOnBtn",
+			"clumpingOnBtn",
+			"tempClumpingBtn",
+			"true",
+			"set_movement_color",
+			"upDown",
+			"leftRight",
+			"upDown",
+			"intersectsegfn",
+			";",
+			"getnodeByName",
+			"theGeoSphere",
+			"theSphere",
+			"MakeCut",
+			"clumpGroupArray[groupNum][hairPlaneIndex]",
+			"hairPlane",
+			"0"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"externalDestDir",
+			"tempInstallDir",
+			"",
+			"set_weight_group",
+			"set_vert_index",
+			"set_weight_for_middle_verts",
+			"set_weight_for_up_verts",
+			"set_weight_for_bottom_verts",
+			"set_blend_falloff",
+			"set_weight_group_num",
+			"get_array_of_verts_to_mapverts",
+			"get_array_of_mapverts_to_verts",
+			"..",
+			"..\\images\\Character\\Substance\\",
+			"..\\images\\Character\\LayeredMat\\",
+			"..\\images\\Character\\SSSMap\\",
+			"..\\images\\Character\\LayeredMat\\BoneMat\\",
+			"..\\images\\Character\\LayeredMat\\",
+			"..\\images\\Character\\LayeredMat\\FabricMat\\",
+			"..\\images\\Character\\FabricMap\\",
+			"..\\images\\Character\\LayeredMat\\",
+			"..\\images\\Character\\LayeredMat\\leatherMat\\",
+			"..\\images\\Character\\LayeredMat\\",
+			"..\\images\\Character\\LayeredMat\\MetalMat\\",
+			"..\\images\\Character\\LayeredMat\\",
+			"../images/Character/Substance/",
+			"../images/Character/SSSMap/",
+			"../images/Character/Substance/",
+			"../images/Character/FabricMap/",
+			"../images/Character/Substance/",
+			"../images/Character/FabricMap/",
+			"../images/Character/SSSMap/",
+			"../images/Character/HairMat/",
+			"../images/Character/HairTexture/",
+			"../images/Character/HairMesh/",
+			"../imgaes/Character/HairMesh/"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/test.ms",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 103,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								103,
+								103
+							]
+						],
+						"settings":
+						{
+							"_anf_new": "",
+							"markdonw_live_preview_last_run": 1543551210.02,
+							"syntax": "Packages/Send to 3ds Max/MaxScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 36.0
+	},
+	"input":
+	{
+		"height": 48.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "FacialTool.sublime-project",
+	"replace":
+	{
+		"height": 68.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"de",
+				"detachElement.ms"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 242.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
