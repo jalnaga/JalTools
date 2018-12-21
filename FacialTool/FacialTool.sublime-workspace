@@ -319,7 +319,7 @@
 			"file": "src/test.ms",
 			"settings":
 			{
-				"buffer_size": 103,
+				"buffer_size": 1075,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -470,10 +470,11 @@
 	},
 	"expanded_folders":
 	[
-		"/D/JalDev/Maxscript/FacialTool/src"
+		"/D/JalDev/JalMaxscript/JalTools/FacialTool/src"
 	],
 	"file_history":
 	[
+		"/D/JalDev/Documents/스캔 데이터의 정리 파이프라인.md",
 		"/D/Download/JalScriptInstaller/src/mzp.run",
 		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/ini/scriptPath.ini",
 		"/D/Download/JalScriptInstaller/src/jalScriptLauncher/macroscripts/jal_align_macro.mcr",
@@ -600,8 +601,7 @@
 		"/E/Dropbox/Programing/MaxScript/HairTool/src/boneCreate.ms",
 		"/E/Dropbox/Programing/MaxScript/HairTool/src/bip.ms",
 		"/E/Dropbox/Programing/MaxScript/MaxTools/B6BipCOMFilter/B6BipCOMFilter.ms",
-		"/E/Dropbox/Programing/MaxScript/MaxTools/B6Lib/B6_BipLib.ms",
-		"/E/Dropbox/Programing/MaxScript/MaxTools/B6BipTool/B6BipTool.ms"
+		"/E/Dropbox/Programing/MaxScript/MaxTools/B6Lib/B6_BipLib.ms"
 	],
 	"find":
 	{
@@ -809,22 +809,25 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 103,
+						"buffer_size": 1075,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								103,
-								103
+								1072,
+								1072
 							]
 						],
 						"settings":
 						{
 							"_anf_new": "",
-							"markdonw_live_preview_last_run": 1543551210.02,
-							"syntax": "Packages/Send to 3ds Max/MaxScript.tmLanguage"
+							"is_init_dirty_state": false,
+							"markdonw_live_preview_last_run": 1543991920.99,
+							"syntax": "Packages/Send to 3ds Max/MaxScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
