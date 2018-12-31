@@ -319,7 +319,15 @@
 			"file": "src/_compileTarget.ms",
 			"settings":
 			{
-				"buffer_size": 161,
+				"buffer_size": 676,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/name.ms",
+			"settings":
+			{
+				"buffer_size": 26827,
 				"line_ending": "Windows"
 			}
 		}
@@ -469,10 +477,17 @@
 	},
 	"expanded_folders":
 	[
-		"/D/Dropbox/Programing/JalTool/JalLib/src"
+		"/D/Dropbox/Programing/JalMaxScript/JalTools/Lib/src"
 	],
 	"file_history":
 	[
+		"/D/Dropbox/GameProject/SuperAverageGirl/Config/DefaultEngine.ini",
+		"/D/Dropbox/GameProject/SuperAverageGirl/Config/DefaultDeviceProfiles.ini",
+		"/D/Dropbox/Download/vertex_normals_stitcher_v.1.2/Vertex_Normals_Stitcher.mcr",
+		"/D/Dropbox/Download/noorsnormalthief (1).ms",
+		"/D/Dropbox/Download/noorsnormalthief.ms",
+		"/D/Dropbox/Programing/JalMaxScript/JalTools/HairTool/src/test.ms",
+		"/D/Dropbox/Programing/MaxScript/B6MaxTools/B6HairTool/B6PigTailHairTool.ms",
 		"/D/Dropbox/Programing/JalTool/JalLib/src/align.ms",
 		"/C/Users/jalnaga/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/usermacros/jalTools-jal_align_pos_only.mcr",
 		"/C/Users/jalnaga/AppData/Local/Autodesk/3dsMax/2019 - 64bit/ENU/usermacros/jalTools-jal_align_to_last.mcr",
@@ -593,18 +608,11 @@
 		"/E/Dropbox/Programing/MaxScript/Lib/export.ms",
 		"/E/Dropbox/Programing/MaxScript/Lib/material.ms",
 		"/E/Dropbox/Programing/MaxScript/Lib/progress.ms",
-		"/E/Dropbox/Programing/MaxScript/Lib/rolloutResize.ms",
-		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_test.ms",
-		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_Compile_Compile_test.ms",
-		"/E/Dropbox/Programing/MaxScript/HairTool/src/Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_Compile_test.ms",
-		"/E/Dropbox/Programing/MaxScript/HairTool/src/main.ms",
-		"/E/Dropbox/Programing/MaxScript/HairTool/src/final/hairTool.ms",
-		"/E/Dropbox/Programing/MaxScript/JalTools/FastNamer.ms",
-		"/E/Dropbox/Programing/MaxScript/JalTools/BoneTool2.ms"
+		"/E/Dropbox/Programing/MaxScript/Lib/rolloutResize.ms"
 	],
 	"find":
 	{
-		"height": 48.0
+		"height": 36.0
 	},
 	"find_in_files":
 	{
@@ -799,7 +807,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -808,25 +816,59 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 161,
+						"buffer_size": 676,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								64,
+								23
 							]
 						],
 						"settings":
 						{
-							"markdonw_live_preview_last_run": 1543734563.13,
+							"is_init_dirty_state": false,
+							"markdonw_live_preview_last_run": 1544338914.47,
 							"origin_encoding": "ASCII",
 							"syntax": "Packages/Send to 3ds Max/MaxScript.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/name.ms",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 26827,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								22248,
+								22248
+							]
+						],
+						"settings":
+						{
+							"is_init_dirty_state": false,
+							"markdonw_live_preview_last_run": 1545380024.23,
+							"origin_encoding": "ASCII",
+							"syntax": "Packages/Send to 3ds Max/MaxScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 17330.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

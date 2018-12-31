@@ -10,6 +10,8 @@ global testJal = _JalLib()
 --"Bip R ForeArm L F 001 R" "ForeArm L F 001 R" "Bip" "R" "" ""
 --"R ForeArm L F 001 R" "ForeArm L F 001 R" "R" "" ""
 --"Bip L R ForeArm R B 001" "ForeArm R B" "Bip" "R" "L"
-testJal.name.set_name_parts_order #("Index", "Side", "Type", "FrontBack", "RealName", "Base")
-testJal.name.split_into_refined_nameArray "Bip 001 L R ForeArm R B 004"
+testJal.name.set_name_parts_order #("Base", "Type", "Index", "Side", "FrontBack", "RealName")
+local testArray = testJal.name.split_into_refined_nameArray "Bip001 L B UpperForeArm2"
+format "%\n" testArray
+testJal.name.get_side "Bip001 L B UpperForeArm2"
 )

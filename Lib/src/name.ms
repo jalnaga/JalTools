@@ -4,10 +4,8 @@ struct _Name (
     /*    [Base] [Type] [Side] [RealName] [Index]
     /*    ex) Bip001 Dummy L SpineA 001
     /*************************************************/
-    struct __NP (type, oriIndex, newIndex),
-    __nameParts = #((__NP type:#Base oriIndex:1 newIndex:1), (__NP type:#Type oriIndex:2 newIndex:2), (__NP type:#Side oriIndex:3 newIndex:3), (__NP type:#FrontBack oriIndex:4 newIndex:4), (__NP type:#RealName oriIndex:5 newIndex:5), (__NP type:#Index oriIndex:6 newIndex:6)),
-    __namePartsOrder = #("Base", "Type", "Side", "FrontBack", "RealName", "Index"),
-    --__namePartsOrder = #("Base", "Type","RealName", "Index", "Side", "FrontBack"),
+    __namePartsOrder = #(#npBase, #npType, #npSide, #npFrontBack, #npRealName, #npIndex),
+    __nameParts = #("Base", "Type", "Side", "FrontBack", "RealName", "Index"),
     __nubStr = "Nub",
     __sideStrArray = #("L", "R"),
     __frontBackStrArray = #("F", "B"),
@@ -49,49 +47,58 @@ struct _Name (
     ),
 
     fn get_base_part_index = (
-        local returnVal = findItem __namePartsOrder "Base"
+        local returnVal = findItem __namePartsOrder #npBase
 
         returnVal
     ),
 
     fn get_type_part_index = (
-        local returnVal = findItem __namePartsOrder "Type"
+        local returnVal = findItem __namePartsOrder #npType
 
         returnVal
     ),
 
     fn get_side_part_index = (
-        local returnVal = findItem __namePartsOrder "Side"
+        local returnVal = findItem __namePartsOrder #npSide
 
         returnVal
     ),
 
     fn get_front_back_part_index = (
-        local returnVal = findItem __namePartsOrder "FrontBack"
+        local returnVal = findItem __namePartsOrder #npFrontBack
 
         returnVal
     ),
 
     fn get_realName_part_index = (
-        local returnVal = findItem __namePartsOrder "RealName"
+        local returnVal = findItem __namePartsOrder #npRealName
 
         returnVal
     ),
 
     fn get_index_part_index = (
-        local returnVal = findItem __namePartsOrder "Index"
+        local returnVal = findItem __namePartsOrder #npIndex
 
         returnVal
     ),
 
     fn set_name_parts_order inOrder = (
-        __namePartsOrder = inOrder
-        __nameParts[1].newIndex = get_base_part_index()
-        __nameParts[2].newIndex = get_type_part_index()
-        __nameParts[3].newIndex = get_side_part_index()
-        __nameParts[4].newIndex = get_front_back_part_index()
-        __nameParts[5].newIndex = get_realName_part_index()
-        __nameParts[6].newIndex = get_index_part_index()
+        __nameParts = inOrder
+        __namePartsOrder[(findItem __nameParts "Base")] = #npBase
+        __namePartsOrder[(findItem __nameParts "Type")] = #npType
+        __namePartsOrder[(findItem __nameParts "Side")] = #npSide
+        __namePartsOrder[(findItem __nameParts "FrontBack")] = #npFrontBack
+        __namePartsOrder[(findItem __nameParts "RealName")] = #npRealName
+        __namePartsOrder[(findItem __nameParts "Index")] = #npIndex
+    ),
+
+    fn split_nameParts_to_refined_nameArray = (
+        local realNameIndex = get_realName_part_index()
+        local beforeRealNameArray = for i = 1 to (realNameIndex - 1) collect __namePartsOrder[i]
+        local afterRealNameArray = for i = (realNameIndex + 1) to __namePartsOrder.count collect __namePartsOrder[i]
+        local returnArray = #(beforeRealNameArray, #(#npRealName), afterRealNameArray)
+
+        returnArray
     ),
 
     fn split_into_string_and_digit inStr = (
@@ -113,7 +120,7 @@ struct _Name (
         return ""
     ),
 
-    fn split_by_filteringChar inStr = (
+    fn filter_by_filteringChar inStr = (
         local filChar = get_filteringChar inStr
         local returnArray = #()
         local splittedPart = ""
@@ -131,7 +138,7 @@ struct _Name (
         returnArray
     ),
 
-    fn split_by_upper_case inStr = (
+    fn filter_by_upper_case inStr = (
         local returnArray = #()
         local splittedPart = ""
         splittedPart += inStr[1]
@@ -167,22 +174,20 @@ struct _Name (
     fn is_side_char inChar = (
         local returnVal = false
         if (findItem __sideStrArray inChar) != 0 then returnVal = true
-        else returnVal = false
         returnVal
     ),
 
-    fn is_front_back_char inChar = (
+    fn is_frontBack_char inChar = (
         local returnVal = false
         if (findItem __frontBackStrArray inChar) != 0 then returnVal = true
-        else returnVal = false
         returnVal
     ),
 
-    fn split_name inStr = (
+    fn filter_name inStr = (
         local nameArray = #()
         local filChar = get_filteringChar inStr
         if filChar == "" then (
-            nameArray = split_by_upper_case inStr
+            nameArray = filter_by_upper_case inStr
             local tempArray = #()
             for item in nameArray do (
                 if (has_digit item) then (
@@ -194,12 +199,12 @@ struct _Name (
             )
             nameArray = deepCopy tempArray
         )
-        else nameArray = split_by_filteringChar inStr
+        else nameArray = filter_by_filteringChar inStr
 
         nameArray
     ),
 
-    fn refine_empty_in_nameArray inNameArray = (
+    fn refine_nameArray_empty inNameArray = (
         local nameArray = #()
         for item in inNameArray do (
             if item != "" then append nameArray item
@@ -208,95 +213,568 @@ struct _Name (
         return nameArray
     ),
 
-    fn refine_index_in_nameArray inNameArray = (
-        local nameArray = #()
-        if inNameArray.count > 0 then (
-            local lastDigitIndex = 0
-            for i = 1 to inNameArray.count do if (is_digit inNameArray[i]) then lastDigitIndex += 1
-            --struct __digitInNameArray (indexAtNameArray = 0, digitStr = "")
-            --local foundDigitArray = #()
-            --for i = 1 to inNameArray.count do (
-            --    if (is_digit inNameArray[i]) then (
-            --        local tempDigitInNameArray = __digitInNameArray()
-            --        tempDigitInNameArray.indexAtNameArray = i
-            --        tempDigitInNameArray.digitStr = inNameArray[i]
-            --        append foundDigitArray tempDigitInNameArray
-            --    )
-            --)
+    fn refine_nameArray_longer_than_nameParts inNameArray = (
+        local nameArray = deepCopy inNameArray
+        local beforeRealNameArray = #()
+        local tempAfterRealNameArray = #()
+        local afterRealNameArray = #()
+        local returnArray = #()
 
-            --if foundDigitArray.count > 1 then (
-            --    local indexIndex = get_index_part_index()
-            --    for i = 1 to foundDigitArray.count do (
-            --    )
-            --)
-            --else (
-            --    -- skip refine index
-            --)
-
-
-            if lastDigitIndex > 2 then (
-                for i = 1 to (lastDigitIndex - 1) do (
-                    if i + 1 < lastDigitIndex then (
-                        if not(is_digit inNameArray[i]) then (
-                            if (is_digit inNameArray[i+1]) then (
-                                local tempStr = inNameArray[i] + inNameArray[i+1]
-                                append nameArray tempStr
-                                i += 2
-                            )
-                            else append nameArray inNameArray[i]
+        for i = 1 to (get_realName_part_index() - 1) do (
+            local k = 1
+            while nameArray.count > 0 do (
+                case __namePartsOrder[i] of (
+                    #npBase:(
+                        if nameArray[k] != "" then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
                         )
                     )
-                    else append nameArray inNameArray[i]
-                )
-
-                for i = lastDigitIndex to inNameArray.count do (
-                    append nameArray inNameArray[i]
+                    #npType:(
+                        if nameArray[k] != "" then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npSide:(
+                        if (is_side_char nameArray[k]) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npFrontBack:(
+                        if (is_frontBack_char nameArray[k]) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npIndex:(
+                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    default: (
+                        k += 1
+                        exit
+                    )
                 )
             )
-            else nameArray = deepCopy inNameArray
         )
 
-        nameArray
+        for i = __namePartsOrder.count to (get_realName_part_index() + 1) by -1 do (
+            local k = nameArray.count
+            while nameArray.count > 1 do (
+                case __namePartsOrder[i] of (
+                    #npBase:(
+                        if nameArray[k] != "" then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npType:(
+                        if nameArray[k] != "" then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npSide:(
+                        if (is_side_char nameArray[k]) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npFrontBack:(
+                        if (is_frontBack_char nameArray[k]) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npIndex:(
+                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    default: (
+                        k -= 1
+                        exit
+                    )
+                )
+            )
+        )
+        afterRealNameArray = for i = tempAfterRealNameArray.count to 1 by -1 collect tempAfterRealNameArray[i]
+
+        returnArray = #(beforeRealNameArray, nameArray, afterRealNameArray)
+        returnArray
+    ),
+
+    fn refine_nameArray_shorter_than_nameParts inNameArray = (
+        local nameArray = deepCopy inNameArray
+        local beforeRealNameArray = #()
+        local tempAfterRealNameArray = #()
+        local afterRealNameArray = #()
+        local returnArray = #()
+
+        for i = __namePartsOrder.count to (get_realName_part_index()) by -1 do (
+            local k = nameArray.count
+            while nameArray.count > 0 do (
+                case __namePartsOrder[i] of (
+                    #npBase:(
+                        if nameArray[k] != "" then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npType:(
+                        if nameArray[k] != "" then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npSide:(
+                        if (is_side_char nameArray[k]) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npFrontBack:(
+                        if (is_frontBack_char nameArray[k]) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    #npIndex:(
+                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
+                            append tempAfterRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k -= 1
+                            exit
+                        )
+                    )
+                    default: (
+                        k -= 1
+                        exit
+                    )
+                )
+            )
+        )
+        afterRealNameArray = for i = tempAfterRealNameArray.count to 1 by -1 collect tempAfterRealNameArray[i]
+
+        for i = 1 to (get_realName_part_index() - 1) do (
+            local k = 1
+            while nameArray.count > 1 do (
+                case __namePartsOrder[i] of (
+                    #npBase:(
+                        if nameArray[k] != "" then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npType:(
+                        if nameArray[k] != "" then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npSide:(
+                        if (is_side_char nameArray[k]) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npFrontBack:(
+                        if (is_frontBack_char nameArray[k]) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    #npIndex:(
+                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
+                            append beforeRealNameArray nameArray[k]
+                            nameArray = deleteItem nameArray k
+                            exit
+                        )
+                        else (
+                            k += 1
+                            exit
+                        )
+                    )
+                    default: (
+                        k += 1
+                        exit
+                    )
+                )
+            )
+        )
+
+        returnArray = #(beforeRealNameArray, nameArray, afterRealNameArray)
+        returnArray
     ),
 
     fn refine_nameArray inNameArray = (
-        local emptyRefinedNameArray = refine_empty_in_nameArray inNameArray
-        local returnNameArray = refine_index_in_nameArray emptyRefinedNameArray
-
-        returnNameArray
+        local returnArray = #(#(), #(), #())
+        if (get_realName_part_index()) > 1 then (
+            if inNameArray.count < __nameParts.count then returnArray = refine_nameArray_shorter_than_nameParts inNameArray
+            else returnArray = refine_nameArray_longer_than_nameParts inNameArray
+        )
+        else returnArray = #(#(), inNameArray, #())
+        returnArray
     ),
 
     fn split_into_refined_nameArray inStr = (
-        local splittedNameArray = split_name inStr
+        local splittedNameArray = filter_name inStr
         local nameArray = refine_nameArray splittedNameArray
         nameArray
     ),
 
-    fn match_nameArray_with_parts_order inNameArray inFilChar = (
-        for i = 1 to inNameArray.count do (
-            for k = 1 to __nameParts.count do (
-                if __nameParts[k].type == #index
+    fn combine_nameArray inNameArray inFilChar = (
+        local returnStr = ""
+        local copiedNameArray = deepCopy inNameArray
+        local refinedNameArray = refine_nameArray_empty copiedNameArray
+        if refinedNameArray.count > 1 then (
+            for i = 1 to refinedNameArray.count - 1 do (
+                returnStr += refinedNameArray[i]
+                returnStr += inFilChar
             )
+
+            returnStr += refinedNameArray[refinedNameArray.count]
         )
+        else returnStr = refinedNameArray[1]
+
+        returnStr
     ),
 
-    fn is_nub inStr = (
-        local returnVal = false
+    fn get_realName inStr = (
+        local filChar = get_filteringChar inStr
         local nameArray = split_into_refined_nameArray inStr
-        local result = findItem nameArray __nubStr
-        if result == 0 then returnVal = false else returnVal = true
+        local realNameArray = nameArray[2]
+        local returnStr = ""
+        returnStr = combine_nameArray realNameArray filChar
+
+        returnStr
+    ),
+
+    fn get_pos_from_refined_nameArray inType = (
+        local returnVal = 2
+        case inType of (
+            #npBase:(
+                if (get_base_part_index()) < (get_realName_part_index()) then returnVal = 1
+                else returnVal = 3
+            )
+            #npType:(
+                if (get_type_part_index()) < (get_realName_part_index()) then returnVal = 1
+                else returnVal = 3
+            )
+            #npSide:(
+                if (get_side_part_index()) < (get_realName_part_index()) then returnVal = 1
+                else returnVal = 3
+            )
+            #npFrontBack:(
+                if (get_front_back_part_index()) < (get_realName_part_index()) then returnVal = 1
+                else returnVal = 3
+            )
+            #npIndex:(
+                if (get_index_part_index()) < (get_realName_part_index()) then returnVal = 1
+                else returnVal = 3
+            )
+            default: returnVal = 2
+        )
 
         returnVal
     ),
 
-    fn get_index inStr = (
-        if (is_nub inStr) then return __nubStr
+    fn get_index_side_frontBack_part_char inNameArray inNamePartsOrder inType = (
+        local returnStr = ""
+        local nameArray = deepCopy inNameArray
+        local baseIndex = findItem inNamePartsOrder #npBase
+        local typeIndex = findItem inNamePartsOrder #npType
+        local indexIndex = findItem inNamePartsOrder #npIndex
+        local sideIndex = findItem inNamePartsOrder #npSide
+        local frontBackIndex = findItem inNamePartsOrder #npFrontBack
+        local targetIndex = 0
+        case inType of (
+            #npIndex: targetIndex = indexIndex
+            #npSide: targetIndex = sideIndex
+            #npFrontBack: targetIndex = frontBackIndex
+        )
+        format "nameArray:%  targetIndex:% inNamePartsOrder:%\n" nameArray targetIndex inNamePartsOrder
 
-        local indexStr = ""
+        if targetIndex != 0 then (
+            local targetArray = #()
+            case inType of (
+                #npIndex: targetArray = for i = 1 to nameArray.count where ((is_digit nameArray[i]) or (nameArray[i] == __nubStr)) collect nameArray[i]
+                #npSide: targetArray = for i = 1 to nameArray.count where (is_side_char nameArray[i]) collect nameArray[i]
+                #npFrontBack: targetArray = targetArray = for i = 1 to nameArray.count where (is_frontBack_char nameArray[i]) collect nameArray[i]
+            )
+            format "targetArray:%\n" targetArray
+            if targetArray.count > 0 then (
+                if targetIndex < (baseIndex + typeIndex) then (
+                    if baseIndex != 0 and typeIndex != 0 then (
+                        if targetArray.count == 1 then (
+                            returnStr = targetArray[1]
+                        )
+                        if targetArray.count == 2 then (
+                            local firstPartIndex = amin #(baseIndex, typeIndex)
+                            if (abs (targetIndex - firstPartIndex)) == 1 then returnStr = targetArray[1]
+                            else returnStr = targetArray[2]
+                        )
+                        if targetArray.count == 3 then (
+                            returnStr = targetArray[2]
+                        )
+                    )
+                    else returnStr = targetArray[1]
+                )
+                if targetIndex >= (baseIndex + typeIndex) then (
+                    if targetArray.count == 1 then (
+                        local targetPosInNameArray = findItem nameArray targetArray[1]
+                        local baseGap = abs (baseIndex - targetPosInNameArray)
+                        if baseIndex == 0 then baseGap = 999
+                        local typeGap = abs (typeIndex - targetPosInNameArray)
+                        if typeIndex == 0 then typeGap = 999
+                        local targetGap = abs (targetIndex - targetPosInNameArray)
+                        format "baseGap:% typeGap:% targetGap:%\n" baseGap typeGap targetGap
+                        if targetGap < baseGap or targetGap < typeGap then returnStr = targetArray[1]
+                        else returnStr = ""
+                    )
+                    if targetArray.count > 1 then returnStr = targetArray[targetArray.count]
+                )
+            )
+        )
+
+        returnStr
+    ),
+
+    fn get_base_type_part_char inNameArray inNamePartsArray inType = (
+        local returnStr = ""
+        local baseIndex = findItem inNamePartsArray #npBase
+        local typeIndex = findItem inNamePartsArray #npType
+        local indexIndex = findItem inNameArray #npIndex
+        local sideIndex = findItem inNameArray #npSide
+        local frontBackIndex = findItem inNameArray #npFrontBack
+        local tempNameArray = deepCopy inNameArray
+
+        if (findItem inNamePartsArray inType) != 0 then (
+            for i = 1 to inNamePartsArray.count do (
+                local tempResult = get_index_side_frontBack_part_char inNameArray inNamePartsArray inNamePartsArray[i]
+                if tempResult != "" then tempNameArray = deleteItem tempNameArray (findItem tempNameArray tempResult)
+            )
+            format "tempNameArray:%\n" tempNameArray
+            if tempNameArray.count > 0 then (
+                if inType == #npBase then (
+                    if tempNameArray.count == 2 then (
+                        if baseIndex < typeIndex then returnStr = tempNameArray[1]
+                        else returnStr = tempNameArray[2]
+                    )
+
+                    if tempNameArray.count == 1 then (
+                        if typeIndex == 0 or baseIndex == 1 then returnStr = tempNameArray[1]
+                        else (
+                            if baseIndex < typeIndex then returnStr = tempNameArray[1]
+                            else (
+                                if baseIndex < (indexIndex + sideIndex + frontBackIndex) then returnStr = tempNameArray[1]
+                                else returnStr = ""
+                            )
+                        )
+                    )
+                )
+                if inType == #npType then (
+                    if tempNameArray.count == 2 then (
+                        if typeIndex < baseIndex then returnStr = tempNameArray[1]
+                        else returnStr = tempNameArray[2]
+                    )
+
+                    if tempNameArray.count == 1 then (
+                        if baseIndex == 0 or typeIndex == 1 then returnStr = tempNameArray[1]
+                        else (
+                            if typeIndex < baseIndex then returnStr = ""
+                            if typeIndex < (indexIndex + sideIndex + frontBackIndex) then returnStr = ""
+                            else returnStr = tempNameArray[1]
+                        )
+                    )
+                )
+            )
+        )
+
+        returnStr
+    ),
+
+    fn match_refined_nameArray_with_namePartsOrder inStr = (
+        local namePartsOrder = split_nameParts_to_refined_nameArray()
         local nameArray = split_into_refined_nameArray inStr
-        for i = 1 to nameArray.count do if (is_digit nameArray[i]) then indexStr = nameArray[i]
+        local beforeRealNameArray = nameArray[1]
+        local afterRealNameArray = nameArray[3]
+        local returnArray = #(#(), nameArray[2], #())
+
+        returnArray[1] = for item in namePartsOrder[1] collect ""
+        returnArray[3] = for item in namePartsOrder[3] collect ""
+
+        for i = 1 to namePartsOrder[1].count do (
+            case namePartsOrder[1][i] of (
+                #npBase:(
+                    returnArray[1][i] = get_base_type_part_char beforeRealNameArray namePartsOrder[1] namePartsOrder[1][i]
+                )
+                #npType:(
+                    returnArray[1][i] = get_base_type_part_char beforeRealNameArray namePartsOrder[1] namePartsOrder[1][i]
+                )
+                #npIndex:(
+                    returnArray[1][i] = get_index_side_frontBack_part_char beforeRealNameArray namePartsOrder[1] namePartsOrder[1][i]
+                )
+                #npSide:(
+                    returnArray[1][i] = get_index_side_frontBack_part_char beforeRealNameArray namePartsOrder[1] namePartsOrder[1][i]
+                )
+                #npFrontBack:(
+                    returnArray[1][i] = get_index_side_frontBack_part_char beforeRealNameArray namePartsOrder[1] namePartsOrder[1][i]
+                )
+            )
+        )
+        for i = 1 to namePartsOrder[3].count do (
+            case namePartsOrder[3][i] of (
+                #npBase:(
+                    returnArray[3][i] = get_base_type_part_char afterRealNameArray namePartsOrder[3] namePartsOrder[3][i]
+                )
+                #npType:(
+                    returnArray[3][i] = get_base_type_part_char afterRealNameArray namePartsOrder[3] namePartsOrder[3][i]
+                )
+                #npIndex:(
+                    returnArray[3][i] = get_index_side_frontBack_part_char afterRealNameArray namePartsOrder[3] namePartsOrder[3][i]
+                )
+                #npSide:(
+                    returnArray[3][i] = get_index_side_frontBack_part_char afterRealNameArray namePartsOrder[3] namePartsOrder[3][i]
+                )
+                #npFrontBack:(
+                    returnArray[3][i] = get_index_side_frontBack_part_char afterRealNameArray namePartsOrder[3] namePartsOrder[3][i]
+                )
+            )
+        )
+
+        returnArray
+    ),
+
+    fn get_side inStr = (
+        local sidePos = get_pos_from_refined_nameArray #npSide
+        local nameArray = (split_into_refined_nameArray inStr)[sidePos]
+        local namePartsOrderArray = (split_nameParts_to_refined_nameArray())[sidePos]
+        local sideStr = get_index_side_frontBack_part_char nameArray namePartsOrderArray #npSide
+
+        sideStr
+    ),
+
+    fn get_frontBack inStr = (
+        local frontBackPos = get_pos_from_refined_nameArray #npFrontBack
+        local nameArray = (split_into_refined_nameArray inStr)[frontBackPos]
+        local namePartsOrderArray = (split_nameParts_to_refined_nameArray())[frontBackPos]
+        local frontBackStr = get_index_side_frontBack_part_char nameArray namePartsOrderArray #npFrontBack
+
+        frontBackStr
+    ),
+
+    fn get_index inStr = (
+        local indexPos = get_pos_from_refined_nameArray #npIndex
+        local nameArray = (split_into_refined_nameArray inStr)[indexPos]
+        local namePartsOrderArray = (split_nameParts_to_refined_nameArray())[indexPos]
+        local indexStr = get_index_side_frontBack_part_char nameArray namePartsOrderArray #npIndex
 
         indexStr
+    ),
+
+    fn is_nub inStr = (
+        local returnVal = false
+        if (get_index inStr) == __nubStr then returnVal = true
+        returnVal
     ),
 
     fn get_index_as_digit inStr = (
@@ -310,21 +788,22 @@ struct _Name (
         else return false
     ),
 
-    fn combine_nameArray inNameArray inFilChar = (
-        local returnStr = ""
-        local copiedNameArray = deepCopy inNameArray
-        local refinedNameArray = refine_nameArray copiedNameArray
-        if refinedNameArray.count > 1 then (
-            for i = 1 to refinedNameArray.count - 1 do (
-                returnStr += refinedNameArray[i]
-                returnStr += inFilChar
-            )
+    fn get_base inStr = (
+        local basePos = get_pos_from_refined_nameArray #npBase
+        local nameArray = (split_into_refined_nameArray inStr)[basePos]
+        local namePartsOrderArray = (split_nameParts_to_refined_nameArray())[basePos]
+        local baseStr = get_base_type_part_char nameArray namePartsOrderArray #npBase
 
-            returnStr += refinedNameArray[refinedNameArray.count]
-        )
-        else returnStr = refinedNameArray[1]
+        baseStr
+    ),
 
-        returnStr
+    fn get_type inStr = (
+        local typePos = get_pos_from_refined_nameArray #npType
+        local nameArray = (split_into_refined_nameArray inStr)[typePos]
+        local namePartsOrderArray = (split_nameParts_to_refined_nameArray())[typePos]
+        local typeStr = get_base_type_part_char nameArray namePartsOrderArray #npType
+
+        typeStr
     ),
 
     fn get_string inStr = (
@@ -484,41 +963,6 @@ struct _Name (
         if (is_back inStr) then return true
     ),
 
-    fn get_side inStr = (
-        toUpper (get_side_char inStr)
-    ),
-
-    fn get_front_back inStr = (
-        toUpper (get_front_back_char inStr)
-    ),
-
-    fn get_base inStr = (
-        local nameArray = split_into_refined_nameArray inStr
-        local basePartIndex = get_base_part_index()
-        if basePartIndex != 0 and nameArray.count >= basePartIndex then return nameArray[basePartIndex]
-
-        return ""
-    ),
-
-    fn get_type inStr = (
-        local nameArray = split_into_refined_nameArray inStr
-        local typePartIndex = get_type_part_index()
-        if typePartIndex != 0 and nameArray.count >= typePartIndex then return nameArray[typePartIndex]
-
-        return ""
-
-        --if nameArray.count > 0 then (
-        --    if (has_side inStr) then (
-        --        local sideChar = get_side inStr
-        --        local sideIndex = findItem nameArray sideChar
-        --        if sideIndex > 2 then return NameArray [2]
-        --    )
-        --    else return nameArray[2]
-        --)
-
-        --return ""
-    ),
-
     fn get_nonRealName inStr = (
         local filChar = get_filteringChar inStr
         local baseIndex = get_base_part_index()
@@ -541,22 +985,6 @@ struct _Name (
 
         local returnStr = ""
         returnStr = combine_nameArray nonRealNameArray filChar
-
-        returnStr
-    ),
-
-    fn get_realName inStr = (
-        local filChar = get_filteringChar inStr
-        local nameArray = split_into_refined_nameArray (get_string inStr)
-        local nonRealNameArray = split_into_refined_nameArray (get_nonRealName inStr)
-        local realNameArray = #()
-
-        for i = 1 to nameArray.count do (
-            if (findItem nonRealNameArray nameArray[i]) == 0 then append realNameArray nameArray[i]
-        )
-
-        local returnStr = ""
-        returnStr = combine_nameArray realNameArray filChar
 
         returnStr
     ),
