@@ -6,10 +6,23 @@ rollout mainRollout "Hair Tools" width:280 height:820 (
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
+    global __hairCardModRoll
+
     include "ui_hairGuideRollout.ms"
+    include "ui_hairCardCreateRollout.ms"
+    include "ui_hairCardModifyRollout.ms"
 
     on mainRollout open do (
+        __hairCardModRoll = hairCardModifyRollout
+
         AddSubRollout mainSub hairGuideRollout
+        AddSubRollout mainSub hairCardCreateRollout
+        AddSubRollout mainSub hairCardModifyRollout
+    )
+
+    on mainRollout close do (
+        hairGuideRollout.jalHairLine.reset()
+        hairCardCreateRollout.jalHairCard.reset()
     )
 )
 jalHairTool = mainRollout
