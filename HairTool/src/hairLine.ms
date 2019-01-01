@@ -25,18 +25,16 @@ struct __HairLine (
         if (classOf inMesh) == Editable_Poly then hairMesh = inMesh
         else return false
 
-        SetCommandPanelTaskMode #modify
-        subobjectLevel = 0
         local matID2FaceNum = 0
 
-        hairMesh.EditablePoly.unhideAll #Face
-        hairMesh.EditablePoly.SetSelection #Edge #{}
-        hairMesh.EditablePoly.SetSelection #Face #{}
-        hairMesh.EditablePoly.SetSelection #Vertex #{}
+        polyop.unHideAllFaces hairMesh
+        polyop.setEdgeSelection hairMesh #{}
+        polyop.setFaceSelection hairMesh #{}
+        polyop.setVertSelection hairMesh #{}
 
         for i = 1 to hairMesh.getNumFaces() do (
             rootFaceBitArray[i] = false
-            if (hairMesh.GetFaceMaterial i) == 2 then (
+            if (polyop.getFaceMatID hairMesh i) == 2 then (
                 rootFaceBitArray[i] = true
                 matID2FaceNum += 1
             )
@@ -65,13 +63,11 @@ struct __HairLine (
         if hairMesh == undefined or rootFaceBitArray.count == 0 then return returnArray
 
         SetCommandPanelTaskMode #modify
-        subobjectLevel = 0
-        local matID2FaceNum = 0
 
-        hairMesh.EditablePoly.unhideAll #Face
-        hairMesh.EditablePoly.SetSelection #Edge #{}
-        hairMesh.EditablePoly.SetSelection #Face #{}
-        hairMesh.EditablePoly.SetSelection #Vertex #{}
+        polyop.unHideAllFaces hairMesh
+        polyop.setEdgeSelection hairMesh #{}
+        polyop.setFaceSelection hairMesh #{}
+        polyop.setVertSelection hairMesh #{}
 
         for i = 1 to rootFaceBitArray.count do (
             if rootFaceBitArray[i] == true then (
@@ -90,21 +86,17 @@ struct __HairLine (
         if hairMesh == undefined or rootFaceBitArray.count == 0 or rootVertPosArray.count == 0 then return returnArray
 
         SetCommandPanelTaskMode #modify
-        subobjectLevel = 0
-        local matID2FaceNum = 0
-
         local selEdgeBitArray = #{}
 
-        hairMesh.EditablePoly.unhideAll #Face
-        hairMesh.EditablePoly.SetSelection #Edge #{}
-        hairMesh.EditablePoly.SetSelection #Face #{}
-        hairMesh.EditablePoly.SetSelection #Vertex #{}
+        polyop.unHideAllFaces hairMesh
+        polyop.setEdgeSelection hairMesh #{}
+        polyop.setFaceSelection hairMesh #{}
+        polyop.setVertSelection hairMesh #{}
 
-        hairMesh.EditablePoly.SetSelection #Face rootFaceBitArray
-        hairMesh.EditablePoly.ConvertSelection #Face #Edge
-        subobjectLevel = 2
+        polyop.setFaceSelection hairMesh rootFaceBitArray
+        polyop.setEdgeSelection hairMesh (polyop.getEdgesUsingFace hairMesh rootFaceBitArray)
         hairMesh.EditablePoly.SelectEdgeRing()
-        selEdgeBitArray = hairMesh.EditablePoly.GetSelection #Edge
+        selEdgeBitArray = polyop.getEdgeSelection hairMesh
         selEdgeBitArray = -selEdgeBitArray
 
         local firstEdgeIndex = 0
@@ -113,25 +105,25 @@ struct __HairLine (
         local firstEdgeLoopBitArray = #{}
         for i = 1 to selEdgeBitArray.count do firstEdgeLoopBitArray[i] = false
         firstEdgeLoopBitArray[firstEdgeIndex] = true
-        hairMesh.EditablePoly.SetSelection #Edge firstEdgeLoopBitArray
+        polyop.setEdgeSelection hairMesh firstEdgeLoopBitArray
         hairMesh.EditablePoly.SelectEdgeLoop()
-        firstEdgeLoopBitArray = hairMesh.EditablePoly.GetSelection #Edge
+        firstEdgeLoopBitArray = polyop.getEdgeSelection hairMesh
 
         for i = 1 to selEdgeBitArray.count do selEdgeBitArray[i] = false
         selEdgeBitArray[firstEdgeIndex] = true
-        hairMesh.EditablePoly.SetSelection #Edge selEdgeBitArray
+        polyop.setEdgeSelection hairMesh selEdgeBitArray
         hairMesh.EditablePoly.SelectEdgeRing()
-        selEdgeBitArray = hairMesh.EditablePoly.GetSelection #Edge
+        selEdgeBitArray = polyop.getEdgeSelection hairMesh
         local guideLineNum = 1
         for i = 1 to selEdgeBitArray.count do if selEdgeBitArray[i] then guideLineNum += 1
 
         returnArray = #()
         append returnArray firstEdgeLoopBitArray
-        hairMesh.EditablePoly.SetSelection #Edge firstEdgeLoopBitArray
+        polyop.setEdgeSelection hairMesh firstEdgeLoopBitArray
         for i = 2 to (guideLineNum - 1) do (
             local tempGuideEdgeBitArray
             hairMesh.setRingShift 1 true false
-            tempGuideEdgeBitArray = hairMesh.EditablePoly.GetSelection #Edge
+            tempGuideEdgeBitArray = polyop.getEdgeSelection hairMesh
             append returnArray tempGuideEdgeBitArray
         )
         guideEdgeBitArrayArray = returnArray
@@ -139,7 +131,7 @@ struct __HairLine (
         return returnArray
     ),
 
-    fn create_guideLine = (
+    fn create_guideLine_shape = (
         local hairGuideLine = undefined
         local hairGuideLineName = uniqueName "GuideLine"
 
@@ -168,17 +160,16 @@ struct __HairLine (
     fn create_emitter = (
         local emitMesh = copy hairMesh
         local nonEmitFaceBitArray = #{}
-        select emitMesh
         SetCommandPanelTaskMode #modify
-
-        subobjectLevel = 4
+        select emitMesh
+        subobjectlevel = 4
         emitMesh.selectByMaterial 2 clearCurrentSelection:true
-        nonEmitFaceBitArray = emitMesh.EditablePoly.GetSelection #Face
-        emitMesh.buttonOp #FlipNormals
+        nonEmitFaceBitArray = polyop.getFaceSelection emitMesh
+        emitMesh.EditablePoly.flipNormals 1
         nonEmitFaceBitArray = -nonEmitFaceBitArray
-        emitMesh.EditablePoly.SetSelection #Face nonEmitFaceBitArray
-        emitMesh.EditablePoly.delete #Face
-        subobjectLevel = 0
+        polyop.deleteFaces emitMesh nonEmitFaceBitArray
+        subobjectlevel = 0
+        clearSelection()
 
         hairEmitMesh = emitMesh
         emitMesh
@@ -190,7 +181,7 @@ struct __HairLine (
         modify = HairMod()
         addModifier hairEmitMesh modify
         modify.HairCount = 20
-        modify.HairSegments = 42
+        modify.HairSegments = 15
         modify.HairPasses = 1
         modify.HairDensity = 100
         modify.HairScale = 100
@@ -231,19 +222,71 @@ struct __HairLine (
         modify.RecombFromSplines guideLine
     ),
 
-    fn create_hairLine inMesh = (
+    fn create_guideLine inMesh = (
         if (set_hairMesh inMesh) == undefined then return false
         else (
             get_rootVertPosArray()
             get_guideEdgeBitArrayArray()
-            create_guideLine()
-
-            create_emitter()
-
+            create_guideLine_shape()
             return true
         )
     ),
 
-    fn create_hairLine_from_hairMod inMesh = (
+    fn detach_spline_to_hairLine inSpline = (
+        local returnArray = #()
+        if superclassof inSpline == shape do (
+            local splineWireColor = inSpline.wireColor
+            convertToSplineShape inSpline
+            local splineNum = numsplines inSpline
+            for splineIndex in splineNum to 2 by -1 do (
+                c = (for k in splineNum to 1 by -1 collect k)
+                local detachedSpline = copy inSpline
+                deleteitem c (splineNum - splineIndex + 1)
+                for iii in c do (
+                    deleteSpline detachedSpline iii
+                )
+                updateshape detachedSpline
+                detachedSpline.wireColor = splineWireColor
+                append returnArray detachedSpline
+            )
+            for iiii in splineNum to 2 by -1 do (
+                deletespline inSpline iiii
+            )
+            updateshape inSpline
+            append returnArray inSpline
+        )
+
+        returnArray
+    ),
+
+    fn create_hairLine inMesh = (
+        create_guideLine inMesh
+        if guideLine != undefined then (
+            local tempHairLine = copy guideLine
+            tempHairLine.name = uniqueName "hairLine_"
+            lineArray = detach_spline_to_hairLine tempHairLine
+            delete guideLine
+        )
+        reset()
+    ),
+
+    fn create_guideline_from_hairMod inMesh = (
+        create_guideLine inMesh
+        create_emitter()
+        hide hairMesh
+        hide guideLine
+        add_hair_modifier()
+    ),
+
+    fn create_hairline_from_hairMode = (
+        if modify != undefined then (
+            select hairEmitMesh
+            local tempHairLine = modify.convertHairsToSplines instance:hairEmitMesh
+            tempHairLine.name = uniqueName "hairLine_"
+            lineArray = detach_spline_to_hairLine tempHairLine
+            delete guideLine
+            delete hairEmitMesh
+            reset()
+        )
     )
 )
