@@ -1,5 +1,6 @@
 rollout hairGuideRollout "Hair Line" (
-    pickButton hairMeshPickBtn "Pick Hair Mesh" autoDisplay:true
+    pickButton hairMeshPickBtn "Pick Hair Mesh" autoDisplay:true across:2
+    button splineDetachBtn "Detach Spline" autoDisplay:true
     button createLineBtn "Create Line" enabled:false
     group "" (
         button createGuideLineFromHairModBtn "Create Line from Hair" enabled:false
@@ -28,6 +29,13 @@ rollout hairGuideRollout "Hair Line" (
             jalHairLine.reset()
             reset_ui()
             messageBox "Please Select...\n   -Editable Poly which has\n   -Material ID 2"
+        )
+    )
+
+    on splineDetachBtn pressed do (
+        local selSpline = for item in selection where (classOf item == SplineShape) collect item
+        for item in selSpline do (
+            jalHairLine.detach_spline_to_hairLine item
         )
     )
 

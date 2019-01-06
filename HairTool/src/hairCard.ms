@@ -18,19 +18,19 @@ struct __HairCard (
     hairLineArray = #(),
     hairCardArray = #(),
     hairMatArray = #("Wide Hair", "Narrow Hair"),
-    hairCardNumPerMat = #(5, 10),
+    hairCardNumPerMatArray = #(5, 10),
 
     fn reset = (
         hairLineArray = #()
         hairCardArray = #()
         hairMatArray = #("Wide Hair", "Narrow Hair")
-        hairCardNumPerMat = #(5, 10)
+        hairCardNumPerMatArray = #(5, 10)
 
         gc()
     ),
 
-    fn set_hairCardNumPerMat inMatIndex inNum = (
-        hairCardNumPerMat[inMatIndex] = inNum
+    fn set_hairCardNumPerMatArray inMatIndex inNum = (
+        hairCardNumPerMatArray[inMatIndex] = inNum
     ),
 
     fn set_hairLineArray inArray = (
@@ -50,9 +50,9 @@ struct __HairCard (
         hairPlaneUVWMod.maptype = 0
         hairPlaneUVWMod.length = hairPlane.length
         hairPlaneUVWMod.width = hairPlane.width
-        hairPlaneUVWMod.utile = 1.0/hairCardNumPerMat[matIndex]
+        hairPlaneUVWMod.utile = 1.0/hairCardNumPerMatArray[matIndex]
         hairPlaneUVWMod.axis = 2
-        hairPlane.modifiers[#HairPlaneUVW].gizmo.position = [-((random 0 (hairCardNumPerMat[matIndex]-1)) * hairPlane.width), 0.0, 0.0]
+        hairPlane.modifiers[#HairPlaneUVW].gizmo.position = [-((random 0 (hairCardNumPerMatArray[matIndex]-1)) * hairPlane.width), 0.0, 0.0]
 
         addModifier hairPlane hairPlaneBendMod
         hairPlaneBendMod.name = "HairPlaneBend"
@@ -65,8 +65,16 @@ struct __HairCard (
         hairPlane
     ),
 
+    fn is_hairPlane inHairPlane = (
+        local returnVal = false
+        if inHairPlane.modifiers[#HairPlaneUVW] != undefined and inHairPlane.modifiers[#HairPathDeform] != undefined and inHairPlane.modifiers[#HairPlaneBend] != undefined then returnVal = true
+        else returnVal = false
+
+        returnVal
+    ),
+
     fn modify_plane_shape inHairPlane inLength inWidth inLengthsegs inWidthsegs inRotation inTwist inBend inTaper = (
-        if inHairPlane.modifiers[#HairPlaneUVW] != undefined and inHairPlane.modifiers[#HairPathDeform] != undefined and inHairPlane.modifiers[#HairPlaneBend] != undefined then (
+        if (is_hairPlane inHairPlane) then (
             SetCommandPanelTaskMode #modify
             select inHairPlane
 
@@ -138,7 +146,6 @@ struct __HairCard (
     ),
 
     fn set_hairCard_Shape inHairCard inShape = (
-
         local returnShape = __HairCardShape()
         if inHairCard.modifiers[#HairPlaneUVW] != undefined and inHairCard.modifiers[#HairPathDeform] != undefined and inHairCard.modifiers[#HairPlaneBend] != undefined then (
             returnShape.object = inHairCard
@@ -169,5 +176,12 @@ struct __HairCard (
             inHairCardShape.object.modifiers[#HairPathDeform].MoveBeforeRotation == inHairCardShape.beforeRot
             inHairCardShape.object.modifiers[#HairPathDeform].X_OFFSET = inHairCardShape.xOffset
             inHairCardShape.object.modifiers[#HairPathDeform].Z_OFFSET = inHairCardShape.zOffset
+    ),
+
+    fn modify_uv inHairPlane inHairMatIndex inPosIndex = (
+        if (is_hairPlane inHairPlane) then (
+            local uPosMul = 1.0/hairCardNumPerMatArray[inHairMatIndex]
+            inHairPlane.modifiers[#HairPlaneUVW].gizmo.position = [-((inPosIndex - 1) * inHairPlane.width), 0.0, 0.0]
+        )
     )
 )

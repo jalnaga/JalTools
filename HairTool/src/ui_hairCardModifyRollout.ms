@@ -17,7 +17,16 @@ rollout hairCardModifyRollout "Modify HairCard" (
 
         button openScaleCurveBtn "Open Scale Curve Editor"
     )
-    group "Random" (
+    group "Material" (
+        spinner hairCardWideNumPerMatSpn "Wide Var. Num:" type:#integer range:[1,10, 5]
+        spinner hairCardNarrowNumPerMatSpn "Narrow Var. Num:" type:#integer range:[1,10, 10]
+        radiobuttons hairCardTypeRdb "" columns:2 labels:#("Wide Hair", "Narrow Hair")
+        spinner hairCardWideMinSpn "Wide Min:" type:#integer range:[1,10, 1] across:2
+        spinner hairCardWideMaxSpn "Wide Max:" type:#integer range:[1,10, 5]
+        spinner hairCardNarrowMinSpn "Narrow Min:" type:#integer range:[1,10, 1] across:2
+        spinner hairCardNarrowMaxSpn "Narrow Max:" type:#integer range:[1,10, 5]
+        spinner hairCardUVIndexSpn "UV Index:" type:#integer range:[1,10, 1] across:2
+        button hairCardUVRandomBtn "Random"
     )
 
     include "hairCard.ms"
@@ -50,7 +59,7 @@ rollout hairCardModifyRollout "Modify HairCard" (
 
     fn update_selArray = (
         if bTargetArrayDone then (
-            local selHairPlaneArray = for item in selection where (item.modifiers[#HairPlaneUVW] != undefined and item.modifiers[#HairPathDeform] != undefined and item.modifiers[#HairPlaneBend] != undefined) collect item
+            local selHairPlaneArray = for item in selection where (jalHairCard.is_hairPlane item) collect item
             if selHairPlaneArray.count > 0 then (
                 update_ui selHairPlaneArray
             )
@@ -240,6 +249,35 @@ rollout hairCardModifyRollout "Modify HairCard" (
         )
     )
 
+    fn modify_uv inNewVal bRandom:false = (
+        if jalHairCard.hairCardArray.count != 0 then (
+            bTargetArrayDone = false
+            local matIndex = hairCardTypeRdb.state
+            local maxVal = jalHairCard.hairCardNumPerMatArray[matIndex]
+            local matMaxVal = 0
+            local matMinVal = 0
+            local newVal = inNewVal
+            case matIndex of (
+                1: (
+                    matMaxVal = hairCardWideMaxSpn.value
+                    matMinVal = hairCardWideMinSpn.value
+                )
+                2: (
+                    matMaxVal = hairCardNarrowMaxSpn.value
+                    matMinVal = hairCardNarrowMinSpn.value
+                )
+            )
+            if matMaxVal <= matMinVal then matMinVal = matMinVal - 1
+            if matMaxVal > maxVal then matMaxVal = maxVal
+            if newVal > matMaxVal then newVal = matMaxVal
+            for item in jalHairCard.hairCardArray do (
+                if bRandom then newVal = random matMinVal matMaxVal
+                jalHairCard.modify_uv item matIndex newVal
+            )
+            bTargetArrayDone = true
+        )
+    )
+
     rollout hairCardScaleCurveEditorRollout "Scale Curve Editor" (
         CurveControl hairCardScaleCrv ""
     )
@@ -265,4 +303,15 @@ rollout hairCardModifyRollout "Modify HairCard" (
 
     on hairCardXOffsetSpn changed newVal do modify_offsetX newVal
     on hairCardZOffsetSpn changed newVal do modify_offsetZ newVal
+
+    on hairCardWideNumPerMatSpn changed newVal do jalHairCard.set_hairCardNumPerMat 1 newVal
+    on hairCardNarrowNumPerMatSpn changed newVal do jalHairCard.set_hairCardNumPerMat 2 newVal
+
+    on hairCardUVIndexSpn changed newVal do (
+        modify_uv newVal
+    )
+
+    on hairCardUVRandomBtn pressed do (
+        modify_uv 1 bRandom:true
+    )
 )

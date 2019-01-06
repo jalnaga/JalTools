@@ -1,8 +1,5 @@
 rollout hairCardCreateRollout "Create HairCard" (
     group "Create" (
-        spinner hairCardWideNumPerMatSpn "Wide Var. Num:" type:#integer range:[1,10, 5]
-        spinner hairCardNarrowNumPerMatSpn "Narrow Var. Num:" type:#integer range:[1,10, 10]
-        radiobuttons hairCardTypeRdb "" columns:2 labels:#("Wide Hair", "Narrow Hair")
         button createHairCardBtn "Create HairCard"
     )
     group "Card Mdofy" (
@@ -86,9 +83,6 @@ rollout hairCardCreateRollout "Create HairCard" (
             reset_ui()
         )
     )
-
-    on hairCardWideNumPerMatSpn changed newVal do jalHairCard.set_hairCardNumPerMat 1 newVal
-    on hairCardNarrowNumPerMatSpn changed newVal do jalHairCard.set_hairCardNumPerMat 2 newVal
 
     on hairCardLengthSpn changed newVal do modify_hairCard()
     on hairCardWidthSpn changed newVal do modify_hairCard()
