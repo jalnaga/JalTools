@@ -1,5 +1,6 @@
 rollout hairCardCreateRollout "Create HairCard" (
     group "Create" (
+        radiobuttons hairCardTypeRdb "" columns:2 labels:#("Wide Hair", "Narrow Hair")
         button createHairCardBtn "Create HairCard"
     )
     group "Card Mdofy" (
