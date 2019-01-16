@@ -14,6 +14,10 @@ struct _Name (
         __nubStr = inStr
     ),
 
+    fn get_nubStr = (
+        return __nubStr
+    ),
+
     fn set_leftStr inStr = (
         __sideStrArray[1] = inStr
     ),
@@ -805,17 +809,28 @@ struct _Name (
         returnVal
     ),
 
+    fn convert_digit_into_padding_string inDigit inPaddingNum:3 = (
+        local formatStr = "0" + (inPaddingNum as String) + "d"
+        local digitNum = 0
+        local returnVal = ""
+        if (classOf inDigit) == integer then digitNum = inDigit
+        if (classOf inDigit) == String then (
+            if (is_digit inDigit) then digitNum = execute inDigit
+        )
+        returnVal = formattedPrint digitNum format:formatStr
+
+        returnVal
+    ),
+
     fn set_index_padding_num inStr inPaddingNum:3 = (
         local filChar = get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
         local indexStr = get_index inStr
         local index = -999
-        local formatStr = "0" + (inPaddingNum as String) + "d"
 
         if indexStr != "" then (
-            if indexStr != __nubStr then index = execute indexStr
-            if index > -1 then indexStr = formattedPrint index format:formatStr
+            if indexStr != __nubStr then indexStr = convert_digit_into_padding_string indexStr inPaddingNum:inPaddingNum
 
             nameArray[indexIndex] = indexStr
         )
@@ -1011,6 +1026,17 @@ struct _Name (
         local patternStr = replace_index inStr "*"
         local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
         local returnVal = replace_index inStr ((returnArray.count+1) as String)
+
+        returnVal
+    ),
+
+    fn replace inStr inTargetStr inNewStr = (
+        local returnVal = inStr
+        if (matchPattern inStr pattern:("*" + inTargetStr + "*")) then (
+            local targetStartIndex = findString inStr inTargetStr
+            local targetLength = inTargetStr.count
+            returnVal = replace inStr targetStartIndex targetLength inNewStr
+        )
 
         returnVal
     )
