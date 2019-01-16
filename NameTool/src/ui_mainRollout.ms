@@ -1,9 +1,9 @@
 try(destroydialog jal.tools.namingTool) catch()
-rollout mainRollout "Naming Tool" width:300 height:570 (
-    SubRollout mainSub "" align:#center height:555
+rollout mainRollout "Naming Tool" width:300 height:690 (
+    SubRollout mainSub "" align:#center height:675
 
     local minWidth = 300
-    local minHeight = 540
+    local minHeight = 690
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
@@ -11,6 +11,10 @@ rollout mainRollout "Naming Tool" width:300 height:570 (
     global __namingRollout
     global __batchNamingRollout
 
+    local iniFile = ""
+    local nubStr = ""
+    local namePartsOrder = #()
+    local numPaddingNum = 3
     local renameObjArray = #()
 
     include "ui_nameListRollout.ms"
@@ -19,6 +23,12 @@ rollout mainRollout "Naming Tool" width:300 height:570 (
 
     on mainRollout open do
     (
+        iniFile = (getFilenamePath (getThisScriptFilename())) +"\\NameTool.ini"
+        nubStr = jal.name.get_nubStr()
+        namePartsOrder = filterString (getINISetting iniFile "DefaultSetting" "NamePartsOrder") " "
+        numPaddingNum = (getINISetting iniFile "DefaultSetting" "PaddingNum") as integer
+        jal.name.set_name_parts_order namePartsOrder
+
         __nameListRollout = nameListRollout
         __namingRollout = namingRollout
         __batchNamingRollout = batchNamingRollout
@@ -32,7 +42,7 @@ rollout mainRollout "Naming Tool" width:300 height:570 (
 
     on mainRollout resized newSize do
     (
-        if newSize[1] > minWidth then 
+        if newSize[1] > minWidth then
         mainSub.width = newSize[1] - subRollWidthOffset
         else (
             mainRollout.width = minWidth
