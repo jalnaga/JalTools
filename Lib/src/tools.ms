@@ -3,8 +3,11 @@ struct _Tools (
     namingTool = undefined,
     boneTool = undefined,
     skinTool = undefined,
+    skinWeightTool = undefined,
     joystickTool = undefined,
     facialTool = undefined,
+    hairTool = undefined,
+    faceCustomTool = undefined,
 
     fn delete_unwantedScripts = (
         local userStartScriptsDir = getDir #userStartupScripts
@@ -40,7 +43,7 @@ struct _Tools (
             z = custattributes.getdef x 1
             custAttributes.delete x z
         )
-        
+
         z=2
         while z !=undefined do (
             x = meditmaterials
