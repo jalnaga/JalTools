@@ -19,12 +19,14 @@ struct __HairCard (
     hairCardArray = #(),
     hairMatArray = #("Wide Hair", "Narrow Hair"),
     hairCardNumPerMatArray = #(5, 10),
+    hairCardWidthArray = #(3.0, 1.5),
 
     fn reset = (
         hairLineArray = #()
         hairCardArray = #()
         hairMatArray = #("Wide Hair", "Narrow Hair")
         hairCardNumPerMatArray = #(5, 10)
+        hairCardWidthArray = #(3.0, 1.5)
 
         gc()
     ),
@@ -38,7 +40,7 @@ struct __HairCard (
     ),
 
     fn create_plane matIndex:1 = (
-        local hairPlane = Plane length:50 width:3 lengthsegs:20 widthsegs:2
+        local hairPlane = Plane length:50 width:hairCardWidthArray[matIndex] lengthsegs:20 widthsegs:2
         local hairPlaneUVWMod = uvwmap()
         local hairPlaneBendMod = Bend()
 
@@ -107,7 +109,7 @@ struct __HairCard (
             hairPathDeformMod.percent_along_path = 100
             hairPathDeformMod.axis = 1
             hairPathDeformMod.ScaleEnable = on
-            hairPathDeformMod.uniform = off
+            hairPathDeformMod.uniform = on
         )
     ),
 

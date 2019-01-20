@@ -52,6 +52,7 @@ rollout hairCardCreateRollout "Create HairCard" (
     fn enabled_modify_controls = (
         hairCardLengthSpn.enabled = true
         hairCardWidthSpn.enabled = true
+        hairCardWidthSpn.value = jalHairCard.hairCardWidthArray[hairCardTypeRdb.state]
         hairCardLengthsegsSpn.enabled = true
         hairCardWidthsegsSpn.enabled = true
         hairCardRotSpn.enabled = true
