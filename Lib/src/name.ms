@@ -1030,7 +1030,7 @@ struct _Name (
         returnVal
     ),
 
-    fn replace inStr inTargetStr inNewStr = (
+    fn find_and_replace inStr inTargetStr inNewStr = (
         local returnVal = inStr
         if (matchPattern inStr pattern:("*" + inTargetStr + "*")) then (
             local targetStartIndex = findString inStr inTargetStr
