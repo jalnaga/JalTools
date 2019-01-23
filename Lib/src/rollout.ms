@@ -23,6 +23,7 @@ struct _Rollout (
                 CheckButtonControl: append controlStatus control.checked
                 EditTextControl: append controlStatus control.text
                 ListBoxControl: append controlStatus control.items
+                MultiListBoxControl: append controlStatus control.items
                 CheckBoxControl: append controlStatus control.checked
                 default: append controlStatus 0
             )
@@ -47,6 +48,7 @@ struct _Rollout (
                 CheckButtonControl: control.checked = inPropertyArray[controlIndex][3]
                 EditTextControl: control.text = inPropertyArray[controlIndex][3]
                 ListBoxControl: control.items = inPropertyArray[controlIndex][3]
+                MultiListBoxControl: control.items inPropertyArray[controlIndex][3]
                 CheckBoxControl: control.checked = inPropertyArray[controlIndex][3]
             )
 
