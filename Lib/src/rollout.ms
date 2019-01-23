@@ -48,7 +48,7 @@ struct _Rollout (
                 CheckButtonControl: control.checked = inPropertyArray[controlIndex][3]
                 EditTextControl: control.text = inPropertyArray[controlIndex][3]
                 ListBoxControl: control.items = inPropertyArray[controlIndex][3]
-                MultiListBoxControl: control.items inPropertyArray[controlIndex][3]
+                MultiListBoxControl: control.items = inPropertyArray[controlIndex][3]
                 CheckBoxControl: control.checked = inPropertyArray[controlIndex][3]
             )
 
