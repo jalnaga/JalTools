@@ -11,10 +11,12 @@ rollout mainRollout "Face Custom Tool" width:300 height:690 (
     local fc = _FaceCustom()
 
     include "ui_regionRollout.ms"
+    include "ui_scanFaceRollout.ms"
 
     on mainRollout open do
     (
         AddSubRollout mainSub regionRollout
+        AddSubRollout mainSub scanFaceRollout
     )
 
     on mainRollout resized newSize do
@@ -32,6 +34,7 @@ rollout mainRollout "Face Custom Tool" width:300 height:690 (
         )
 
         jal.roll.update_subroll_when_resized mainSub regionRollout
+        jal.roll.update_subroll_when_resized mainSub scanFaceRollout
     )
 )
 jal.tools.faceCustomTool = mainRollout
