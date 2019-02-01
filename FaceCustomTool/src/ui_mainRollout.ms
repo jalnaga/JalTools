@@ -38,4 +38,4 @@ rollout mainRollout "Face Custom Tool" width:300 height:690 (
     )
 )
 jal.tools.faceCustomTool = mainRollout
-createDialog jal.tools.faceCustomTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing, #style_maximizebox)
+createDialog jal.tools.faceCustomTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_maximizebox)
