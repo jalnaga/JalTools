@@ -15,18 +15,18 @@ rollout _progressRollout "Now Processing..." width:300 height:120
 
 struct _Progress (
     progressWindow = _progressRollout,
-    currentStep = 1,
+    currentStep = 0,
     totalStepNum = 1,
     progressText = "",
     dialog = true,
-    
+    keepGoing = true,
+
     fn start_progress inProgressName totalStep:1 useDialog:true = (
         dialog = useDialog
         progressText = inProgressName
         totalStepNum = totalStep
 
         disableSceneRedraw()
-        setWaitCursor()
 
         if dialog then CreateDialog progressWindow
         else progressStart inProgressName
@@ -36,16 +36,15 @@ struct _Progress (
         if dialog then DestroyDialog progressWindow
         else progressEnd()
 
-        setArrowCursor()
         enableSceneRedraw()
         redrawViews()
     ),
 
     fn update_progress inCurrentIndex inTotalIndex inProgressText:"" inCurrentStep:1 = (
         local percentage = ((inCurrentIndex as float) / (inTotalIndex)) * 100
-        
+        if inProgressText != "" then progressText = inProgressText
+
         if dialog then (
-            if inProgressText != "" then progressText = inProgressText
             currentStep = inCurrentStep
             progressWindow.currentStepLabel.text = (currentStep as String) + " / " + (totalStepNum as String)
             progressWindow.totalProgressbar.value = ((currentStep as float) / totalStepNum) * 100
@@ -60,8 +59,13 @@ struct _Progress (
             )
         )
         else (
+            if currentStep < inCurrentStep then (
+                progressStart (progressText + " " + ((currentStep + 1) as String))
+                currentStep = inCurrentStep
+            )
             progressUpdate percentage
-            if (getProgressCancel()) then (
+            if (getProgressCancel()) then keepGoing = false
+            if keepGoing == false then (
                 end_progress()
                 exit
             )
