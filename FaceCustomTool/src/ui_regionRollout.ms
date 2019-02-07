@@ -108,17 +108,6 @@ rollout regionRollout "Region" (
         )
     )
 
-    fn fnMaxRedraw arg = (
-        if arg == 1 then (
-            cui.CommandPanelOpen = true
-            enableSceneRedraw()
-        )
-        else disableSceneRedraw()
-        WM_SETREDRAW=0xB
-        commandHWND = (windows.getChildHWND #max "Command Panel")
-        windows.sendmessage (commandHWND[1]) WM_SETREDRAW arg 0
-    )
-
     rollout editRegionNameRollout "Region Name" (
         edittext editRegionNameTxt ""
         button cancelBtn "Cancel" across:2
