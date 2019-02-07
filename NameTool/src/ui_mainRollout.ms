@@ -23,11 +23,18 @@ rollout mainRollout "Naming Tool" width:300 height:690 (
 
     on mainRollout open do
     (
-        iniFile = (getFilenamePath (getThisScriptFilename())) +"\\NameTool.ini"
-        nubStr = jal.name.get_nubStr()
+        iniFile = jal.name.get_iniFile()
+        nubStr = getINISetting iniFile "DefaultSetting" "NubStr"
         namePartsOrder = filterString (getINISetting iniFile "DefaultSetting" "NamePartsOrder") " "
         numPaddingNum = (getINISetting iniFile "DefaultSetting" "PaddingNum") as integer
+        local iniSideStrArray = filterString (getINISetting iniFile "DefaultSetting" "SideStrArray") " "
+        local iniFrontBackStrArray = filterString (getINISetting iniFile "DefaultSetting" "FrontBackStrArray") " "
         jal.name.set_name_parts_order namePartsOrder
+        jal.name.set_nubStr nubStr
+        jal.name.set_leftStr iniSideStrArray[1]
+        jal.name.set_rightStr iniSideStrArray[2]
+        jal.name.set_frontStr iniFrontBackStrArray[1]
+        jal.name.set_backStr iniFrontBackStrArray[2]
 
         __nameListRollout = nameListRollout
         __namingRollout = namingRollout

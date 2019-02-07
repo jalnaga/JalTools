@@ -9,6 +9,7 @@ struct _Name (
     __nubStr = "Nub",
     __sideStrArray = #("L", "R"),
     __frontBackStrArray = #("F", "B"),
+    __iniFile = "",
 
     fn set_nubStr inStr = (
         __nubStr = inStr
@@ -1039,5 +1040,24 @@ struct _Name (
         )
 
         returnVal
+    ),
+
+    fn get_iniFile = (
+        return __iniFile
+    ),
+
+    fn load_setting_from_ini = (
+        __iniFile = (getFilenamePath (getThisScriptFilename())) +"\\NameTool.ini"
+        local nubStr = getINISetting __iniFile "DefaultSetting" "NubStr"
+        local namePartsOrder = filterString (getINISetting __iniFile "DefaultSetting" "NamePartsOrder") " "
+        local numPaddingNum = (getINISetting __iniFile "DefaultSetting" "PaddingNum") as integer
+        local iniSideStrArray = filterString (getINISetting __iniFile "DefaultSetting" "SideStrArray") " "
+        local iniFrontBackStrArray = filterString (getINISetting __iniFile "DefaultSetting" "FrontBackStrArray") " "
+        set_name_parts_order namePartsOrder
+        set_nubStr nubStr
+        set_leftStr iniSideStrArray[1]
+        set_rightStr iniSideStrArray[2]
+        set_frontStr iniFrontBackStrArray[1]
+        set_backStr iniFrontBackStrArray[2]
     )
 )
