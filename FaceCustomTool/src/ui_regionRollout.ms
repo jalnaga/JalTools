@@ -242,11 +242,12 @@ rollout regionRollout "Region" (
 
     on genRegionMeshBtn pressed do (
         if fc.univMesh != undefined and fc.regionArray.count > 0 then (
+            local percentage = 0.0
             local replaceArray = (for i = 1 to fc.regionArray.count collect true)
             local meshInLayerArray = jal.layer.get_nodes_by_layername "RegionMesh"
             local delRegionMeshArray = #()
             local cloneMeshInitPos = fc.univMesh.pos
-            cloneMeshInitPos = cloneMeshInitPos + [-20,0,0]
+            cloneMeshInitPos = cloneMeshInitPos + [0,0,genMeshOffsetVal]
 
             for i = 1 to fc.regionArray.count do (
                 for k = 1 to meshInLayerArray.count do (
@@ -268,13 +269,20 @@ rollout regionRollout "Region" (
             for item in delRegionMeshArray do delete item
             delRegionMeshArray = #()
 
+            disableSceneRedraw()
+            progressStart "Generating Custom Mesh..."
             for i = 1 to fc.regionArray.count do (
                 if replaceArray[i] then (
-                    local cloneMesh = fc.gen_regionMesh fc.regionArray[i].name initPos:cloneMeshInitPos inPosOffset:[0,0, (i-1) * 20]
+                    local cloneMesh = fc.gen_regionMesh fc.regionArray[i].name initPos:cloneMeshInitPos inPosOffset:[0,0, (i-1) * genMeshOffsetVal]
                     fc.apply_regionMat_to_mesh cloneMesh
                     fc.regionMeshArray[i] = cloneMesh
                 )
+                percentage = (i as float) / (fc.scanMeshArray.count as float) * 100.0
+                progressUpdate percentage
             )
+            progressEnd()
+            enableSceneRedraw()
+            redrawViews()
 
             if fc.regionMeshArray.count > 0 then (
                 jal.layer.create_layer_from_array fc.regionMeshArray "RegionMesh"
@@ -289,7 +297,7 @@ rollout regionRollout "Region" (
         max create mode
         clearSelection()
         disableSceneRedraw()
-        progressStart "Baking to Vertex Color..."
+        progressStart "Baking Region info..."
         local percentage = 1.0
         if regionNameLv.SelectedItems.count == 0 then (
             for i = 1 to fc.regionArray.count do (

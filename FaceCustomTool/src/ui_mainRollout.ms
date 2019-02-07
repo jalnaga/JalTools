@@ -7,6 +7,8 @@ rollout mainRollout "Face Custom Tool" width:300 height:690 (
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
+    local genMeshOffsetVal = 35
+
     include "faceCustom.ms"
     local fc = _FaceCustom()
 

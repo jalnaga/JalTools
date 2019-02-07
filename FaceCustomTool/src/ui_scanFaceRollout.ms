@@ -38,11 +38,11 @@ rollout scanFaceRollout "Scan Faces" (
             fc.customMorphTargetArray = #()
             local percentage = 0.0
             for i = 1 to fc.scanMeshArray.count do (
-                local custMorphTargetInitPos = fc.univMesh.pos + [(i-1) * 40,0,0]
+                local custMorphTargetInitPos = fc.scanMeshArray[i].pos + [0,0,genMeshOffsetVal]
                 local custPrefixName = jal.name.get_base fc.scanMeshArray[i].name
                 local layerName = custPrefixName + "RegionMesh"
                 local previousMeshArray = jal.layer.get_nodes_by_layername layerName
-                local custMorph = fc.gen_custom_morph_targets fc.scanMeshArray[i] custPrefixName initPos:custMorphTargetInitPos inPosOffset:[0, 0, 20]
+                local custMorph = fc.gen_custom_morph_targets fc.scanMeshArray[i] custPrefixName initPos:custMorphTargetInitPos inPosOffset:[0, 0, genMeshOffsetVal]
                 if custMorph != undefined then (
                     for item in previousMeshArray do delete item
                     previousMeshArray = #()
