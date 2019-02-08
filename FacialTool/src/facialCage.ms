@@ -1,4 +1,4 @@
-struct _Facial (
+struct _FacialCage (
     cageMesh = undefined,
     skinMesh = undefined,
     placerArray = #(),
