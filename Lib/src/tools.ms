@@ -8,6 +8,7 @@ struct _Tools (
     facialTool = undefined,
     hairTool = undefined,
     faceCustomTool = undefined,
+    facialCageTool = undefined,
 
     fn delete_unwantedScripts = (
         local userStartScriptsDir = getDir #userStartupScripts

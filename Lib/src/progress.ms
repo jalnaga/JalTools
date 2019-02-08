@@ -36,6 +36,8 @@ struct _Progress (
         if dialog then DestroyDialog progressWindow
         else progressEnd()
 
+        currentStep = 0
+
         enableSceneRedraw()
         redrawViews()
     ),

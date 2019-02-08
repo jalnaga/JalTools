@@ -54,14 +54,14 @@ struct _Bip (
     rForeArmTwist8,
     rForeArmTwist9,
     rHand,
-    
+
     spine,
     spine1,
     spine2,
     spine3,
     spine4,
     pelvis,
-    
+
     lThigh,
     lCalf,
     lFoot,
@@ -301,14 +301,14 @@ struct _Bip (
         rForeArmTwist8 = biped.getNode com #rfArmTwist  link:9
         rForeArmTwist9 = biped.getNode com #rfArmTwist  link:10
         rHand = biped.getNode com #rarm link:4
-        
+
         spine = biped.getNode com #spine link:1
         spine1 = biped.getNode com #spine link:2
         spine2 = biped.getNode com #spine link:3
         spine3 = biped.getNode com #spine link:4
         spine4 = biped.getNode com #spine link:5
         pelvis = biped.getNode com 12
-        
+
         lThigh = biped.getNode com #lleg linke:1
         lCalf = biped.getNode com #lleg linke:2
         lFoot = biped.getNode com #lleg linke:4
@@ -359,7 +359,7 @@ struct _Bip (
 
         return returnNubs
     ),
-    
+
     fn get_com inBip = (
         get_bip_nodes inBip
         return com
@@ -427,9 +427,9 @@ struct _Bip (
     ),
 
     fn create_bip = (
-        local bipObj = biped.createNew 180 -90 [0, 0, 172.627] arms:true neckLinks:1 \ 
-        spineLinks:3 legLinks:3 fingers:5 fingerLinks:3 toes:1 toeLinks:1 \ 
-        ankleAttach:0.2 trianglePelvis:false triangleNeck:true \ 
+        local bipObj = biped.createNew 180 -90 [0, 0, 172.627] arms:true neckLinks:1 \
+        spineLinks:3 legLinks:3 fingers:5 fingerLinks:3 toes:1 toeLinks:1 \
+        ankleAttach:0.2 trianglePelvis:false triangleNeck:true \
         forearmTwistLinks:3 upperarmTwistLinks:3 thighTwistLinks:3 calfTwistLinks:3
 
         get_bip_nodes bipObj

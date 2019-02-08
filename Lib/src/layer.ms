@@ -76,5 +76,34 @@ struct _Layer (
         for item in inArray do newLayer.addNode item
 
         return newLayer
+    ),
+
+    fn delete_layer inLayerName forceDelete:false = (
+        local returnVal = false
+        local deflayer = layermanager.getlayer 0
+        deflayer.current = true
+        local nodeArray = get_nodes_by_layername inLayerName
+        if nodeArray.count > 0 then (
+            if forceDelete then (
+                delete nodeArray
+                nodeArray = #()
+            )
+            else for item in nodeArray do deflayer.addNode item
+        )
+        returnVal = LayerManager.deleteLayerbyname inLayerName
+
+        returnVal
+    ),
+
+    fn set_parent_layer inLayerName inParentName = (
+        local returnVal = false
+        local targetLayer = layermanager.getlayer (get_layer_number inLayerName)
+        local parentLayer = layermanager.getlayer (get_layer_number inParentName)
+        if targetLayer != undefined and parentLayer != undefined then (
+            targetLayer.setParent parentLayer
+            returnVal = true
+        )
+
+        returnVal
     )
 )
