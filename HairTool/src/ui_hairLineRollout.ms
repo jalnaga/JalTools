@@ -45,7 +45,8 @@ rollout hairLineRollout "Guide Line" (
     )
 
     on createLineBtn pressed do (
-        jalHairLine.create_hairLine hairMeshPickBtn.object
+        jalHairLine.get_rootVertPosArray()
+        jalHairLine.get_guideEdgeBitArrayArray()
         reset_ui()
     )
 )
