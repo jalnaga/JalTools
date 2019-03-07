@@ -3,9 +3,6 @@ struct __HairLine (
     detachedHairMeshArray = #(),
     hairEmitMesh = undefined,
     modify = undefined,
-    rootFaceBitArray = #{},
-    rootVertPosArray = #(),
-    guideEdgeBitArrayArray = #(),
     guideLine = undefined,
     lineArray = #(),
 
@@ -14,17 +11,12 @@ struct __HairLine (
         detachedHairMeshArray = #()
         hairEmitMesh = undefined
         modify = undefined
-        rootFaceBitArray = #{}
-        rootVertPosArray = #()
-        guideEdgeBitArrayArray = #()
         guideLine = undefined
         lineArray = #()
         gc()
     ),
 
     fn is_valid_hairMesh inMesh = (
-        rootFaceBitArray = #{}
-        detachedHairMeshArray = #()
         if (classOf inMesh) == Editable_Poly then hairMesh = inMesh
         else return false
 
@@ -43,7 +35,6 @@ struct __HairLine (
         else (
             hairMesh = undefined
             detachedHairMeshArray = #()
-            rootFaceBitArray = #{}
             return false
         )
     ),
@@ -54,7 +45,9 @@ struct __HairLine (
             local copyHairMesh = copy hairMesh
             while polyOp.getNumFaces copyHairMesh != 0 do (
                 local f_list = polyOp.getElementsUsingFace copyHairMesh #{1}
-                local elem = polyOp.detachFaces copyHairMesh f_list asNode:true name:(uniqueName hairMesh.name)
+                local elemName = uniqueName hairMesh.name
+                polyOp.detachFaces copyHairMesh f_list asNode:true name:elemName
+                local elem = getNodeByName elemName
                 append detachedHairMeshArray elem
             )
             delete copyHairMesh
@@ -65,7 +58,6 @@ struct __HairLine (
         local returnMesh = undefined
         if not(is_valid_hairMesh inMesh) then return returnMesh
 
-        detach_hairMesh()
         hairMesh = inMesh
         returnMesh = hairMesh
 
@@ -191,6 +183,7 @@ struct __HairLine (
                 local guideEdgeBitArrayArray = get_guideEdgeBitArrayArray item rootFaceBitArray
                 create_guideLine_shape item guideEdgeBitArrayArray rootVertPosArray
             )
+            delete detachedHairMeshArray
             return true
         )
     ),

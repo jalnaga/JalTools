@@ -1,11 +1,11 @@
 rollout hairLineRollout "Guide Line" (
-    pickButton hairMeshPickBtn "Pick Hair Mesh" autoDisplay:true across:2
-    button splineDetachBtn "Detach Spline" autoDisplay:true
+    pickButton hairMeshPickBtn "Pick Hair Mesh" autoDisplay:true height:35 width:160
     button createLineBtn "Create Line" enabled:false
     group "Generate from Hair Modifier" (
-        button createGuideLineFromHairModBtn "Create Line from Hair" enabled:false
-        button genLineFromHairBtn "Gen Line" enabled:false
+        button createGuideLineFromHairModBtn "Create Line from Hair" enabled:false across:2 align:#left
+        button genLineFromHairBtn "Gen Line" enabled:false align:#right
     )
+    button splineDetachBtn "Detach Spline" autoDisplay:true width:160
 
     include "hairLine.ms"
 
@@ -45,8 +45,7 @@ rollout hairLineRollout "Guide Line" (
     )
 
     on createLineBtn pressed do (
-        jalHairLine.get_rootVertPosArray()
-        jalHairLine.get_guideEdgeBitArrayArray()
+        jalHairLine.create_guideLine hairMeshPickBtn.object
         reset_ui()
     )
 )
