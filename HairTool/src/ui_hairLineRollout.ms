@@ -7,10 +7,6 @@ rollout hairLineRollout "Guide Line" (
     )
     button splineDetachBtn "Detach Spline" autoDisplay:true width:160
 
-    include "hairLine.ms"
-
-    local jalHairLine = __HairLine()
-
     fn reset_ui = (
         hairMeshPickBtn.object = undefined
         hairMeshPickBtn.text = "Pick Hair Mesh"

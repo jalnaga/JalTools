@@ -1,8 +1,8 @@
-rollout mainRollout "Hair Tools" width:280 height:820 (
-    SubRollout mainSub "" align:#center height:805
+rollout mainRollout "Hair Tools" width:320 height:900 (
+    SubRollout mainSub "" align:#center height:885
 
-    local minWidth = 280
-    local minHeight = 820
+    local minWidth = 320
+    local minHeight = 900
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
@@ -26,10 +26,18 @@ rollout mainRollout "Hair Tools" width:280 height:820 (
         hairCardCreateRollout.jalHairCard.reset()
     )*/
 
+    include "hairLine.ms"
+    include "hairChunk.ms"
+
+    local jalHairLine = __HairLine()
+    local jalHairChunk = __HairChunk()
+
     include "ui_hairLineRollout.ms"
+    include "ui_hairChunkRollout.ms"
 
     on mainRollout open do (
         AddSubRollout mainSub hairLineRollout
+        AddSubRollout mainSub hairChunkRollout
     )
 )
 jalHairTool = mainRollout

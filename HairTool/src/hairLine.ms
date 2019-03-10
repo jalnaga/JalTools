@@ -255,7 +255,7 @@ struct __HairLine (
 
     fn detach_spline_to_hairLine inSpline = (
         local returnArray = #()
-        if superclassof inSpline == shape do (
+        if superclassof inSpline == shape then (
             local splineWireColor = inSpline.wireColor
             convertToSplineShape inSpline
             local splineNum = numsplines inSpline
