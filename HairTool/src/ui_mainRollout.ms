@@ -6,25 +6,7 @@ rollout mainRollout "Hair Tools" width:320 height:900 (
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
-    /*global __hairCardModRoll
-
-    include "ui_hairGuideRollout.ms"
-    include "ui_hairCardCreateRollout.ms"
-    include "ui_hairCardModifyRollout.ms"
-
-
-    on mainRollout open do (
-        __hairCardModRoll = hairCardModifyRollout
-
-        AddSubRollout mainSub hairGuideRollout
-        AddSubRollout mainSub hairCardCreateRollout
-        AddSubRollout mainSub hairCardModifyRollout
-    )
-
-    on mainRollout close do (
-        hairGuideRollout.jalHairLine.reset()
-        hairCardCreateRollout.jalHairCard.reset()
-    )*/
+    global __hairChunkRollout
 
     include "hairLine.ms"
     include "hairChunk.ms"
@@ -36,8 +18,17 @@ rollout mainRollout "Hair Tools" width:320 height:900 (
     include "ui_hairChunkRollout.ms"
 
     on mainRollout open do (
+        __hairChunkRollout = hairChunkRollout
+
         AddSubRollout mainSub hairLineRollout
         AddSubRollout mainSub hairChunkRollout
+
+        callbacks.addScript #selectionSetChanged " __hairChunkRollout.set_UI_to_chunk_shape()" id:#jalHairChunkRolloutUIUpdate
+        __hairChunkRollout.set_UI_to_chunk_shape()
+    )
+
+    on mainRollout close do (
+        callbacks.removeScripts id:#jalHairChunkRolloutUIUpdate
     )
 )
 jalHairTool = mainRollout
