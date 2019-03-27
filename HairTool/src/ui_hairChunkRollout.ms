@@ -156,19 +156,23 @@ rollout hairChunkRollout "Chunk" (
     on replaceOriMeshBtn pressed do (
         local selArray = filtering_hairChunk_from_selection()
         if selArray.count > 0 and oriChunkLst.selection > 0 then (
+            local resultChunkArray = #()
             for item in selArray do (
-                jalHairChunk.replace_oriChunk item oriChunkLst.selection
+                append resultChunkArray (jalHairChunk.replace_oriChunk item oriChunkLst.selection)
             )
+            select resultChunkArray
         )
     )
 
     on randomOriMeshBtn pressed do (
         local selArray = filtering_hairChunk_from_selection()
         if selArray.count > 0 then (
+            local resultChunkArray = #()
             for item in selArray do (
                 local randomIndex = random 1 oriChunkLst.items.count
-                jalHairChunk.replace_oriChunk item randomIndex
+                append resultChunkArray (jalHairChunk.replace_oriChunk item randomIndex)
             )
+            select resultChunkArray
         )
     )
 

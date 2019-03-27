@@ -114,6 +114,14 @@ struct __HairChunk (
         returnVal
     ),
 
+    fn get_chunk inMesh = (
+        local returnVal = undefined
+        if is_hairChunk inMesh then (
+            returnVal = inMesh
+        )
+        returnVal
+    ),
+
     fn get_chunk_shape inMesh = (
         local returnVal = undefined
         if (is_hairChunk inMesh) then (
@@ -156,7 +164,7 @@ struct __HairChunk (
     ),
 
     fn replace_oriChunk inMesh inNewChunkIndex = (
-        local returnVal = false
+        local returnVal = undefined
         if (is_hairChunk inMesh) then (
             local previousChunkName = inMesh.name
             local previousChunkShape = get_chunk_shape inMesh
@@ -168,7 +176,7 @@ struct __HairChunk (
                     set_chunk_shape newChunk previousChunkShape
                     newChunk.name = previousChunkName
 
-                    returnVal = true
+                    returnVal = newChunk
                 )
             )
         )
