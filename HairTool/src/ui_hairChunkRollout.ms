@@ -10,7 +10,7 @@ rollout hairChunkRollout "Chunk" (
         button replaceOriMeshBtn "Replace" across:3 height:28 width:80
         button randomOriMeshBtn "Random" height:28 width:80
         button selOriMeshBtn "sel. OriChunk" height:28
-        checkButton editSplineCkBtn "Edit HairLine" height:28 width:240
+        checkButton editSplineCkBtn "Edit HairLine" height:28 width:245
         spinner chunckPercentSpn "Percent:" range:[-200,200,0] type:#float scale:0.01
         checkbox chunkUniformCkb "Uniform"
         spinner chunkStretchSpn "Stretch:" range:[-20,20,0] type:#float scale:0.001
@@ -145,9 +145,11 @@ rollout hairChunkRollout "Chunk" (
     on genHairChunkBtn pressed do (
         local selArray = for item in selection where (superClassOf item) == shape collect item
         if oriChunkLst.selection > 0 then (
+            local resultChunkArray = #()
             for item in selArray do (
-                jalHairChunk.gen_hairChunk oriChunkLst.selection item
+                append resultChunkArray (jalHairChunk.gen_hairChunk oriChunkLst.selection item)
             )
+            select resultChunkArray
         )
     )
 
@@ -174,6 +176,25 @@ rollout hairChunkRollout "Chunk" (
         local selArray = filtering_hairChunk_from_selection()
         if selArray.count > 0 then (
             select selArray[1].modifiers["ChunkInfo"].origin
+        )
+    )
+
+    on editSplineCkBtn changed startSplineEdit do (
+        if startSplineEdit then (
+            set_chunk_array()
+            if chunkSelArray.count > 0 then (
+                local chunkLineArray = for item in chunkSelArray collect (jalHairChunk.get_hairLine item)
+                max modify mode
+                select chunkLineArray
+                modPanel.addModToSelection (Edit_Spline ()) ui:on
+            )
+        )
+        else (
+            if chunkSelArray.count > 0 then (
+                local chunkLineArray = for item in chunkSelArray collect (jalHairChunk.get_hairLine item)
+                convertToSplineShape chunkLineArray
+                select chunkSelArray
+            )
         )
     )
 

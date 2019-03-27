@@ -108,9 +108,15 @@ struct __HairChunk (
         returnChunk
     ),
 
+    fn is_hairChunk inMesh = (
+        local returnVal = false
+        if inMesh.modifiers["ChunkInfo"] != undefined and inMesh.modifiers["HairPathDeform"] != undefined then returnVal = true
+        returnVal
+    ),
+
     fn get_chunk_shape inMesh = (
         local returnVal = undefined
-        if inMesh.modifiers["ChunkInfo"] != undefined and inMesh.modifiers["HairPathDeform"] != undefined then (
+        if (is_hairChunk inMesh) then (
             local returnChunkShape = __HairChunkShpae()
             returnChunkShape.oriChunk = inMesh.modifiers["ChunkInfo"].origin
             returnChunkShape.hairLine = inMesh.modifiers["ChunkInfo"].hairLine
@@ -131,7 +137,7 @@ struct __HairChunk (
 
     fn set_chunk_shape inMesh inChunkShape = (
         local returnVal = false
-        if inMesh.modifiers["ChunkInfo"] != undefined and inMesh.modifiers["HairPathDeform"] != undefined then (
+        if (is_hairChunk inMesh) then (
             inMesh.modifiers["ChunkInfo"].origin = inChunkShape.oriChunk
             inMesh.modifiers["ChunkInfo"].hairLine = inChunkShape.hairLine
             inMesh.modifiers["HairPathDeform"].percent_along_path = inChunkShape.percent
@@ -151,7 +157,7 @@ struct __HairChunk (
 
     fn replace_oriChunk inMesh inNewChunkIndex = (
         local returnVal = false
-        if inMesh.modifiers["ChunkInfo"] != undefined and inMesh.modifiers["HairPathDeform"] != undefined then (
+        if (is_hairChunk inMesh) then (
             local previousChunkName = inMesh.name
             local previousChunkShape = get_chunk_shape inMesh
             if oriChunkArray[inNewChunkIndex] != undefined and oriChunkArray[inNewChunkIndex] != previousChunkShape.oriChunk then (
@@ -167,6 +173,12 @@ struct __HairChunk (
             )
         )
 
+        returnVal
+    ),
+
+    fn get_hairLine inMesh = (
+        local returnVal = undefined
+        if (is_hairChunk inMesh) then returnVal = inMesh.modifiers["ChunkInfo"].hairLine
         returnVal
     )
 )
