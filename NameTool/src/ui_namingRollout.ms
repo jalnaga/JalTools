@@ -148,7 +148,11 @@ rollout namingRollout "Naming Tool" (
 
         if sortedRenameObjsArray.count > 0 then (
             for i = 1 to sortedRenameObjsArray.count do (
-                sortedRenameObjsArray[i].name = jal.name.combine inBase:baseNameTxt.text inType:typeTxt.text inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:nameTxt.text inIndex:((startCountSpn.value + i - 1) as String) inFilChar:filCharArray[filteringCharRdo.state]
+                local baseStr = basePrefixTxt.text + baseNameTxt.text + baseSufixTxt.text
+                local typeStr = typePrefixTxt.text + typeTxt.text + typeSufixTxt.text
+                local realStr = namePrefixTxt.text + nameTxt.text + nameSufixTxt.text
+                local indexStr = jal.name.convert_digit_into_padding_string (startCountSpn.value + i - 1) inPaddingNum:paddingNumSpn.value
+                sortedRenameObjsArray[i].name = jal.name.combine inBase:baseStr inType:typeStr inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:realStr inIndex:indexStr inFilChar:filCharArray[filteringCharRdo.state]
 
                 if countingBySelOrderCkb.checked == false then (
                     if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_nub_bone sortedRenameObjsArray[i]) then sortedRenameObjsArray[i].name = jal.name.set_index_as_nub sortedRenameObjsArray[i].name
