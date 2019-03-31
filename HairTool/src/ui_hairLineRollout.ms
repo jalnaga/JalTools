@@ -5,7 +5,10 @@ rollout hairLineRollout "Guide Line" (
         button createGuideLineFromHairModBtn "Create Line from Hair" enabled:false across:2 align:#left
         button genLineFromHairBtn "Gen Line" enabled:false align:#right
     )
-    button splineDetachBtn "Detach Spline" autoDisplay:true width:160
+    group "Utility" (
+        button splineDetachBtn "Detach Spline" across:2
+        button selUsedLineBtn "Sel. Used Line"
+    )
 
     fn reset_ui = (
         hairMeshPickBtn.object = undefined
@@ -38,6 +41,11 @@ rollout hairLineRollout "Guide Line" (
         for item in selSpline do (
             jalHairLine.detach_spline_to_hairLine item
         )
+    )
+
+    on selUsedLineBtn pressed do (
+        local usedHairLineArray = for item in selection where (item.modifiers["ChunkInfo"] != undefined and item.modifiers["HairPathDeform"] != undefined) collect item.modifiers["ChunkInfo"].hairLine
+        select usedHairLineArray
     )
 
     on createLineBtn pressed do (
