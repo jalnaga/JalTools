@@ -24,24 +24,26 @@ include "joystick.ms"
 include "progress.ms"
 include "rollout.ms"
 
+include "poly.ms"
+
 include "tools.ms"
 
 struct _JalLib (
     name = _Name(),
     anim = _Anim(),
-    
+
     helper = _Helper(),
     const = _Constraint(),
     bone = _Bone(),
-    
+
     bip = _Bip(),
-    
+
     mirror = _Mirror(),
     layer = _Layer(),
     align = _Align(),
     sel = _Select(),
     link = _Link(),
-    
+
     skin = _Skin(),
 
     hip = _Hip(),
@@ -51,9 +53,11 @@ struct _JalLib (
     twistBone = _TwistBone(),
 
     joystick = _JoystickGenerator(),
-    
+
     prog = _Progress(),
     roll = _Rollout(),
+
+    poly = _Poly(),
 
     tools = _Tools(),
 
@@ -62,7 +66,7 @@ struct _JalLib (
 
         const.name = name
         const.helper = helper
-        
+
         bone.name = name
         bone.anim = anim
         bone.helper = helper
