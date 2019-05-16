@@ -12,7 +12,7 @@ struct _SkinVert (
 
 struct _Skin (
     name,
-    
+
     prog,
 
     skinMod,
@@ -42,7 +42,7 @@ struct _Skin (
         max modify mode
         select inputObj
         modPanel.setCurrentObject inputObj.modifiers[modIndex]
-        
+
         local vertCount = skinOps.GetNumberVertices skinMod
         local bonesCount = skinOps.GetNumberBones skinMod
         local unusedBones = #{1..bonesCount}
@@ -50,7 +50,7 @@ struct _Skin (
         --prog.start_progress "Get Skin vertex weight..." totalStep:2
         for v = 1 to vertCount do (
             local vertWeightCount = skinOps.GetVertexWeightCount skinMod v
-            
+
             for i = 1 to vertWeightCount do (
                 local weight = skinOps.GetVertexWeight skinMod v i
                 if weight >= weightThresh then (
@@ -60,7 +60,7 @@ struct _Skin (
             )
             --prog.update_progress v vertCount inProgressText:"" inCurrentStep:1
         )
-        
+
         for i = bonesCount to 1 by -1 where unusedBones[i] do (
             skinOps.SelectBone skinMod i
             skinOps.RemoveBone skinMod
@@ -109,7 +109,7 @@ struct _Skin (
                 local boneNameArray = #()
                 local weightArray = #()
                 local boneNum = skinOps.getVertexWeightCount skinMod v
-                
+
                 for i = 1 to boneNum do (
                     local boneID = skinOps.getVertexWeightBoneID skinMod v i
                     local boneName = skinOps.GetBoneName skinMod boneID 0
@@ -130,7 +130,7 @@ struct _Skin (
     fn replace_bone inputObj oriBone newBone removeOldBone:true = (
         if (find_skin inputObj) == 0 then return false
         skinOps.addbone skinMod newBone 1
-        
+
         get_skin_weights inputObj
         local prevSkinWeightsArray = deepCopy skinWeightsArray
         local oriBoneIndex = get_bone_index inputObj oriBone
@@ -155,7 +155,7 @@ struct _Skin (
 
     fn copy_weight_between_bones_in_skin inputObj oriBone newBone removeOldBone:false = (
         if (find_skin inputObj) == 0 then return false
-        
+
         get_skin_weights inputObj
         local prevSkinWeightsArray = deepCopy skinWeightsArray
         local oriBoneIndex = get_bone_index inputObj oriBone
@@ -185,11 +185,11 @@ struct _Skin (
             for item in newBoneArray do (
                 skinOps.addbone skinMod item 1
             )
-            
+
             get_skin_weights inputObj
             local delBones = #{1..allBonesArray.count}
             local prevSkinWeightsArray = deepCopy skinWeightsArray
-            
+
             --prog.start_progress "Replace multi bones..." totalStep:2
             local vertNum = skinOps.GetNumberVertices skinMod
             for i= 1 to oriBoneArray.count do (
@@ -267,5 +267,17 @@ struct _Skin (
             --prog.update_progress v targetObjNumVert
         )
         --prog.end_progress()
+    ),
+
+    fn select_bone inObj inBoneObj = (
+        local returnVal = false
+
+        local boneIndex = get_bone_index inObj inBoneObj
+        if boneIndex > 0 then (
+            skinOps.SelectBone skinMod boneIndex
+            returnVal = true
+        )
+
+        returnVal
     )
 )
