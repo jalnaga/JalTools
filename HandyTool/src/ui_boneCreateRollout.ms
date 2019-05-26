@@ -40,7 +40,7 @@ rollout boneCreateRollout "Bone Tools" (
                 local itemParent = undefined
                 if item.parent != undefined then itemParent = maxOps.getNodeByHandle item.parent.handle
                 local itemChildrenArray = for child in item.children collect (maxOps.getNodeByHandle child.handle)
-                
+
                 item.parent = undefined
                 for child in itemChildrenArray do child.parent = undefined
                 jal.anim.rotate_local item inRot 0 0
@@ -64,7 +64,7 @@ rollout boneCreateRollout "Bone Tools" (
         local boneNameFilteringChar = " "
 
         fn update_boneNameResult = (
-            boneName = jal.name.combine boneBaseNameTxt.text "" boneNameSide boneNameTxt.text "0" boneNameFilteringChar
+            boneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:"0" inFilChar:boneNameFilteringChar
             resultTxt.text = boneName
             boneName = jal.name.replace_index boneName ""
         )
@@ -94,7 +94,7 @@ rollout boneCreateRollout "Bone Tools" (
 
         on okBtn pressed do (
             update_boneNameResult()
-            
+
             local isBoneExist = 0
             local nameCheckBonesArray = for item in objects where (classOf item) == BoneGeometry collect item
             for item in nameCheckBonesArray do (
@@ -123,7 +123,7 @@ rollout boneCreateRollout "Bone Tools" (
         if state then (
             local createdBonesArray = #()
             createDialog boneNameRollout style:#(#style_titlebar, #style_border) escapeEnable:false modal:true
-            
+
             if boneNameSetted then (
                 createdBonesArray = StartObjectCreation Bones returnNewNodes:true
             )
@@ -167,7 +167,7 @@ rollout boneCreateRollout "Bone Tools" (
                         if selArray.count == 1 then (
                             local endTm = tempEndPoint.transform
                             tempStartPoint.transform = selArray[1].transform
-                            tempEndPoint.transform = endTm * tempStartPoint.transform 
+                            tempEndPoint.transform = endTm * tempStartPoint.transform
                         )
                         jal.bone.create_simple_stretch_bone tempStartPoint tempEndPoint boneName
                     )
@@ -175,7 +175,7 @@ rollout boneCreateRollout "Bone Tools" (
                     if selArray.count > 1 then (
                         local pointNameArray = #()
                         local stretchBonePointArray = #()
-                        
+
                         for i = 1 to selArray.count do (
                             local tempPointName = jal.name.replace_type boneName "Dum"
                             tempPointName = jal.name.replace_index tempPointName ((i - 1) as String) keepPadding:false
@@ -216,7 +216,7 @@ rollout boneCreateRollout "Bone Tools" (
             if selArray.count > 0 then (
                 local lastBoneArray = #()
                 local nonBoneArray = #()
-                
+
                 for item in selArray do (
                     if (classOf item == BoneGeometry) then append lastBoneArray item
                     else append nonBoneArray item
@@ -254,7 +254,7 @@ rollout boneCreateRollout "Bone Tools" (
 
     on refineBtn changed state do (
         bonesys.RefineBone()
-        
+
         if state then refineBoneTimer.active = true
     )
 
@@ -282,25 +282,25 @@ rollout boneCreateRollout "Bone Tools" (
                             chl.parent=parent
                             chl.ResetBoneStretch()
                         )
-                    
+
                         $.parent=undefined
                         delete $
                     )
                     else (
                         local chlArr=#()
                         local chlAsm=#()
-                        
+
                         for i=1 to $.children.count do (
                             append chlArr $.children[i]
                             append chlAsm $.children[i].assemblyMember
                             jal.bone.remove_ik $.children[i]
                         )
-                        
+
                         local chl=$.children[1]
                         local prt=$.parent
-                
+
                         local asmMbr = $.assemblyMember
-                        $.pivot=chl.transform.translation 
+                        $.pivot=chl.transform.translation
 
                         for i=1 to chlArr.count do(
                             chlArr[i].parent=prt
