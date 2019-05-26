@@ -1,3 +1,4 @@
+try(destroydialog jal.tools.hairTool) catch()
 rollout mainRollout "Hair Tools" width:320 height:900 (
     SubRollout mainSub "" align:#center height:885
 
@@ -31,5 +32,5 @@ rollout mainRollout "Hair Tools" width:320 height:900 (
         callbacks.removeScripts id:#jalHairChunkRolloutUIUpdate
     )
 )
-jalHairTool = mainRollout
-createDialog jalHairTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing, #style_maximizebox)
+jal.tools.hairTool = mainRollout
+createDialog jal.tools.hairTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing, #style_maximizebox)
