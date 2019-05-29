@@ -3,12 +3,25 @@ macroscript jal_create_parentHelper category:"jalTools" tooltip:"create Parent H
 )
 
 macroscript jal_create_helper category:"jalTools" tooltip:"create Helper" autoUndoEnabled:true (
-    jal.helper.create_helper()
+    rollout helperTypeRollout "Set Helper Type" (
+        radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
+        button okBtn "OK"
+
+        on okBtn pressed do (
+            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
+            local genHelpers = jal.helper.create_helper()
+            for item in genHelpers do (
+                item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
+            )
+            DestroyDialog helperTypeRollout
+        )
+    )
+    createDialog helperTypeRollout modal:true
 )
 
 macroscript jal_create_average_helper category:"jalTools" tooltip:"create Average Helper" autoUndoEnabled:true (
     local selArray = getCurrentSelection()
-    
+
     if selArray.count > 0 then (
         local tempTransform = matrix3 1
         tempTransform.rotation = (jal.anim.create_average_rot_transform selArray).rotation
@@ -23,7 +36,7 @@ macroscript jal_create_average_helper category:"jalTools" tooltip:"create Averag
 
 macroscript jal_create_pos_average_helper category:"jalTools" tooltip:"create Pos avrg. Helper" autoUndoEnabled:true (
     local selArray = getCurrentSelection()
-    
+
     if selArray.count > 0 then (
         local tempTransform = matrix3 1
         tempTransform.position = (jal.anim.create_average_pos_transform selArray).position
@@ -32,12 +45,13 @@ macroscript jal_create_pos_average_helper category:"jalTools" tooltip:"create Po
         local dumShape = jal.helper.gen_helper_shape_from_obj selArray[1]
         local averageDum = jal.helper.create_point dumName[1] size:dumShape[1] boxToggle:dumShape[3] crossToggle:dumShape[2]
         averageDum.transform = tempTransform
+        averageDum.name = jal.name.replace_type averageDum.name "Pos"
     )
 )
 
 macroscript jal_create_rot_average_helper category:"jalTools" tooltip:"create Rot avrg. Helper" autoUndoEnabled:true (
     local selArray = getCurrentSelection()
-    
+
     if selArray.count > 0 then (
         local tempTransform = matrix3 1
         tempTransform.rotation = (jal.anim.create_average_rot_transform selArray).rotation
@@ -46,6 +60,7 @@ macroscript jal_create_rot_average_helper category:"jalTools" tooltip:"create Ro
         local dumShape = jal.helper.gen_helper_shape_from_obj selArray[1]
         local averageDum = jal.helper.create_point dumName[1] size:dumShape[1] boxToggle:dumShape[3] crossToggle:dumShape[2]
         averageDum.transform = tempTransform
+        averageDum.name = jal.name.replace_type averageDum.name "Rot"
     )
 )
 
@@ -85,7 +100,7 @@ macroscript jal_modify_helperShape category:"jalTools" tooltip:"modify Helper sh
             )
         )
         on helperSizeAddSpn buttonup do helperSizeAddSpn.value = 0.0
-    
+
         on helperTypeRdo changed state do (
             undo on (
                 if selection.count > 0 then (
