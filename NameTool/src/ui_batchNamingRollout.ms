@@ -49,11 +49,17 @@ rollout batchNamingRollout "Batch Naming" (
         fn gen_name inName = (
             local returnName = ""
             local nameArray = jal.name.convert_name_to_nameArray inName
+            local returnBaseNameTxt = ""
+            local returnTypeTxt = ""
+            local returnNameTxt = ""
+            if baseNameTxt.text == "" then returnBaseNameTxt = nameArray[baseIndex] else returnBaseNameTxt = baseNameTxt.text
+            if typeTxt.text == "" then returnTypeTxt = nameArray[typeIndex] else returnTypeTxt = typeTxt.text
+            if nameTxt.text == "" then returnNameTxt = nameArray[realNameIndex] else returnNameTxt = nameTxt.text
 
             local returnFilChar = filCharArray[filteringCharRdo.state]
-            local returnBase = basePrefixTxt.text + baseNameTxt.text + baseSufixTxt.text
-            local returnType = typePrefixTxt.text + typeTxt.text + typeSufixTxt.text
-            local returnRealName = namePrefixTxt.text + nameTxt.text + nameSufixTxt.text
+            local returnBase = basePrefixTxt.text + returnBaseNameTxt + baseSufixTxt.text
+            local returnType = typePrefixTxt.text + returnTypeTxt + typeSufixTxt.text
+            local returnRealName = namePrefixTxt.text + returnNameTxt + nameSufixTxt.text
             local returnSide = nameArray[sideIndex]
             local returnFrontBack = nameArray[forntBackIndex]
             struct renamedStruct (result, newName)
@@ -185,6 +191,7 @@ rollout batchNamingRollout "Batch Naming" (
             for i = 1 to renameSelObjArray.count do (
                 renameSelObjArray[i].name = (gen_name renameSelObjArray[i].name).newName
             )
+            __nameListRollout.update_UI()
             DestroyDialog subWindow
         )
     )
