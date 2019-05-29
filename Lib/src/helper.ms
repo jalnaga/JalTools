@@ -14,7 +14,7 @@ struct _Helper (
 
         returnPoint.centermarker = off
         returnPoint.axistripod = off
-        
+
         return returnPoint
     ),
 
@@ -139,6 +139,7 @@ struct _Helper (
                 genPoint.transform = item.transform
                 genPoint.parent = item.parent
                 item.parent = genPoint
+                item.name = name.replace_type item.name "P"
             )
         )
     ),
