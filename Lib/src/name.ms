@@ -806,7 +806,7 @@ struct _Name (
     ),
 
     fn add_sufix_to_realName inStr inSufix = (
-        local returnVal = add_fix inStr #npRealName inPreFix pos:#npPosSufix
+        local returnVal = add_fix inStr #npRealName inSufix pos:#npPosSufix
         returnVal
     ),
 
