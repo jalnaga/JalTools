@@ -69,7 +69,20 @@ macroscript jal_create_expHelper category:"jalTools" tooltip:"create Exp Helper"
 )
 
 macroscript jal_create_two_helper category:"jalTools" tooltip:"create Two Helper" autoUndoEnabled:true (
-    jal.helper.create_helper makeTwo:true
+    rollout helperTypeRollout "Set Helper Type" (
+        radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
+        button okBtn "OK"
+
+        on okBtn pressed do (
+            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
+            local genHelpers = jal.helper.create_helper makeTwo:true
+            for item in genHelpers do (
+                item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
+            )
+            DestroyDialog helperTypeRollout
+        )
+    )
+    createDialog helperTypeRollout modal:true
 )
 
 macroscript jal_modify_helperShape category:"jalTools" tooltip:"modify Helper shape" autoUndoEnabled:true (
