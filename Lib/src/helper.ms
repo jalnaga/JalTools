@@ -113,6 +113,7 @@ struct _Helper (
             append createdHelperArray genPoint
         )
         select createdHelperArray
+        return createdHelperArray
     ),
 
     fn create_parent_helper = (
@@ -176,6 +177,7 @@ struct _Helper (
             append createdHelperArray genPoint
         )
         select createdHelperArray
+        return createdHelperArray
     ),
 
     fn set_size inObj inNewSize = (
