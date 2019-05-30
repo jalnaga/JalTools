@@ -791,8 +791,8 @@ struct _Name (
                 #npIndex: partIndex = get_index_part_index()
             )
             if partIndex != 0 then (
-                if pos == #npPosPrefix then nameArray[partIndex] = inFix + filChar + nameArray[partIndex]
-                if pos == #npPosSufix then nameArray[partIndex] = nameArray[partIndex] + filChar + inFix
+                if pos == #npPosPrefix then nameArray[partIndex] = inFix + nameArray[partIndex]
+                if pos == #npPosSufix then nameArray[partIndex] = nameArray[partIndex] + inFix
             )
             returnStr = combine_nameArray nameArray filChar
         )
