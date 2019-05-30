@@ -151,12 +151,13 @@ rollout namingRollout "Naming Tool" (
                 local baseStr = basePrefixTxt.text + baseNameTxt.text + baseSufixTxt.text
                 local typeStr = typePrefixTxt.text + typeTxt.text + typeSufixTxt.text
                 local realStr = namePrefixTxt.text + nameTxt.text + nameSufixTxt.text
-                local indexStr = jal.name.convert_digit_into_padding_string (startCountSpn.value + i - 1) inPaddingNum:paddingNumSpn.value
-                sortedRenameObjsArray[i].name = jal.name.combine inBase:baseStr inType:typeStr inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:realStr inIndex:indexStr inFilChar:filCharArray[filteringCharRdo.state]
-
+                local indexStr = ""
+                indexStr = jal.name.convert_digit_into_padding_string (startCountSpn.value + i - 1) inPaddingNum:paddingNumSpn.value
                 if countingBySelOrderCkb.checked == false then (
-                    if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_nub_bone sortedRenameObjsArray[i]) then sortedRenameObjsArray[i].name = jal.name.set_index_as_nub sortedRenameObjsArray[i].name
+                    if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_end_bone sortedRenameObjsArray[i]) then indexStr = jal.name.get_nubStr()
                 )
+
+                sortedRenameObjsArray[i].name = jal.name.combine inBase:baseStr inType:typeStr inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:realStr inIndex:indexStr inFilChar:filCharArray[filteringCharRdo.state]
             )
 
             __nameListRollout.update_UI()
@@ -170,7 +171,7 @@ rollout namingRollout "Naming Tool" (
 
         if sortedRenameObjsArray.count > 0 then (
             for i = 1 to sortedRenameObjsArray.count do (
-                if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_nub_bone sortedRenameObjsArray[i]) then sortedRenameObjsArray[i].name = jal.name.set_index_as_nub sortedRenameObjsArray[i].name
+                if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_end_bone sortedRenameObjsArray[i]) then sortedRenameObjsArray[i].name = jal.name.set_index_as_nub sortedRenameObjsArray[i].name
             )
             __nameListRollout.update_UI()
             update_UI()
