@@ -15,10 +15,10 @@ rollout skinWeightRollout "SkinWeight Tool" (
         button p9Btn ".9" width:25 height:25
         button oneBtn "1" width:25 height:25 align:#right
 
-        button setWeightBtn "Set Weight" across:4 height:35 width:70 align:#left
-        spinner weightSpn "" range:[0.0, 1.0, 0.1] type:#float scale:0.001 width:70 offset:[18, 10]
-        button addWeightBtn "+" width:30 height:35 offset:[32, 0]
-        button minusWeightBtn "-" width:30 height:35 align:#right
+        button setWeightBtn "Set Weight" across:4 height:25 width:70 align:#left
+        spinner weightSpn "" range:[0.0, 1.0, 0.1] type:#float scale:0.001 width:70 offset:[18, 5]
+        button addWeightBtn "+" width:30 height:25 offset:[32, 0]
+        button minusWeightBtn "-" width:30 height:25 align:#right
         label absWeightLbl "Abs. Effect:" across:2
         spinner absWeightSpn "" range:[0.0, 1.0, 0.1] type:#float scale:0.001 width:90 align:#right
 
@@ -50,6 +50,7 @@ rollout skinWeightRollout "SkinWeight Tool" (
     local workingSkinMod
     local workingVerts
     local weightBoneListArray = #()
+    local selBoneID = 1
 
     fn populate_weightList = (
         local returnArray = #()
@@ -98,8 +99,15 @@ rollout skinWeightRollout "SkinWeight Tool" (
                                         else (workingVerts.count as string + " vertices selected.")
 
         boneListLbx.items = populate_weightList()
-        absWeightSpn.value = populate_absWeight inBoneID:boneListLbx.selection
-        skinOps.SelectBone workingSkinMod weightBoneListArray[boneListLbx.selection]
+        selBoneID = skinOps.GetSelectedBone workingSkinMod
+        local boneFindingResult = findItem weightBoneListArray selBoneID
+        boneListLbx.selection = boneFindingResult
+
+        if boneListLbx.selection > 0 then (
+            absWeightSpn.value = populate_absWeight inBoneID:boneListLbx.selection
+            skinOps.SelectBone workingSkinMod weightBoneListArray[boneListLbx.selection]
+        )
+        else skinOps.SelectBone workingSkinMod selBoneID
     )
 
     fn objectParmams_changed_ch = (
@@ -235,10 +243,15 @@ rollout skinWeightRollout "SkinWeight Tool" (
     )
 
     on absWeightSpn changed inVal do (
-        skinOps.SetWeight workingSkinMod inVal
+        undo off (
+            skinOps.SetWeight workingSkinMod inVal
+        )
     )
     on absWeightSpn buttonup do (
-        update_ui()
+        undo on (
+            skinOps.SetWeight workingSkinMod absWeightSpn.value
+            update_ui()
+        )
     )
 
     on copyWeightBtn pressed do (
