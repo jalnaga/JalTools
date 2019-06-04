@@ -67,7 +67,7 @@ rollout skinBonesRollout "Skin Bones" (
         on pickReplaceBoneBtn picked inPickObj do (
             local findedIndex = finditem jalSkin.allBonesArray inPickObj
             if findedIndex > 0 then (
-                messageBox "Select Bone which is not in Skin"
+                messageBox "Selected Bone is in Skin.\nSelect Bone which is not in Skin."
                 pickReplaceBoneBtn.object = undefined
             )
         )
@@ -96,7 +96,7 @@ rollout skinBonesRollout "Skin Bones" (
     )
 /****************************************************************************/
 
-/****************************************************************************/    
+/****************************************************************************/
     rollout replaceMultiRollout "Replace Multi" (
         multiListBox sourceBoneListLst "Source:" across:2
         multiListBox targetBoneListLst "Target:"
@@ -134,7 +134,7 @@ rollout skinBonesRollout "Skin Bones" (
             try(destroydialog multiRoll) catch()
             createDialog replaceSingleRollout width:300 height:400
         )
-        
+
         /*if selIndexArray.count > 1 then (
             try(destroydialog singleRoll) catch()
             try(destroydialog multiRoll) catch()

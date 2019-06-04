@@ -70,7 +70,6 @@ rollout skinObjectRollout "Skin Objects" (
     on selZeroWeightVertBtn pressed do (
         if selSkinObj != undefined then (
             jalSkin.select_zeroWeight_vertex selSkinObj
-            update_bone_rollout()
         )
     )
 )
