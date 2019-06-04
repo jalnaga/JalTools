@@ -22,32 +22,39 @@ struct _Skin (
     skinWeightsArray = #(),
 
     fn find_skin inputObj = (
-        if inputObj.modifiers.count == 0 then return 0
+        local returnVal = 0
+        if inputObj.modifiers.count == 0 then return returnVal
         for i = 1 to inputObj.modifiers.count do (
             if (classof inputObj.modifiers[i]) == Skin then (
                 skinMod = inputObj.modifiers[i]
                 modIndex = i
-                max modify mode
-                select inputObj
-                modPanel.setCurrentObject inputObj.modifiers[modIndex]
-                return i
+                returnVal = i
             )
         )
 
-        return 0
+        returnVal
     ),
 
-    fn remove_unused_bones inputObj weightThresh:0.0001 = (
-        if (find_skin inputObj) == 0 then return false
+    fn select_skinObj inputObj = (
+        local returnVal = false
+        if (find_skin inputObj) == 0 then return returnVal
+
         max modify mode
         select inputObj
         modPanel.setCurrentObject inputObj.modifiers[modIndex]
+        subobjectLevel = 1
+        returnVal = true
+        returnVal
+    ),
+
+    fn remove_unused_bones inputObj weightThresh:0.0001 = (
+        local returnVal = false
+        if not(select_skinObj inputObj) then return returnVal
 
         local vertCount = skinOps.GetNumberVertices skinMod
         local bonesCount = skinOps.GetNumberBones skinMod
         local unusedBones = #{1..bonesCount}
 
-        --prog.start_progress "Get Skin vertex weight..." totalStep:2
         for v = 1 to vertCount do (
             local vertWeightCount = skinOps.GetVertexWeightCount skinMod v
 
@@ -58,43 +65,85 @@ struct _Skin (
                     unusedBones[boneID] = false
                 )
             )
-            --prog.update_progress v vertCount inProgressText:"" inCurrentStep:1
         )
 
         for i = bonesCount to 1 by -1 where unusedBones[i] do (
             skinOps.SelectBone skinMod i
             skinOps.RemoveBone skinMod
-
-            --prog.update_progress (bonesCount - i + 1) bonesCount inProgressText:"Remove Unused bones..." inCurrentStep:2
         )
-        --prog.end_progress()
 
-        return true
+        returnVal = true
+        returnVal
     ),
 
     fn get_all_bones inputObj = (
-        if (find_skin inputObj) == 0 then return false
+        local returnVal = #()
+        if not(select_skinObj inputObj) then return returnVal
 
         allBoneNamesArray = #()
         allBonesArray = #()
 
-        if modIndex != 0 then (
-            max modify mode
-            select inputObj
-            modPanel.setCurrentObject inputObj.modifiers[modIndex]
-            allBoneNamesArray = for i = 1 to skinOps.GetNumberBones skinMod collect skinOps.GetBoneName skinMod i 0
-            allBonesArray = for i = 1 to allBoneNamesArray.count collect getNodeByName allBoneNamesArray[i]
-            return true
-        )
-        else return false
+        allBoneNamesArray = for i = 1 to skinOps.GetNumberBones skinMod collect skinOps.GetBoneName skinMod i 0
+        allBonesArray = for i = 1 to allBoneNamesArray.count collect getNodeByName allBoneNamesArray[i]
+
+        returnVal = deepCopy allBonesArray
+        returnVal
     ),
 
     fn get_bone_index inputObj targetBone = (
+        local returnVal = 0
         if allBonesArray.count > 0 then (
             local boneID = findItem allBonesArray targetBone
-            return boneID
+            returnVal = boneID
         )
-        else return 0
+
+        returnVal
+    ),
+
+    fn round_number num precision:3 = (
+        local multiplier = 10 ^ precision
+        ( floor ( (num * multiplier) + 0.5) ) / multiplier
+    ),
+
+    fn get_selected_skinVerts inputObj = (
+        local returnVal = #()
+        if not(select_skinObj inputObj) then return returnVal
+        returnVal = for v = 1 to skinOps.GetNumberVertices skinMod where skinOps.IsVertexSelected skinMod v == 1 collect v
+
+        returnVal
+    ),
+
+    fn get_vert_weight inputObj inVertIndex = (
+        local returnVal = _SkinVert()
+        if allBonesArray.count == 0 then (
+            get_all_bones inputObj
+            if allBonesArray.count == 0 then return returnVal
+        )
+
+        local boneArray = #()
+        local boneIDArray = #()
+        local boneNameArray = #()
+        local weightArray = #()
+        local boneNum = skinOps.getVertexWeightCount skinMod inVertIndex
+
+        for i = 1 to boneNum do (
+            local boneID = skinOps.getVertexWeightBoneID skinMod inVertIndex i
+            local boneName = skinOps.GetBoneName skinMod boneID 0
+            local boneSysID = findItem allBoneNamesArray boneName
+            local boneWeight = skinOps.getVertexWeight skinMod inVertIndex i
+            append boneArray allBonesArray[boneSysID]
+            append boneIDArray boneID
+            append boneNameArray boneName
+            append weightArray (round_number boneWeight)
+        )
+
+        returnVal.index = inVertIndex
+        returnVal.boneArray = deepCopy boneArray
+        returnVal.boneIDArray = deepCopy boneIDArray
+        returnVal.boneNameArray = deepCopy boneNameArray
+        returnVal.weightArray = deepCopy weightArray
+
+        returnVal
     ),
 
     fn get_skin_weights inputObj = (
@@ -127,9 +176,41 @@ struct _Skin (
         )
     ),
 
+    fn get_skin_weights inputObj = (
+        local returnVal = #()
+        if allBonesArray.count > 0 then (
+            skinWeightsArray = #()
+            local numVerts = skinOps.GetNumberVertices skinMod
+            for i = 1 to numVerts do (
+                append skinWeightsArray (get_vert_weight inputObj i)
+            )
+            returnVal = deepCopy skinWeightsArray
+        )
+        returnVal
+    ),
+
+    fn select_zeroWeight_vertex inputObj = (
+        local returnArray = #()
+        if not(select_skinObj inputObj) then return returnArray
+
+        local numVerts = skinOps.GetNumberVertices skinMod
+        for v = 1 to numVerts do (
+            local weights = (get_vert_weight inputObj v).weightArray
+            local weightVal = 0.0
+            for item in weights do if item != undefined then weightVal += item
+            if weightVal == 0.0 then append returnArray v
+        )
+        skinOps.SelectVertices skinMod returnArray
+        redrawViews()
+
+        returnArray
+    ),
+
     fn replace_bone inputObj oriBone newBone removeOldBone:true = (
         if (find_skin inputObj) == 0 then return false
         skinOps.addbone skinMod newBone 1
+        get_all_bones inputObj
+        if allBonesArray.count < 2 then return false
 
         get_skin_weights inputObj
         local prevSkinWeightsArray = deepCopy skinWeightsArray
