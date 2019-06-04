@@ -44,13 +44,13 @@ rollout skinWeightRollout "SkinWeight Tool" (
         button removeUnusedBonesBtn "Remove Unused Bones"
     )
 
-    timer tmUpdateDelay interval:1000
-
     local suspendVertSelectionChangeUpdate = false
     local workingSkinMod
-    local workingVerts
+    local workingVerts = #()
+    local selectedVerts = #()
     local weightBoneListArray = #()
     local selBoneID = 1
+    local skinVertChangeCallbackItem = undefined
 
     fn populate_weightList = (
         local returnArray = #()
@@ -87,14 +87,14 @@ rollout skinWeightRollout "SkinWeight Tool" (
         local currentMod = modPanel.getCurrentObject()
         if isKindOf currentMod skin then (
             workingSkinMod = currentMod
-            local selectedVerts = skinStr.get_selected_skinVerts()
+            selectedVerts = skinStr.get_selected_skinVerts()
             if selectedVerts.count > 0 then workingVerts = selectedVerts
-            else workingVerts = undefined
-        ) else (
-            workingSkinMod = undefined
-            workingVerts = undefined
         )
-        lblSelectedVerts.text = if workingVerts == undefined then "No vertices selected." \
+        else (
+            workingSkinMod = undefined
+            workingVerts = #()
+        )
+        lblSelectedVerts.text = if workingVerts.count == 0 then "No vertices selected." \
                                         else if workingVerts.count == 1 then ("Vertex ID: " + (workingVerts[1] - 1) as string) \
                                         else (workingVerts.count as string + " vertices selected.")
 
@@ -110,56 +110,15 @@ rollout skinWeightRollout "SkinWeight Tool" (
         else skinOps.SelectBone workingSkinMod selBoneID
     )
 
-    fn objectParmams_changed_ch = (
-        if not suspendVertSelectionChangeUpdate then (
-            local preSkin = workingSkinMod
-            local preVerts = workingVerts
-            local currentMod = modPanel.getCurrentObject()
-            if workingSkinMod != currentMod then
-                update_ui()
-            else (
-                local selectedVerts = skinStr.get_selected_skinVerts()
-                local selectedVertsBA = selectedVerts as bitArray
-                local workingVertsBA = #{}
-
-                if workingVerts != undefined then workingVertsBA = workingVerts as bitArray
-                if selectedVertsBA.numberSet != workingVertsBA.numberSet \
-                        or (selectedVertsBA - workingVertsBA).numberSet != 0 \
-                        or (workingVertsBA - selectedVertsBA).numberSet != 0 then (
-                    update_ui()
-                )
-            )
-        )
-    )
-
-    fn unregist_changeHandlers = (
-        deleteAllChangeHandlers id:#SkinHelperCH
-    )
-
-    fn regist_changeHandlers = (
-        unregist_changeHandlers()
-        local currentMod = modPanel.getCurrentObject()
-        if isKindOf currentMod skin then (
-            local objs = refs.dependentNodes currentMod
-            when parameters objs changes id:#SkinHelperCH do (try(__jalSkinWeightToolRollout.objectParmams_changed_ch())catch(print "Error in ro_SkinTools.objectParmams_changed_ch"))
-        )
-    )
-
-    fn unregisterCallbacks = (
-        unregist_changeHandlers()
-        callbacks.removeScripts id:#SkinHelperCB
-    )
-
-    fn registerCallbacks = (
-        unregisterCallbacks()
-        callbacks.addScript #modPanelObjPostChange "try(__jalSkinWeightToolRollout.regist_changeHandlers())catch(print \"Error registring change handler\")" id:#SkinHelperCB
+    fn call_skinVert_change ev nd = (
+        selectedVerts = skinStr.get_selected_skinVerts()
+        if selectedVerts != workingVerts then update_ui()
     )
 
 
     on skinWeightRollout open do (
-        registerCallbacks()
         update_ui()
-        regist_changeHandlers()
+        skinVertChangeCallbackItem = NodeEventCallback mouseUp:true delay:500 subobjectSelectionChanged:call_skinVert_change
 
         if workingSkinMod != undefined then (
             workingSkinMod.filter_vertices = vertexCkb.checked
@@ -171,8 +130,8 @@ rollout skinWeightRollout "SkinWeight Tool" (
     )
 
     on skinWeightRollout close do (
-        unregist_changeHandlers()
-        unregisterCallbacks()
+        skinVertChangeCallbackItem = undefined
+        gc light:true
     )
 
     on selectByBoneBtn pressed do (
@@ -275,10 +234,6 @@ rollout skinWeightRollout "SkinWeight Tool" (
     on boneListLbx selected selIndex do (
         skinOps.SelectBone workingSkinMod weightBoneListArray[selIndex]
         update_ui()
-    )
-
-    on tmUpdateDelay tick do (
-        --if workingSkinMod == undefined then (modPanel.GetcurrentObject())
     )
 
     on selElementCkb changed state do (
