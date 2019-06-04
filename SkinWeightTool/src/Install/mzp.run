@@ -1,7 +1,0 @@
-name "jal Skin weight tool Installer"
-version 1.0
-
-extract to "$temp/jalSkinWeightTool"
-
-run "jalSkinWeightTool_install.ms"
-drop "jalSkinWeightTool_install.ms"

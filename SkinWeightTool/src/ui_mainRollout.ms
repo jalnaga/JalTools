@@ -6,14 +6,14 @@ rollout mainRollout "SkinWeight Tool" width:280 height: 545(
 
     local skinStr
 
-    include "skinStr.ms"
+    include "skinWeight.ms"
     include "ui_skinWeightRollout.ms"
 
     on mainRollout open do
     (
         max modify mode
         if ((classof(modPanel.GetcurrentObject())) == Skin) then (
-            skinStr = __Skin()
+            skinStr = _SkinWeight()
             skinStr.init()
             __jalSkinWeightToolRollout = skinWeightRollout
             AddSubRollout mainSub skinWeightRollout

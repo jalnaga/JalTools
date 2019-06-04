@@ -6,7 +6,7 @@ struct __SkinVert (
     weightArray = #()
 )
 
-struct __Skin (
+struct _SkinWeight (
     skinMod,
     allBoneNamesArray = #(),
     allBonesArray = #(),
