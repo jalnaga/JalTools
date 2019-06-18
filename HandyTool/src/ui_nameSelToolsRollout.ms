@@ -1,8 +1,7 @@
 rollout nameSelToolsRollout "Name Select" (
-    button renameToolOpenBtn "Tool" align:#left across:2 offset:[0, -2]
-    editText findNameTxt "" align:#left offset:[-40, 0]
-    checkbutton fuzzToggleBtn "Fz." checked:true align:#right offset:[0, -27]
-    multiListBox nameListLst "Selected Objects:" height:4
+    editText findNameTxt "" align:#left offset:[0, 0] across:2 width:180
+    checkbutton fuzzToggleBtn "Fz." checked:false align:#right offset:[0, 0]
+    multiListBox nameListLst "Selected Objects:" height:8
 
     local findedObjNameArray = #()
     local namePattern = "*"

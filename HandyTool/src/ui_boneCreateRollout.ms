@@ -5,7 +5,8 @@ rollout boneCreateRollout "Bone Tools" (
         button nubCreateBtn "Nub" width:40 align:#right
     )
     group "Bone Edit" (
-        checkbutton editModeBtn "Edit Mode" width:150 height:25
+        checkbox boneOnCkb "Bone On" across:2 align:#left
+        checkbutton editModeBtn "Edit Mode" width:120 height:25 align:#right
         checkButton refineBtn "Refine" across:2 width:80
         button removeBtn "Remove" width:80
         button turn90Btn "90" width:40 across:3
@@ -235,6 +236,11 @@ rollout boneCreateRollout "Bone Tools" (
 
     timer boneEditModeTimer interval:100 active:true
 
+    on boneOnCkb changed state do (
+        if state then jal.bone.set_bone_on_selection()
+        else jal.bone.set_bone_off_selection()
+    )
+
     on editModeBtn changed state do (
         if (editModeBtn.state == true) then (
             maxops.affectchildren = false
@@ -325,6 +331,13 @@ rollout boneCreateRollout "Bone Tools" (
             turn_bone turnVal
         )
     )
+    on turn90Btn rightclick do (
+        undo "Jal Bone Turn" on (
+            local turnVal = -90
+            if keyboard.controlPressed then turnVal = 90
+            turn_bone turnVal
+        )
+    )
 
     on turn45Btn pressed do (
         undo "Jal Bone Turn" on (
@@ -333,11 +346,25 @@ rollout boneCreateRollout "Bone Tools" (
             turn_bone turnVal
         )
     )
+    on turn45Btn rightclick do (
+        undo "Jal Bone Turn" on (
+            local turnVal = -45
+            if keyboard.controlPressed then turnVal = 45
+            turn_bone turnVal
+        )
+    )
 
     on turn5Btn pressed do (
         undo "Jal Bone Turn" on (
             local turnVal = 5
             if keyboard.controlPressed then turnVal = -5
+            turn_bone turnVal
+        )
+    )
+    on turn5Btn rightclick do (
+        undo "Jal Bone Turn" on (
+            local turnVal = -5
+            if keyboard.controlPressed then turnVal = 5
             turn_bone turnVal
         )
     )
