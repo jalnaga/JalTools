@@ -54,7 +54,7 @@ struct _Constraint (
         )
 
         if classOf inObj.position.controller == Position_Constraint then returnConst = inObj.position.controller
-        
+
         return returnConst
     ),
 
@@ -90,6 +90,13 @@ struct _Constraint (
         local targetPosConst = assign_pos_const inObj inTarget
         local targetNum = targetPosConst.getNumTargets()
         targetPosConstraint.SetWeight targetNum inWeight
+    ),
+
+    fn assign_pos_xyz inObj = (
+        if classOf inObj.position.controller != position_list then inObj.position.controller = position_list()
+        local posList = assign_pos_list inObj
+        posList.Available.controller = Position_XYZ()
+        posList.setActive posList.count
     ),
 
     fn get_rot_list_controller inObj = (
@@ -128,7 +135,7 @@ struct _Constraint (
         )
 
         if classOf inObj.rotation.controller == Orientation_Constraint then returnConst = inObj.rotation.controller
-        
+
         return returnConst
     ),
 
@@ -166,6 +173,13 @@ struct _Constraint (
         targetRotConstraint.SetWeight targetNum inWeight
     ),
 
+    fn assign_euler_xyz inObj = (
+        if classOf inObj.rotation.controller != rotation_list then inObj.rotation.controller = rotation_list()
+        local rotList = assign_rot_list inObj
+        rotList.Available.controller = Euler_XYZ()
+        rotList.setActive rotList.count
+    ),
+
     fn get_lookat inObj = (
         local returnConst = undefined
         if classOf inObj.rotation.controller == rotation_list then (
@@ -181,7 +195,7 @@ struct _Constraint (
         )
 
         if classOf inObj.rotation.controller == LookAt_Constraint then returnConst = inObj.rotation.controller
-        
+
         return returnConst
     ),
 
@@ -264,7 +278,7 @@ struct _Constraint (
         rotScript += "local rotZ = (radToDeg targetRot.z)\n"
         rotScript += "local result = eulerAngles rotX rotY rotZ\n"
         rotScript += "eulerToQuat result\n"
-        
+
         targetRotConstraint.AddNode "rot" rotExpPoint
         targetRotConstraint.SetExpression rotScript
     ),
@@ -303,7 +317,7 @@ struct _Constraint (
         local rotControll = Euler_XYZ()
         if classOf oriObj.rotation.controller != rotation_list then oriObj.rotation.controller = rotation_list()
         oriObj.rotation.controller.Available.controller = rotControll
-        
+
         local rotControllerNum = oriObj.rotation.controller.count
         oriObj.rotation.controller.setname rotControllerNum "Script Rotation"
 
@@ -346,7 +360,7 @@ struct _Constraint (
             posListConst.Available.controller = attConst
             attConst.node = inSurfObj
             attConst.align = bAlign
-            
+
             attachKey = attachCtrl.addNewKey attConst 0
             attachKey.face = intersectArr[2] - 1
             attachKey.coord = intersectArr[3]
@@ -358,7 +372,7 @@ struct _Constraint (
 
     fn get_pos_controllers_name_from_list inObj = (
         local returnNameArray = #()
-        
+
         if classOf inObj.position.controller == position_list then (
             local posList = inObj.position.controller
             for i = 1 to posList.count do append returnNameArray posList.getName i
@@ -369,7 +383,7 @@ struct _Constraint (
 
     fn get_pos_controllers_weight_from_list inObj = (
         local returnWeightArray = #()
-        
+
         if classOf inObj.position.controller == position_list then (
             local posList = inObj.position.controller
             returnWeightArray = posList.weight
@@ -390,7 +404,7 @@ struct _Constraint (
 
     fn get_rot_controllers_name_from_list inObj = (
         local returnNameArray = #()
-        
+
         if classOf inObj.rotation.controller == position_list then (
             local rotList = inObj.rotation.controller
             for i = 1 to rotList.count do append returnNameArray rotList.getName i
@@ -401,7 +415,7 @@ struct _Constraint (
 
     fn get_rot_controllers_weight_from_list inObj = (
         local returnWeightArray = #()
-        
+
         if classOf inObj.rotation.controller == position_list then (
             local rotList = inObj.rotation.controller
             returnWeightArray = rotList.weight

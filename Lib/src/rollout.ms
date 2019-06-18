@@ -56,11 +56,22 @@ struct _Rollout (
         )
     ),
 
+    fn save_rollout_open_stat inRollout = (
+        local returnVal = inRollout.open
+        returnVal
+    ),
+
+    fn load_rollout_open_stat inRollout inStat = (
+        inRollout.open = inStat
+    ),
+
     fn update_subroll_when_resized inSubRoll inUpdatedRollout =
     (
         local controlsText = save_control_properties_in_rollout inUpdatedRollout
+        local openStat = save_rollout_open_stat inUpdatedRollout
         RemoveSubRollout inSubRoll inUpdatedRollout
         AddSubRollout inSubRoll inUpdatedRollout
         update_control_properties_in_rollout inUpdatedRollout controlsText
+        load_rollout_open_stat inUpdatedRollout openStat
     )
 )

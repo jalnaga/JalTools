@@ -538,7 +538,7 @@ struct _Name (
 
             returnStr += refinedNameArray[refinedNameArray.count]
         )
-        else returnStr = refinedNameArray[1]
+        if refinedNameArray.count == 1 then returnStr = refinedNameArray[1]
 
         returnStr
     ),

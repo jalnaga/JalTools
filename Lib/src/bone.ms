@@ -1,6 +1,6 @@
 /*******************************/
 /* Bone Creation Library
-/* dependency: 
+/* dependency:
 /*     name.ms
 /*     anim.ms
 /*     helper.ms
@@ -37,7 +37,7 @@ struct _Bone (
         -- fill the array of bone structures. intialize the hierarchy level with 0
         for i = 1 to inBoneArray.count do
         (
-            bones[i] = BoneLevel i 0        
+            bones[i] = BoneLevel i 0
         )
 
         -- calculate the hierarchy level for each bone in bones array. the hierarchy level
@@ -56,7 +56,7 @@ struct _Bone (
 
         -- sort the bones array by the hierarchy level
         qsort bones (fn myLevel v1 v2 = (v1.level - v2.level))
-        
+
         -- prepare the storage for the new bones and their parents
         local returnBonesArray = #()
         for i = 1 to inBoneArray.count do append returnBonesArray inBoneArray[bones[i].index]
@@ -248,20 +248,20 @@ struct _Bone (
         local tempBone = #()
         local returnArray = #()
         tempBone = create_bone inPointArray inName size:size
-        
+
         for i = 1 to (tempBone.count - 1) do
         (
             tempBone[i].position.controller = Position_Constraint()
             tempBone[i].position.controller.AppendTarget inPointArray[i] 100
-            
+
             tempBone[i].rotation.controller =  LookAt_Constraint()
             tempBone[i].rotation.controller.appendTarget inPointArray[i+1] 100
             tempBone[i].rotation.controller.lookat_vector_length = 0
         )
-        
+
         tempBone[tempBone.count].position.controller = Position_Constraint()
         tempBone[tempBone.count].position.controller.AppendTarget inPointArray[inPointArray.count] 100
-        
+
         return tempBone
     ),
 
@@ -362,7 +362,7 @@ struct _Bone (
         if (classOf inBone == BoneGeometry) then (
             inBone.width = inSize
             inBone.height = inSize
-            
+
             if (is_end_bone inBone) or (is_nub_bone inBone) then (
                 inBone.taper = 90
                 inBone.length = inSize
@@ -389,7 +389,7 @@ struct _Bone (
 
     fn select_first_children inObj = (
         selectmore inObj
-        
+
         if inObj.children[1] == undefined then return false
         else (
             for i = 1 to inObj.children.count do (
@@ -404,7 +404,7 @@ struct _Bone (
         if includeSelf then (
             children = (execute ("$'" + inObj.name + "'/*/.../*")) as array
             insertItem inObj children 1
-        ) 
+        )
         else children = (execute ("$'" + inObj.name + "'/*/.../*")) as array
 
         children
@@ -446,10 +446,10 @@ struct _Bone (
             max modify mode
             modPanel.setCurrentObject skinBone.modifiers[#Edit_Poly]
             skinBone.modifiers[#Edit_Poly].Attach snapShotObj editPolyNode:skinBone
-            
+
             const.assign_pos_const skinBone inBoneArray[i]
             const.assign_rot_const skinBone inBoneArray[i]
-            
+
             skinBone.boneEnable = true
             skinBone.renderable = false
             skinBone.boneScaleType=#none
@@ -478,6 +478,28 @@ struct _Bone (
         bones = #()
 
         return returnBones
+    ),
+
+    fn set_bone_on inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneEnable = true
+        )
+    ),
+
+    fn set_bone_off inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneEnable = false
+        )
+    ),
+
+    fn set_bone_on_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do item.boneEnable = true
+    ),
+
+    fn set_bone_off_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do item.boneEnable = false
     )
 )
 
