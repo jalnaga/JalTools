@@ -540,7 +540,7 @@ struct _Name (
         )
         if refinedNameArray.count == 1 then returnStr = refinedNameArray[1]
 
-        returnStr
+        return returnStr
     ),
 
     fn get_char_type inChar = (
