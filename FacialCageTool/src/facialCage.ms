@@ -31,7 +31,42 @@ struct _FacialCage (
     ),
 
     fn create_skinMesh = (
-        if cageMesh != undefined and (classOf cageMesh) == Editable_Poly then skinMesh = copy cageMesh
+        if cageMesh != undefined and (classOf cageMesh.baseObject) == Editable_Poly then (
+            skinMesh = copy cageMesh
+            convertTo skinMesh Editable_Poly
+
+            addModifier skinMesh (Skin())
+        )
+    ),
+
+    fn add_skinBone = (
+        if skinMesh != undefined then (
+            local skinIndex = jal.skin.find_skin skinMesh
+            if skinIndex != 0 then (
+                max modify mode
+                select skinMesh
+                modPanel.setCurrentObject skinMesh.modifiers[skinIndex]
+                local skinMod = skinMesh.modifiers[1]
+
+                for i = 1 to boneArray.count by 2 do (
+                    skinOps.addbone skinMod boneArray[i] 1
+                )
+            )
+        )
+    ),
+
+    fn set_skinWeight = (
+        if skinMesh != undefined then (
+            max modify mode
+            select skinMesh
+            modPanel.setCurrentObject skinMesh.modifiers[1]
+            local skinMod = skinMesh.modifiers[1]
+
+            local targetObjNumVert = skinOps.GetNumberVertices skinMod
+            for v = 1 to targetObjNumVert do (
+                skinOps.ReplaceVertexWeights skinMod v v 1.0
+            )
+        )
     ),
 
     fn gen_rot_const inVertIndex = (
@@ -52,9 +87,9 @@ struct _FacialCage (
         rotConst
     ),
 
-    fn gen_placer_on_vertex alignToVertexNormal:true = (
+    fn gen_placer_on_vertex alignToVertexNormal:true useRotConst:false = (
         local returnPointArray = #()
-        if classOf cageMesh == Editable_Poly then (
+        if classOf cageMesh.baseObject == Editable_Poly then (
             local selMesh = cageMesh.mesh
 
             jal.prog.start_progress "Placer Generating..." useDialog:true
@@ -82,7 +117,7 @@ struct _FacialCage (
                 key.face = face - 1
                 key.coord = #([1,0], [0,1], [0,0])[findItem faceVerts i]
 
-                genPoint.rotation.controller = (gen_rot_const i)
+                if useRotConst then genPoint.rotation.controller = (gen_rot_const i)
 
                 append returnPointArray genPoint
                 jal.prog.update_progress i cageMesh.numverts
