@@ -25,6 +25,7 @@ include "progress.ms"
 include "rollout.ms"
 
 include "poly.ms"
+include "morph.ms"
 
 include "tools.ms"
 
@@ -58,6 +59,7 @@ struct _JalLib (
     roll = _Rollout(),
 
     poly = _Poly(),
+    mor = _Morph(),
 
     tools = _Tools(),
 
