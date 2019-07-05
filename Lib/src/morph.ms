@@ -107,5 +107,30 @@ struct _Morph (
         )
 
         return returnVal
+    ),
+
+    fn set_channel_name_by_name inObj inTargetName inNewName = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            local channelIndex = get_channel_index inObj inTargetName
+            if channelIndex > 0 then (
+                WM3_MC_SetName morphMod channelIndex inNewName
+                returnVal = true
+            )
+        )
+        return returnVal
+    ),
+
+    fn set_channel_name_by_index inObj inIndex inName = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            if (WM3_MC_HasTarget morphMod inIndex) then (
+                WM3_MC_SetName morphMod inIndex inName
+                returnVal = true
+            )
+        )
+        return returnVal
     )
 )
