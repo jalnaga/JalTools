@@ -16,10 +16,32 @@ struct _Morph (
         local returnVal = undefined
         local modIndex = get_modifier_index inObj
         if modIndex > 0 then (
+            max modify mode
+            select inObj
+            modPanel.setCurrentObject inObj.modifiers[modIndex]
             returnVal = inObj.modifiers[modIndex]
         )
 
         return returnval
+    ),
+
+    fn add_target inObj inTarget inIndex = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
+        )
+        return returnVal
+    ),
+
+    fn add_targets inObj inTargetArray = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            for i = 1 to inTargetArray.count do (
+                add_target inObj inTargetArray[i] i
+            )
+        )
     ),
 
     fn get_channel_num inObj = (
@@ -30,7 +52,7 @@ struct _Morph (
             local morphChannelCounter = 0
             while morphChannelExistance do (
                 for i = (morphChannelCounter + 1) to (morphChannelCounter + channelMaxViewNum) do (
-                    if not(WM3_MC_HasTarget morphMod i) then (
+                    if not(WM3_MC_HasData morphMod i) then (
                         returnVal = i - 1
                         morphChannelExistance = false
                         exit

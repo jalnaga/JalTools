@@ -9,13 +9,41 @@ rollout mainRollout "Facial Mocap Tool" width:300 height:400 (
 
     include "xml.ms"
     include "facialMocapConverter.ms"
+
     local fmc = _FacialMocapConverter()
+    local xDoc = _XMLDoc()
+
+    fn get_fbx_classNum import:true export:false = (
+        local exportClass = exporterPlugin.classes
+        local importClass = importerPlugin.classes
+        local returnVal = 0
+
+        if export then (
+            for i = 1 to exportClass.count do (
+                if exportClass[i] == FBXEXP then (
+                    returnVal = i
+                )
+            )
+        )
+
+        if import then (
+            for i = 1 to importClass.count do (
+                if importClass[i] == FBXIMP then (
+                    returnVal = i
+                )
+            )
+        )
+
+        return returnVal
+    )
 
     include "ui_mocapFileExportRollout.ms"
+    include "ui_mocapFileImportRollout.ms"
 
     on mainRollout open do
     (
         AddSubRollout mainSub mocapFileExportRollout
+        AddSubRollout mainSub mocapFileImportRollout
     )
     on mainRollout resized newSize do
     (
@@ -32,6 +60,7 @@ rollout mainRollout "Facial Mocap Tool" width:300 height:400 (
         )
 
         jal.roll.update_subroll_when_resized mainSub mocapFileExportRollout
+        jal.roll.update_subroll_when_resized mainSub mocapFileImportRollout
     )
 )
 _FacialMocapTool = mainRollout
