@@ -36,23 +36,31 @@ struct _BoneOnPoly (
         rotConst
     ),
 
-    fn get_filtered_vertex_by_vertexColor inFilterColor = (
+    fn get_filtered_vertex_by_vertexColor inFilterColor inChannel:0 = (
         local returnVal = #()
         if (classOf cageMesh) == Editable_Poly or (classOf cageMesh) == PolyMeshObject then (
-            local balckVertArray = polyop.getVertsByColor cageMesh inFilterColor 0 0 0 channel:3
+            local balckVertArray = polyop.getVertsByColor cageMesh inFilterColor 0 0 0 channel:inChannel
             balckVertArray = -balckVertArray
             returnVal = for vertIndex in balckVertArray where vertIndex == true collect vertIndex
         )
         returnVal
     ),
 
-    fn gen_placer_on_vertex alignToNormal:true addRotConst:true= (
+    fn get_filtered_vertex_by_vertexSelection = (
+        local returnVal = #()
+        if (classOf cageMesh) == Editable_Poly or (classOf cageMesh) == PolyMeshObject then (
+            local selVertBitArray = polyop.getVertSelection cageMesh
+            returnVal = for vertIndex in selVertBitArray where vertIndex == true collect vertIndex
+        )
+        returnVal
+    ),
+
+    fn gen_placer_on_vertex inVertSel alignToNormal:true = (
         local returnPointArray = #()
         if superClassOf cageMesh == GeometryClass then (
             local selMesh = cageMesh.mesh
-            local vertIndexArray = get_filtered_vertex_by_vertexColor (color 0 0 0)
 
-            for vertIndex in vertIndexArray do (
+            for vertIndex in inVertSel do (
                 local vertPos = (getVert selMesh vertIndex) * cageMesh.objectTransform
                 local helperMatrix = matrix3 [1,0,0] [0,1,0] [0,0,1] vertPos
                 if alignToNormal then (
@@ -64,24 +72,36 @@ struct _BoneOnPoly (
                 )
                 local genPoint = jal.helper.create_point (jal.name.gen_uniqueName "Point") size:0.3
                 genPoint.transform = helperMatrix
-
-                local face = get_first_item_from_bitArray (meshop.getFacesUsingVert selMesh vertIndex)
-                local faceVerts = convert_point3_to_array (getFace selMesh face)
-                local attachConst = Attachment node:cageMesh
-                attachConst.align = false
-
-                genPoint.position.controller = attachConst
-                local key = AttachCtrl.addNewKey attachConst 0
-                key.face = face - 1
-                key.coord = #([1,0], [0,1], [0,0])[findItem faceVerts vertIndex]
-
-                if addRotConst then genPoint.rotation.controller = gen_rot_const vertIndex
                 append returnPointArray genPoint
             )
 
             placerArray = deepCopy returnPointArray
         )
         returnPointArray
+    ),
+
+    fn attach_controller_to_helper inHelperArray inVertSel addRotConst:false = (
+        local returnVal = false
+        if superClassOf cageMesh == GeometryClass then (
+            if inHelperArray.count == inVertSel.count then (
+                local selMesh = cageMesh.mesh
+                for i = 1 to inHelperArray.count do (
+                    local face = get_first_item_from_bitArray (meshop.getFacesUsingVert selMesh inVertSel[i])
+                    local faceVerts = convert_point3_to_array (getFace selMesh face)
+                    local attachConst = Attachment node:cageMesh
+                    attachConst.align = false
+
+                    inHelperArray[i].position.controller = attachConst
+                    local key = AttachCtrl.addNewKey attachConst 0
+                    key.face = face - 1
+                    key.coord = #([1,0], [0,1], [0,0])[findItem faceVerts inVertSel[i]]
+
+                    if addRotConst then inHelperArray[i].rotation.controller = gen_rot_const inVertSel[i]
+                    returnVal = true
+                )
+            )
+        )
+        returnVal
     ),
 
     fn gen_placer_on_face alignToNormal:true = (
