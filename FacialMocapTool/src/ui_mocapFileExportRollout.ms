@@ -1,7 +1,7 @@
 rollout mocapFileExportRollout "Mocap File Export"(
     button loadBtn "Load Mocap FBX"
-    spinner startSpn "From:" across:2 type:#integer
-    spinner endSpn "End:" type:#integer
+    spinner startSpn "From:" across:2 type:#integer range:[0, 100000, 0]
+    spinner endSpn "End:" type:#integer range:[0, 100000, 100]
     button exportFileBtn "Export Mocap File"
 
     on loadBtn pressed do (
@@ -10,12 +10,13 @@ rollout mocapFileExportRollout "Mocap File Export"(
             actionMan.executeAction 0 "16"
             local importClass = importerPlugin.classes
             importFile mocapFile #noPrompt using:importClass[(get_fbx_classNum import:true export:false)]
-            fmc.set_sourceHead $head
-            fmc.convert_morphTargetName()
         )
     )
 
     on exportFileBtn pressed do (
+        fmc.set_sourceHead $head
+        fmc.convert_morphTargetName()
+
         if fmc.sourceHead != undefined then (
             local saveFileName = getSaveFileName caption:"Save Mocap XML:" types:"XML (*.xml)|*.xml"
             if saveFileName != undefined then (
