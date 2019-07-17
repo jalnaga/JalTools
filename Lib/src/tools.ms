@@ -23,11 +23,13 @@ struct _Tools (
             local dellScriptsArray = System_IO_Directory.getFiles dir
             for scriptFullPath in dellScriptsArray do (
                 local scriptFileName = filenameFromPath scriptFullPath
-                if (findItem unwantedScriptsArray scriptFileName) > 0 then (
+                local foundScriptIndex = findItem unwantedScriptsArray scriptFileName
+                if foundScriptIndex > 0 then (
                     setFileAttribute scriptFullPath #readOnly false
                     setFileAttribute scriptFullPath #hidden false
                     setFileAttribute scriptFullPath #system false
                     deleteFile scriptFullPath
+                    format "% is deleted.\n" unwantedScriptsArray[foundScriptIndex]
                 )
             )
         )
