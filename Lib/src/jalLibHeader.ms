@@ -1,3 +1,4 @@
+include "string.ms"
 include "name.ms"
 include "anim.ms"
 
@@ -30,6 +31,7 @@ include "morph.ms"
 include "tools.ms"
 
 struct _JalLib (
+    str = _String(),
     name = _Name(),
     anim = _Anim(),
 

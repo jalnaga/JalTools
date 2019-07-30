@@ -148,7 +148,7 @@ struct _Morph (
         local returnVal = false
         local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            if (WM3_MC_HasTarget morphMod inIndex) then (
+            if (WM3_MC_HasData morphMod inIndex) then (
                 WM3_MC_SetName morphMod inIndex inName
                 returnVal = true
             )
