@@ -1,6 +1,7 @@
 struct _Tools (
     handyTool = undefined,
     namingTool = undefined,
+    nameReplaceTool = undefined,
     batchNamingTool = undefined,
     boneTool = undefined,
     skinTool = undefined,
