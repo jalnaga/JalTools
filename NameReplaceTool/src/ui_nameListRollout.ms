@@ -2,15 +2,14 @@ rollout nameListRollout "Name List" (
     multiListBox nameListLst "Selected Objects:" height:10
 
     fn update_ui = (
+        renameObjArray = #()
         local selArray = getCurrentSelection() as array
         if selArray.count > 0 then (
             local selNameArray = for item in selArray collect item.name
             nameListLst.items = jal.str.sort_by_alphabet selNameArray
         )
-        else (
-            nameListLst.items = #()
-            renameObjArray = #()
-        )
+        else nameListLst.items = #()
+        nameListLst.selection = #{}
 
         __nameRepNameReplaceRollout.update_UI()
     )

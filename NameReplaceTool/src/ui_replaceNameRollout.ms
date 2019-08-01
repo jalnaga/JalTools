@@ -25,7 +25,6 @@ rollout replaceNameRollout "Replace Name" (
 
     local editTextCtrArray = #(strTxt1, strTxt2, strTxt3, strTxt4, strTxt5, strTxt6)
     local checkboxCtrArray = #(removeCkb1, removeCkb2, removeCkb3, removeCkb4, removeCkb5, removeCkb6)
-    local filteringChar = " "
     local prevEditTextCtrArray = #()
     local resultNameArray = #()
 
@@ -98,6 +97,11 @@ rollout replaceNameRollout "Replace Name" (
             set_filCharRdo displayName
             set_editTextCtrText nameArray
             resultLst.items = for item in renameObjArray collect item.name
+        )
+        else (
+            resultLst.items = #()
+            set_editTextCtrText #("")
+            for item in checkboxCtrArray do item.checked = false
         )
     )
 

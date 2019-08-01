@@ -1,13 +1,14 @@
-try(destroydialog _NameReplaceTool) catch()
-rollout mainRollout "Name Replace Tool" width:350 height:730 (
-    SubRollout mainSub "" align:#center height:715
+try(destroydialog jal.tools.nameReplaceTool) catch()
+rollout mainRollout "Name Replace Tool" width:350 height:740 (
+    SubRollout mainSub "" align:#center height:725
 
     local minWidth = 350
-    local minHeight = 715
+    local minHeight = 725
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
     local renameObjArray = #()
+    local filteringChar = " "
 
     global __nameRepNameListRollout
     global __nameRepNameReplaceRollout
@@ -17,7 +18,6 @@ rollout mainRollout "Name Replace Tool" width:350 height:730 (
 
     on mainRollout open do
     (
-        str = _String()
         __nameRepNameListRollout = nameListRollout
         __nameRepNameReplaceRollout = replaceNameRollout
         AddSubRollout mainSub nameListRollout
@@ -41,5 +41,5 @@ rollout mainRollout "Name Replace Tool" width:350 height:730 (
         jal.roll.update_subroll_when_resized mainSub replaceNameRollout
     )
 )
-_NameReplaceTool = mainRollout
-createDialog _NameReplaceTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing, #style_maximizebox)
+jal.tools.nameReplaceTool = mainRollout
+createDialog jal.tools.nameReplaceTool style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing, #style_maximizebox)
