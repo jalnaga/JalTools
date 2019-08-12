@@ -1,0 +1,7 @@
+name "jalToolInstaller"
+version 3.0
+
+extract to "$temp/jalInstaller"
+
+run "jalInstall.ms"
+drop "jalInstall.ms"
