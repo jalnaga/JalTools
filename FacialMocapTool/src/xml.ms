@@ -103,7 +103,7 @@ struct _XMLDoc (
     loaded = false,
 
     on create do (
-        DotNet.LoadAssembly "System.Xml"
+        --DotNet.LoadAssembly "System.Xml"
     ),
 
     fn load_file inFullFileName = (

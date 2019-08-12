@@ -25,7 +25,6 @@ rollout mocapFileExportRollout "Mocap File Export"(
                 xDoc.create_file saveFileName
                 rNode = xDoc.get_root_node()
                 frameRangeNode = fmc.gen_xmlNode_for_range startSpn.value endSpn.value xDoc
-                local temp = frameRangeNode.get_children()
                 rNode.append_child_node frameRangeNode
 
                 xDoc.save_pretty()

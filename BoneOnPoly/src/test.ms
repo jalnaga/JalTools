@@ -6,7 +6,7 @@ sysInfo.currentdir = __BoneOnFace
     local bop = _BoneOnPoly()
     bop.cageMesh = (getCurrentSelection())[1]
     local filterVertArray = bop.get_filtered_vertex_by_vertexSelection()
-    local genHelperArray = bop.gen_placer_on_vertex filterVertArray alignToNormal:true
+    local genHelperArray = bop.gen_placer_on_vertex filterVertArray alignToNormal:false
     bop.attach_controller_to_helper genHelperArray filterVertArray
     --local oriObj = selection[1]
     --local newObj = selection[2]

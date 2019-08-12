@@ -16,9 +16,9 @@ struct _Morph (
         local returnVal = undefined
         local modIndex = get_modifier_index inObj
         if modIndex > 0 then (
-            max modify mode
-            select inObj
-            modPanel.setCurrentObject inObj.modifiers[modIndex]
+            --max modify mode
+            --select inObj
+            --modPanel.setCurrentObject inObj.modifiers[modIndex]
             returnVal = inObj.modifiers[modIndex]
         )
 
@@ -123,7 +123,7 @@ struct _Morph (
         if morphMod != undefined then (
             local channelIndex = get_channel_index inObj inName
             if channelIndex > 0 then (
-                WM3_MC_SetValue morphMod inVal
+                WM3_MC_SetValue morphMod channelIndex inVal
                 returnVal = true
             )
         )
