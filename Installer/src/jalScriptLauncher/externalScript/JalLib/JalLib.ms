@@ -3735,6 +3735,7 @@ struct _Skin (
 
     fn get_vert_weight inputObj inVertIndex = (
         local returnVal = _SkinVert()
+        if skinMod == undefined then return returnVal
         if allBonesArray.count == 0 then (
             get_all_bones inputObj
             if allBonesArray.count == 0 then return returnVal
@@ -3770,7 +3771,6 @@ struct _Skin (
         if (get_all_bones inputObj) then (
             skinWeightsArray = #()
 
-            --prog.start_progress "Get Skin vertex weight"
             local numVerts = skinOps.GetNumberVertices skinMod
             for v = 1 to numVerts do (
                 local boneArray = #()
@@ -3790,9 +3790,7 @@ struct _Skin (
                     append weightArray boneWeight
                 )
                 append skinWeightsArray (_SkinVert index:v boneArray:boneArray boneIDArray:boneIDArray boneNameArray:boneNameArray weightArray:weightArray)
-                --prog.update_progress v numVerts
             )
-            --prog.end_progress()
         )
     ),
 
@@ -3839,17 +3837,14 @@ struct _Skin (
         local newBoneIndex = get_bone_index inputObj newBone
         local vertNum = skinOps.GetNumberVertices skinMod
 
-        --prog.start_progress "Replace Bones..."
         for v = 1 to vertNum do (
             local finedBoneID = findItem prevSkinWeightsArray[v].boneIDArray oriBoneIndex
             if finedBoneID != 0 then (
                 prevSkinWeightsArray[v].boneIDArray[finedBoneID] = newBoneIndex
                 skinOps.ReplaceVertexWeights skinMod v prevSkinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
             )
-            --prog.update_progress v vertNum
         )
         if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
-        --prog.end_progress()
 
         return true
     ),
@@ -3864,17 +3859,14 @@ struct _Skin (
         local newBoneIndex = get_bone_index inputObj newBone
         local vertNum = skinOps.GetNumberVertices skinMod
 
-        --prog.start_progress "Copy weights..."
         for v = 1 to vertNum do (
             local finedBoneID = findItem prevSkinWeightsArray[v].boneIDArray oriBoneIndex
             if finedBoneID != 0 then (
                 prevSkinWeightsArray[v].boneIDArray[finedBoneID] = newBoneIndex
                 skinOps.ReplaceVertexWeights skinMod v prevSkinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
             )
-            --prog.update_progress v vertNum
         )
         if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
-        --prog.end_progress()
 
         return true
     ),
@@ -3891,7 +3883,6 @@ struct _Skin (
             local delBones = #{1..allBonesArray.count}
             local prevSkinWeightsArray = deepCopy skinWeightsArray
 
-            --prog.start_progress "Replace multi bones..." totalStep:2
             local vertNum = skinOps.GetNumberVertices skinMod
             for i= 1 to oriBoneArray.count do (
                 local oriBoneIndex = get_bone_index inputObj oriBoneArray[i]
@@ -3906,15 +3897,12 @@ struct _Skin (
                         )
                     )
                 )
-                --prog.update_progress i oriBoneArray.count
             )
 
             for i = allBonesArray.count to 1 by -1 where (delBones[i] == false) do (
                 skinOps.SelectBone skinMod i
                 skinOps.RemoveBone skinMod
-                --prog.update_progress (allBonesArray.count - i + 1) allBonesArray.count inCurrentStep:2
             )
-            --prog.end_progress()
             return true
         )
 
@@ -3960,14 +3948,11 @@ struct _Skin (
         for i = 1 to targetObj.modifiers.count do (
             if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
         )
-        --prog.start_progress "Paste Skin..."
         local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
 
-            --prog.update_progress v targetObjNumVert
         )
-        --prog.end_progress()
     ),
 
     fn select_bone inObj inBoneObj = (
@@ -3980,1725 +3965,6 @@ struct _Skin (
         )
 
         returnVal
-    )
-)
-
-
-struct _Hip (
-    name, anim, helper, bone, const, bip,
-    
-    baseName = "",
-    filteringChar = " ",
-
-    boneSize = 2.0,
-
-    boneArray = #(),
-    rotDir = [0.0, 0.0, -1.0],
-
-    pelvisWeight = 60.0,
-    thighWeight = 40.0,
-
-    xAxisOffset = 0.1,
-
-    spineDummy,
-    lHipDummy,
-    lHipTargetDummy,
-    lHipExp,
-    rHipDummy,
-    rHipTargetDummy,
-    rHipExp,
-
-    pelvis,
-    spine,
-    lThigh,
-    lThighTwist,
-    rThigh,
-    rThighTwist,
-
-    helperArray = #(),
-
-    fn init inBip inLThighTwist inRThighTwist inBaseName inFilteringChar:" " inXAxisOffset:0.1 inRotDir:[0.0, 0.0, -1.0] inPelvisWeight:60.0 inThighWeight:40.0 inBoneSize:2.0 = (
-        baseName = inBaseName
-        filteringChar = inFilteringChar
-        boneSize = inBoneSize
-        xAxisOffset = inXAxisOffset
-        rotDir = inRotDir
-
-        pelvisWeight = inPelvisWeight
-        thighWeight = inThighWeight
-
-        pelvis = inBip.pelvis
-        spine = inBip.spine
-        lThigh = inBip.lThigh
-        rThigh = inBip.rThigh
-        lThighTwist = inLThighTwist
-        rThighTwist = inRThighTwist
-
-        boneArray = #()
-        helperArray = #()
-    ),
-
-    fn assign_position_script inObj inExp inScale:"0.1" = (
-        local posScript = position_script()
-        inObj.position.controller = position_list()
-        inObj.position.controller.available.controller = posScript
-
-        posScript.AddNode "exp" inExp
-        local scriptStr = ""
-        scriptStr += "zRotValue = amin 0.0 exp.localEulerZ\n"
-        scriptStr += "result = [0, zRotValue * " + inScale + ", 0]\n"
-        scriptStr += "result"
-
-        posScript.SetExpression scriptStr
-        posScript.Update()
-
-        const.set_active_last inObj
-    ),
-
-    fn update_position_script_scale_value inObj inVal = (
-        local posScript = inObj.position.controller[2]
-        local newScale = inVal as String
-        local scriptStr = ""
-        scriptStr += "zRotValue = amin 0.0 exp.localEulerZ\n"
-        scriptStr += "result = [0, zRotValue * " + newScale + ", 0]\n"
-        scriptStr += "result"
-        posScript.SetExpression scriptStr
-        posScript.Update()
-    ),
-
-    fn gen_helpers = (
-        spineDummy = helper.create_point (name.combine baseName "Dum" "" "HipSpine" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        
-        lHipDummy = helper.create_point (name.combine baseName "Dum" "L" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        lHipTargetDummy = helper.create_point (name.combine baseName "Dum" "L" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        lHipExp = ExposeTm name:(name.combine baseName "Exp" "L" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
-        rHipDummy = helper.create_point (name.combine baseName "Dum" "R" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        rHipTargetDummy = helper.create_point (name.combine baseName "Dum" "R" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        rHipExp = ExposeTm name:(name.combine baseName "Exp" "R" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
-
-        helperArray = #()
-        append helperArray spineDummy
-        append helperArray lHipDummy
-        append helperArray lHipTargetDummy
-        append helperArray lHipExp
-        append helperArray rHipDummy
-        append helperArray rHipTargetDummy
-        append helperArray rHipExp
-        return helperArray
-    ),
-
-    fn create = (
-        gen_helpers()
-
-        lHipDummy.transform = lThighTwist.transform
-        rHipDummy.transform = rThighTwist.transform
-
-        const.assign_pos_const spineDummy spine
-        const.assign_rot_const_multi spineDummy #(lThighTwist, rThighTwist)
-        const.collapse spineDummy
-
-        lHipDummy.parent = pelvis
-        lHipTargetDummy.parent = pelvis
-        lHipExp.parent = pelvis
-        rHipDummy.parent = pelvis
-        rHipTargetDummy.parent = pelvis
-        rHipExp.parent = pelvis
-        spineDummy.parent = pelvis
-
-        lHipDummy.rotation.controller = Orientation_Constraint()
-        lHipDummy.rotation.controller.appendTarget spineDummy pelvisWeight
-        lHipDummy.rotation.controller.appendTarget lThighTwist thighWeight
-        lHipDummy.rotation.controller.relative = true
-        
-        rHipDummy.rotation.controller = Orientation_Constraint()
-        rHipDummy.rotation.controller.appendTarget spineDummy pelvisWeight
-        rHipDummy.rotation.controller.appendTarget rThighTwist thighWeight
-        rHipDummy.rotation.controller.relative = true
-
-        lHipTargetDummy.transform = lHipDummy.transform
-        lHipExp.transform = lHipDummy.transform
-        rHipTargetDummy.transform = rHipDummy.transform
-        rHipExp.transform = rHipDummy.transform
-
-        lHipExp.exposeNode = lHipDummy
-        lHipExp.localReferenceNode = lHipTargetDummy
-        lHipExp.useParent = false
-
-        rHipExp.exposeNode = rHipDummy
-        rHipExp.localReferenceNode = rHipTargetDummy
-        rHipExp.useParent = false
-
-        boneArray = #()
-
-        local lHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "L" "Hip" "" filteringChar) size:boneSize
-        lHipBone[1].transform = lThigh.transform
-        anim.rotate_local lHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
-        lHipBone[1].parent = lHipDummy
-        append boneArray lHipBone[1]
-        append boneArray lHipBone[2]
-        
-        local rHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "R" "Hip" "" filteringChar) size:boneSize
-        rHipBone[1].transform = rThigh.transform
-        anim.rotate_local rHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
-        rHipBone[1].parent = rHipDummy
-        append boneArray rHipBone[1]
-        append boneArray rHipBone[2]
-
-        assign_position_script lHipBone[1] lHipExp inScale:(xAxisOffset as string)
-        assign_position_script rHipBone[1] rHipExp inScale:(xAxisOffset as string)
-    ),
-
-    fn delAll = (
-        bone.delete_bones_safely boneArray
-        bone.delete_bones_safely helperArray
-    ),
-
-    fn set_weight inPelvisWeight inThighWeight = (
-        delAll()
-        pelvisWeight = inPelvisWeight
-        thighWeight = inThighWeight
-
-        create()
-    )
-)
-
-struct _JointMidBone (
-    name,
-    anim,
-    helper,
-    bone,
-    const,
-
-    baseName = "",
-    boneSize = 2.0,
-
-    boneArray = #(),
-    rotDir = [0.0, 0.0, -1.0],
-    
-    upperObj,
-    underObj,
-    upperWeight = 50.0,
-    underWeight = 50.0,
-
-    upperDummy,
-    underDummy,
-
-    helperArray = #(),
-
-    fn init inBaseName inUpper inUnder inBoneSize:2.0 inRotDir:[0.0, 0.0, -1.0] inUpperWeight:50.0 inUnderWeight:50.0 = (
-        filteringChar = inFilteringChar
-        boneSize = inBoneSize
-        baseName = inBaseName
-        rotDir = inRotDir
-        upperObj = inUpper
-        underObj = inUnder
-        upperWeight = inUpperWeight
-        underWeight = inUnderWeight
-
-        boneArray = #()
-        helperArray = #()
-    ),
-
-    fn gen_helpers = (
-        upperDummy = helper.create_point (name.replace_type baseName "Dum") size:1 boxToggle:on
-        upperDummy.name = name.replace_index upperDummy.name "0"
-        upperDummy.name = name.add_sufix_to_realName upperDummy.name "Upper"
-
-        underDummy = helper.create_point (name.replace_type baseName "Dum") size:1.5 boxToggle:on
-        underDummy.name = name.replace_index underDummy.name "0"
-        upperDummy.name = name.add_sufix_to_realName underDummy.name "Under"
-
-        helperArray = #()
-        append helperArray upperDummy
-        append helperArray underDummy
-        return helperArray
-    ),
-
-    fn create = (
-        gen_helpers()
-        local pickMiddleBone = bone.create_simple_bone (boneSize * 2) baseName size:boneSize
-
-        upperDummy.transform = underObj.transform
-        underDummy.transform = underObj.transform
-        upperDummy.parent = upperObj
-        underDummy.parent = underObj
-        
-        pickMiddleBone[1].transform = underObj.transform
-        anim.rotate_local pickMiddleBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
-        
-        pickMiddleBone[1].rotation.controller = Orientation_Constraint ()
-        pickMiddleBone[1].rotation.controller.appendTarget upperDummy upperWeight
-        pickMiddleBone[1].rotation.controller.appendTarget underDummy underWeight
-        pickMiddleBone[1].rotation.controller.relative = on
-
-        pickMiddleBone[1].position.controller = Position_Constraint ()
-        pickMiddleBone[1].position.controller.appendTarget upperDummy upperWeight
-        pickMiddleBone[1].position.controller.appendTarget underDummy underWeight
-        pickMiddleBone[1].position.controller.relative = on
-
-        pickMiddleBone[1].parent = underObj.parent
-        
-        boneArray = #()
-
-        append boneArray pickMiddleBone[1]
-        append boneArray pickMiddleBone[2]
-    ),
-
-    fn delAll = (
-        bone.delete_bones_safely boneArray
-        bone.delete_bones_safely helperArray
-    ),
-
-    fn set_weight inUpperWeight inUnderWeight = (
-        delAll()
-        upperWeight = inUpperWeight
-        underWeight = inUnderWeight
-
-        create()
-    )
-)
-
-struct _MuscleBone (
-    name, anim, helper, const, bone,
-
-    boneSize = 2.0,
-    linkNum = 1,
-    squash = false,
-
-    chainBoneArray = #(),
-    boneName = "",
-    
-    splineKnotArray = #(),
-    spline = undefined,
-    splineName = "",
-
-    splineHelperArray = #(),
-    controlHelperArray = #(),
-    controlHelperName = "",
-    chainRootHelper = undefined,
-    rootHelperName = "",
-
-
-    fn reset = (
-        boneSize = 2.0
-        linkNum = 1
-        squash = false
-
-        chainBoneArray = #()
-        boneName = ""
-        
-        splineKnotArray = #()
-        spline = undefined
-        splineName = ""
-
-        splineHelperArray = #()
-        controlHelperArray = #()
-        controlHelperName = ""
-        chainRootHelper = undefined
-        rootHelperName = ""
-    ),
-
-    fn gen_name inName = (
-        boneName = inName
-        splineName = name.replace_type inName "Spn"
-        splineName = name.replace_index splineName "0"
-        controlHelperName = name.replace_type inName "Dum"
-        rootHelperName = name.replace_type inName "Dum"
-        rootHelperName = name.add_sufix_to_realName rootHelperName "Root"
-        rootHelperName = name.replace_index rootHelperName "0"
-    ),
-
-    fn set_spline inSpline = (
-        if classOf inSpline == line or classOf inSpline == SplineShape then spline = inSpline
-        spline.name = splineName
-    ),
-
-    fn set_splineKnotArray = (
-        splineKnotArray = #()
-
-        for i = 1 to (numsplines spline) do (
-            for k = 1 to (numKnots spline i) do (
-                append splineKnotArray (getKnotPoint spline i k)
-            )
-        )
-    ),
-
-    fn init inName inSpline inLinkNum inBoneSize inSquash = (
-        reset()
-
-        linkNum = inLinkNum
-        boneSize = inBoneSize
-        squash = inSquash
-        
-        gen_name inName
-        set_spline inSpline
-        set_splineKnotArray()
-    ),
-
-    fn assign_splineIK type:1 tangentsBool:false =
-    (
-        local n=(numknots spline 1)   
-        --Here is the creation of the Control Objects (the ones that will deform the spline)
-        local controlsArray=#()
-        for i=1 to n do
-        (
-            local controlVarName = name.replace_type controlHelperName "SpnCtr"
-            controlVarName = name.replace_index controlVarName ((i - 1) as String)
-            controlVar=point centerMarker:false axisTripod:false cross:false box:true size:(boneSize * 1.2) wirecolor:red name:controlVarName
-            local controlRow1=pathTangent spline 1 ((i-1)/(n-1) as float)
-            local controlRow3=normalize (cross controlRow1 [0,1,0])
-            local controlRow2=normalize (cross controlRow3 controlRow1)
-            local controlRow4=getknotpoint spline 1 i
-            controlVar.transform=matrix3 controlRow1 controlRow2 controlRow3 controlRow4
-            append controlsArray controlVar
-        )
-        
-        --it's a need to select the spline and activate the modify panel, oterwise the script 
-        --will crash when adding the control Objects in the skin modifier.
-        select spline
-        setCommandPanelTaskMode mode: #modify
-        
-        --Creates the Attachment, according to the type.
-        if type==1 then --Spline IK Control
-        (
-            if tangentsBool then --With tangents
-            (
-                for i=1 to n do
-                (
-                    setknotType spline 1 i #beziercorner
-                    local knotPos=(getKnotPoint spline 1 i)
-                    setInVec spline 1 i (((getInVec spline 1 i)-knotPos)*(inverse controlsArray[i].transform.rotation)+knotPos)
-                    setOutVec spline 1 i (((getOutVec spline 1 i)-knotPos)*(inverse controlsArray[i].transform.rotation)+knotPos)
-                )
-                updateshape spline
-            )
-            else    --Without tangents
-                for i=1 to n do
-                    setknotType spline 1 i #smooth
-                
-            addmodifier spline (Spline_IK_Control ()) 
-            spline.modifiers[1].noLinking()
-            spline.modifiers[1].helper_list=controlsArray
-        )
-        else --Skin
-        (
-            if tangentsBool then --With tangents
-            (
-                for i=1 to n do
-                  setknotType spline 1 i #beziercorner 
-                addmodifier spline (skin())     
-                for i=1 to n do
-                (
-                    --First Creates The InVec Control Object, adds it to the skin and sets the respective weight,
-                    --then the Vertex Control Object, and finally the OutVec Control Object
-                    if i>1 then
-                    (
-                        controlVarInVec=copy controlsArray[i]
-                        controlVarInVec.size=(boneSize * 1.2)
-                        controlVarInVec.wirecolor=red
-                        controlVarInVec.name = name.add_sufix_to_realName controlHelperName "SpnCtrChainInVec"
-                        controlVarInVec.name = name.replace_index controlVarInVec.name (i as String)
-                        controlVarInVec.parent=controlsArray[i]
-                        controlVarInVec.position=getInVec spline 1 i
-                        skinops.addbone spline.modifiers[1] controlVarInVec 0
-                        classof spline 
-                        skinops.setVertexWeights spline.modifiers[1] (i*3-2) (i*3-3) 1
-                    )
-                    skinops.addbone spline.modifiers[1] controlsArray[i] 0
-                    classof spline
-                    skinops.setVertexWeights spline.modifiers[1] (i*3-1) (i*3-2) 1      
-                    if i==1 then
-                        skinops.setVertexWeights spline.modifiers[1] (i*3-2) (i*3-2) 1      
-                    if i<n then
-                    (
-                        controlVarOutVec=copy controlsArray[i]
-                        controlVarOutVec.wirecolor=red
-                        controlVarOutVec.size=(boneSize * 1.2)
-                        controlVarOutVec.name = name.add_sufix_to_realName controlHelperName "SpnCtrChainOutVec"
-                        controlVarOutVec.name = name.replace_index controlVarOutVec.name (i as String)
-                        controlVarOutVec.parent=controlsArray[i]
-                        controlVarOutVec.position=getOutVec spline 1 i
-                        skinops.addbone spline.modifiers[1] controlVarOutVec 0
-                        classof spline
-                        skinops.setVertexWeights spline.modifiers[1] (i*3) (i*3-1) 1
-                    )                         
-                    else
-                        skinops.setVertexWeights spline.modifiers[1] (i*3) (i*3-2) 1
-                )
-            )
-            else --Without tangents
-            (
-                for i=1 to n do
-                  setknotType spline 1 i #smooth
-                addmodifier spline (skin())
-                for i=1 to n do
-                (
-                    skinops.addbone spline.modifiers[1] controlsArray[i] 0
-                    classof spline --this line is a need to update the skin, and to don't get a crash with the next line (setVertexWeights)
-                    --set the vertex and its tangent points weights
-                    skinops.setVertexWeights spline.modifiers[1] (i*3) i 1
-                    skinops.setVertexWeights spline.modifiers[1] (i*3-1) i 1
-                    skinops.setVertexWeights spline.modifiers[1] (i*3-2) i 1
-              )
-            )
-        )
-        splineHelperArray = deepCopy controlsArray
-        return controlsArray
-    ),
-
-    /*******************************************/
-    /* LookAtType
-        1: LookAt Constraint
-        2: Quaternion Aim
-    /* RotationAverage
-        RotationAverage[1] = Roll Average
-        RotationAverage[2] = AverageType
-            AverageType
-                1: Orientation Constraint
-                2: Euler Angles
-        RotationAverage[3] = Average To
-            Average To
-                1: First and Last Controls
-                2: All controls
-                3: Spinner
-        origin:#(true, 2, 1)
-        orientation const enable:#(true, 1, 1)
-    /*******************************************/
-    function create_chain splineNode ControlsArray nBones widthVar taperVar SquashBool:false LookAtType:2 RotationAverage:#(true, 1, 1) ManCtrlsBool:true IKSolverBool:false =
-    (
-        --some variables
-        local BoneArray=#()
-        local SplineChainDef
-        local rotScriptCtrl
-        local lengthVar=curveLength splineNode
-        local HelperArray=#()
-        local RootHelper=point centerMarker:false axisTripod:false cross:false box:true size:(widthVar * 1.5) wirecolor:green name:rootHelperName
-        RootHelper.transform=ControlsArray[1].transform
-        ControlsArray.parent=RootHelper
-        chainRootHelper = RootHelper
-        local prevBoneVar=RootHelper
-        
-         --First loop, it creates each bone and defines its settings, it creates also its respective
-         --helper and the controller to attach the bone to the helper (position constraint)
-        for i=1 to nBones+1 do
-        (
-            BoneVar=bonesys.createBone [(lengthVar*(i-1)/nBones),0,0] [(lengthVar*i/nBones),0,0] [0,0,1]
-            BoneVar.name = name.replace_index boneName ((i - 1) as string)
-            BoneVar.parent=prevBoneVar
-            BoneVar.taper=taperVar
-            BoneVar.width=widthVar
-            BoneVar.height=boneVar.width
-            BoneVar.frontfin = off
-            BoneVar.backfin = off
-            BoneVar.sidefins = off
-
-            local helperVarName = name.replace_index controlHelperName ((i - 1) as string)
-            HelperVar=point centerMarker:false axisTripod:false cross:false box:true size:(widthVar * 0.5) wirecolor:blue name:helperVarName
-            HelperVar.position=BoneVar.position
-            --HelperVar.rotation=RootHelper.rotation
-            BoneVar.position.controller=position_constraint()
-            BoneVar.position.controller.appendTarget HelperVar 100
-            prevBoneVar=BoneVar
-            append BoneArray BoneVar
-            append HelperArray HelperVar
-        )
-        --Here are some special settings for the End Bone
-        BoneArray[nBones+1].taper=100
-        BoneArray[nBones+1].width=BoneArray[nBones+1].width/2
-        BoneArray[nBones+1].height=BoneArray[nBones+1].width
-        BoneArray[nBones+1].length=BoneArray[nBones+1].width
-        --If squash option active:
-        if SquashBool then BoneArray.boneScaleType=#squash
-            
-        if (RotationAverage[3]==3) or IKSolverBool then
-        (
-            local defString="Attributes SplineChain\n(\n\tparameters SCParams rollout:SCRoll\n\t("
-            local defParamString=""
-            local defRollString=""
-            if (RotationAverage[3]==3) then
-            (
-                defParamString+="\n\t\tRoll type:#float default:0 ui:UIRoll"
-                defRollString+="\n\t\tspinner UIRoll \"Roll:\" range:[-999999999,999999999,0]"
-            )
-            if IKSolverBool then
-            (
-                defParamString+="\n\t\tStretch type:#float default:0 ui:UIStretch"
-                defRollString+="\n\t\tspinner UIStretch \"Stretch Percent:\" range:[0,100,0] scale:0.5"
-            )
-            defString+=defParamString+"\n\t)"
-            defString+="\n\trollout SCRoll \"Spline Chain Control\"\n\t("
-            defString+=defRollString+"\n\t)\n)"
-            
-            local CtrlModifier=EmptyModifier()
-            CtrlModifier.name="Control"
-            custAttributes.add CtrlModifier (execute(defString))
-            addModifier RootHelper CtrlModifier
-            addModifier ControlsArray CtrlModifier
-        )
-            
-        --Remove Helper's inheritance 
-        if ((LookAtType==2) or (RotationAverage[1] and RotationAverage[2]==1 and RotationAverage[3]!=3)) then
-                setInheritanceFlags HelperArray #{7,8,9}
-        
-        --This loop assigns the path_constraint to the helper objects
-        for i=1 to HelperArray.count do
-        (
-            HelperArray[i].position.controller=path_constraint()
-            HelperArray[i].position.controller.appendTarget splineNode 100
-            deletekeys HelperArray[i].position.controller.percent.controller
-            --the helper's percent over the spline depends on its position over the chain
-            HelperArray[i].position.controller.percent=100*(i-1)/nBones as float
-        )
-        
-        if IKSolverBool or ManCtrlsBool then (
-            for i=1 to (nBones+1) do (
-                HelperArray[i].position.controller=position_list()
-            )
-        )
-        
-        HelperArray.parent=RootHelper
-        
-        /*If the IKSolver option is active It creates an extra chain of helper objects with a spline ik 
-        solver to the same spline, also creates the position constraints of the previosly created objects with
-        these new helpers as targets and creates an expression_controller to control the weight of the position 
-        constraint. This expression controller has a variable "value" that will need to be assigned by the user 
-        to a spinner or a slider, it has to be done only once because all the weight controllers are instanced.*/
-        if IKSolverBool then
-        (
-            local FirstHelperIK, LastHelperIK
-            prevHelperIK=undefined
-            WeightController=float_script()
-            RootHelper.modifiers[1].SplineChain.Stretch.controller=bezier_float()
-            WeightController.addTarget "Value" RootHelper.modifiers[1].SplineChain.Stretch.controller
-            WeightController.script= "1-(Value/100)"
-            for i=1 to HelperArray.count do
-            (
-                local helperIKSolverName = name.replace_type controlHelperName "IK"
-                helperIKSolverName = name.replace_index helperIKSolverName ((i - 1) as string)
-                HelperIKSolver=point centerMarker:false axisTripod:false cross:true box:false size:(widthVar*0.5) wirecolor:blue name:helperIKSolverName
-                HelperIKSolver.parent=prevHelperIK
-                HelperIKSolver.position=[lengthVar*(i-1)/nBones,0,0]
-                HelperArray[i].position.controller[2].controller=position_constraint()
-                HelperArray[i].position.controller[2].controller.appendTarget HelperIKSolver 100
-                HelperArray[i].position.controller.weights[2].controller=WeightController
-                if i==1 then FirstHelperIK=HelperIKSolver
-                if i==HelperArray.count then LastHelperIK=HelperIKSolver
-                prevHelperIK=HelperIKSolver
-            )
-            SplineIK=IKSys.IKChain FirstHelperIK LastHelperIK "SplineIKSolver"
-            SplineIK.controller.pickShape=splineNode
-            SplineIK.controller.goalSize=widthVar
-            FirstHelperik.position.controller=path_constraint()
-            FirstHelperik.position.controller.appendTarget splineNode 100
-        )
-        --if the manipulation controllers option is active then create an extra position_xyz controller for manual adjustments
-        if ManCtrlsBool then
-        (
-            for i=1 to HelperArray.count do
-            (
-                HelperArray[i].position.controller.available.controller=position_xyz()
-                HelperArray[i].position.controller.active=HelperArray[i].position.controller.count
-            )
-        )
-        
-        --if Look At Type equals LookAt Constraint, constraints each bone to the next level helper object
-        --and use the current level helper as upNode
-        if LookAtType==1 then   
-        (
-            --If the Average Constraint option is active then constraints the helpers to an average defined by the user
-            --(by First and Last Control Objects, All Control Objects or Spinner)
-            if RotationAverage[1] then
-            (
-                case RotationAverage[3] of
-                (
-                    --if "Average To" equals First and Last controls
-                    1:
-                    (
-                         --If "Average Type" equals Orientation Constraint
-                        if RotationAverage[2]==1 then
-                        (
-                            for i=1 to nBones do
-                            (
-                                HelperArray[i].rotation.controller=orientation_constraint()
-                                --The weights in the orientation constraint depends on the helper's position in the chain
-                                HelperArray[i].rotation.controller.appendTarget ControlsArray[1] (100*(nBones-i)/(nBones-1) as float)
-                                HelperArray[i].rotation.controller.appendTarget ControlsArray[ControlsArray.count] (100*(i-1)/(nBones-1) as float)
-                            )
-                        )
-                        --If Average Type equals Euler Angles Average
-                        else
-                        (
-                            for i=1 to nBones do
-                            (
-                                HelperArray[i].rotation.controller=rotation_script()
-                                HelperArray[i].rotation.controller.addObject "rotA" ControlsArray[1].rotation.controller
-                                HelperArray[i].rotation.controller.addObject "rotB" ControlsArray[ControlsArray.count].rotation.controller
-                                local tempScript = ""
-                                tempScript += "rotX= (rotA.x_rotation*"+(((nBones-i)/(nBones-1) as float) as string)+"+rotB.x_rotation*"+(((i-1)/(nBones-1) as float)as string)+")\n"
-                                tempScript += "rotY= (rotA.y_rotation*"+(((nBones-i)/(nBones-1) as float) as string)+"+rotB.y_rotation*"+(((i-1)/(nBones-1) as float)as string)+")\n"
-                                tempScript += "rotZ= (rotA.z_rotation*"+(((nBones-i)/(nBones-1) as float) as string)+"+rotB.z_rotation*"+(((i-1)/(nBones-1) as float)as string)+")\n"
-                                tempScript += "eulerangles rotX rotY rotZ"
-                                HelperArray[i].rotation.controller.script=tempScript
-                            )
-                        )
-                    )
-                    --if "Average to" equals All controls
-                    2:
-                    (
-                        --If "Average Type" equals Orientation Constraint
-                        if RotationAverage[2]==1 then
-                        (
-                             --Loops throught the Control Objects and constraint the bones between them (the weight is a static value in respect percent by number of controls 
-                             --instead dynamic distance calculation)
-                            m =(ControlsArray.count-1)
-                            l=nBones/m as float
-                            for j=1 to m do
-                            (
-                                for i=(ceil ((j-1)*l+1)) to (ceil (j*l)) do
-                                (
-                                    HelperArray[i].parent=RootHelper
-                                    HelperArray[i].rotation.controller=orientation_constraint()
-                                    --The weights in the orientation constraint depends on the helper's position in the chain
-                                    HelperArray[i].rotation.controller.appendTarget ControlsArray[j] (100*(j-(i-1)/l as float))
-                                    HelperArray[i].rotation.controller.appendTarget ControlsArray[(j+1)] (100*((i-1)-(j-1)*l)/l as float)
-                                )
-                            )
-                        )
-                        --If Average Type equals Euler Angles Average
-                        else
-                        (
-                            m =(ControlsArray.count-1)
-                            l=nBones/m as float
-                            for j=1 to m do
-                            (
-                                for i=(ceil ((j-1)*l+1)) to (ceil (j*l)) do
-                                (
-                                    HelperArray[i].parent=RootHelper
-                                    HelperArray[i].rotation.controller=rotation_script()
-                                    HelperArray[i].rotation.controller.addObject "rotA" ControlsArray[j].rotation.controller
-                                    HelperArray[i].rotation.controller.addObject "rotB" ControlsArray[j+1].rotation.controller
-                                    local tempScript = ""
-                                    tempScript += "rotX= (rotA.x_rotation*"+((j-(i-1)/l as float) as string)+"+rotB.x_rotation*"+((((i-1)-(j-1)*l)/l as float) as string)+")\n"
-                                    tempScript += "rotY= (rotA.y_rotation*"+((j-(i-1)/l as float)as string)+"+rotB.y_rotation*"+((((i-1)-(j-1)*l)/l as float) as string)+")\n"
-                                    tempScript += "rotZ= (rotA.z_rotation*"+((j-(i-1)/l as float) as string)+"+rotB.z_rotation*"+((((i-1)-(j-1)*l)/l as float) as string)+")\n"
-                                    tempScript += "eulerangles rotX rotY rotZ"
-                                    HelperArray[i].rotation.controller.script=tempScript
-                                )
-                            )
-                        )
-                    )
-                    -- if "Average to" equals Spinner
-                    3:
-                    (
-                        RootHelper.modifiers[1].SplineChain.Roll.controller=bezier_float()
-                        for i=1 to nBones do
-                        (
-                            HelperArray[i].rotation.x_rotation.controller=float_script()
-                            HelperArray[i].rotation.x_rotation.controller.addTarget "rollValue" RootHelper.modifiers[1].SplineChain.Roll.controller
-                            HelperArray[i].rotation.x_rotation.controller.script="degtorad rollValue*"+(((i-1)/(nBones-1) as float) as string)
-                        )
-                    )
-                )
-            )
-            --if the manipulation controllers option is active then create an extra euler_xyz controller for manual adjustments
-            if ManCtrlsBool and RotationAverage[1] then
-            (
-                for i=1 to HelperArray.count do
-                (
-                    HelperArray[i].rotation.controller=rotation_list()
-                    HelperArray[i].rotation.controller[2].controller=euler_xyz()
-                    HelperArray[i].rotation.controller.active=2
-                )
-            )
-            for i=1 to nBones do
-            (
-                boneArray[i].rotation.controller=lookAt_constraint()
-                boneArray[i].rotation.controller.appendTarget helperArray[(i+1)] 100
-                boneArray[i].rotation.controller.lookat_vector_length=0
-                boneArray[i].rotation.controller.pickupnode=helperArray[i]
-                boneArray[i].rotation.controller.upnode_world=false
-            )
-        )
-        --if Look At Type Equals Quaternion Aim,constraints each bone to the current level helper
-        --the helper will do all the job with the quaternion script controller
-        else
-        (
-            setTransformLockFlags HelperArray #{5,6,7,8,9}
-            local quatScriptCtrl
-            local scriptString=""
-            scriptString += "posThis=posThisCtrl.value*inverse nodeParent.transform\n"
-            scriptString += "posTarget=posTargetCtrl.value*inverse nodeParent.transform\n"
-            scriptString += "vector=posTarget-posThis\n"
-            scriptString += "axis=normalize (cross vector [1,0,0])\n"
-            scriptString += "angle=acos (normalize vector).x\n"
-            if ManCtrlsBool then
-            (
-                for i=1 to HelperArray.count do
-                (
-                    HelperArray[i].rotation.controller=rotation_list()
-                    HelperArray[i].rotation.controller[2].controller=euler_xyz()
-                    HelperArray[i].rotation.controller.active=2
-                )
-                quatScriptCtrl=rotation_script()
-                helperArray[1].rotation.controller[1].controller=quatScriptCtrl
-                quatScriptCtrl.addNode "nodeParent" RootHelper
-                quatScriptCtrl.addObject "posTargetCtrl" helperArray[2].position.controller
-                quatScriptCtrl.addObject "posThisCtrl" helperArray[1].position.controller
-                quatScriptCtrl.script=scriptString+"(quat angle axis)*nodeParent.transform.rotation"
-                scriptString+="(quat rotX [1,0,0])*(quat angle axis)*nodeParent.transform.rotation"
-                for i=2 to nBones do
-                (
-                    quatScriptCtrl=rotation_script()
-                    helperArray[i].rotation.controller[1].controller=quatScriptCtrl
-                    quatScriptCtrl.addNode "nodeParent" helperArray[i-1]
-                    quatScriptCtrl.addObject "posTargetCtrl" helperArray[i+1].position.controller
-                    quatScriptCtrl.addObject "posThisCtrl" helperArray[i].position.controller
-                    quatScriptCtrl.addTarget "rotX" helperArray[i-1].rotation.controller[2].x_rotation.controller
-                    quatScriptCtrl.script=scriptString
-                )
-            )
-            else
-            (
-                scriptString+="(quat angle axis)*nodeParent.transform.rotation"
-                local prevHelper=RootHelper
-                for i=1 to nBones do
-                (
-                    quatScriptCtrl=rotation_script()
-                    helperArray[i].rotation.controller=quatScriptCtrl
-                    quatScriptCtrl.addNode "nodeParent" prevHelper
-                    quatScriptCtrl.addObject "posTargetCtrl" helperArray[i+1].position.controller
-                    quatScriptCtrl.addObject "posThisCtrl" helperArray[i].position.controller
-                    quatScriptCtrl.script=scriptString
-                    prevHelper=helperArray[i]
-                )
-            )
-            --If the Average Constraint option is active then constraints the helpers to an average defined by the user
-            --(by First and Last Control Objects, All Control Objects or Spinner)
-            if RotationAverage[1] then
-            (
-                if not ManCtrlsBool then
-                    for i=1 to HelperArray.count do
-                        HelperArray[i].rotation.controller=rotation_list()
-                    
-                case RotationAverage[3] of
-                (
-                    --if "Average To" equals First and Last controls
-                    1:
-                    (
-                         --If "Average Type" equals Orientation Constraint
-                        if RotationAverage[2]==1 then
-                        (
-                            rotScriptCtrl=rotation_script()
-                            rotScriptCtrl.addNode "nodeA" RootHelper
-                            rotScriptCtrl.addNode "nodeB" controlsArray[1]
-                            rotScriptCtrl.script="rot=quatToEuler (nodeB.transform*inverse nodeA.transform).rotation order:7\n"+
-                                                       "quat (rot.x+rot.z) [-1,0,0]"
-                            HelperArray[1].rotation.controller.available.controller=rotScriptCtrl
-                            rotScriptCtrl=copy rotScriptCtrl
-                            rotScriptCtrl.setNode "nodeA" controlsArray[1]
-                            rotScriptCtrl.setNode "nodeB" controlsArray[controlsArray.count]
-                            for i=2 to nBones do
-                            (
-                                HelperArray[i].rotation.controller.available.controller=rotScriptCtrl
-                                HelperArray[i].rotation.controller.weight[HelperArray[i].rotation.controller.count]=100.0/(nBones-1)
-                            )
-                        )
-                        --If Average Type equals Euler Angles Average
-                        else
-                        (
-                            rotScriptCtrl=rotation_script()
-                            rotScriptCtrl.addTarget "rotXA" controlsArray[1].rotation.controller.x_rotation.controller
-                            rotScriptCtrl.script="quat rotXA [-1,0,0]"
-                            HelperArray[1].rotation.controller.available.controller=rotScriptCtrl
-                            rotScriptCtrl=copy rotScriptCtrl
-                            rotScriptCtrl.addTarget "rotXB" controlsArray[controlsArray.count].rotation.controller.x_rotation.controller
-                            rotScriptCtrl.script="quat ((rotXB-rotXA)*"+((1.0/(nBones-1)) as string)+") [-1,0,0]"       
-                            for i=2 to nBones do
-                                HelperArray[i].rotation.controller.available.controller=rotScriptCtrl
-                        )
-                    )
-                    --if "Average to" equals All controls
-                    2:
-                    (
-                        --If "Average Type" equals Orientation Constraint
-                        if RotationAverage[2]==1 then
-                        (
-                             --Loops throught the Control Objects and constraint the bones between them (the weight is a static value in respect percent by number of controls 
-                             --instead dynamic distance calculation)
-                            m =(ControlsArray.count-1)
-                            l=nBones/m as float
-                            rotScriptCtrl=rotation_script()
-                            rotScriptCtrl.addNode "nodeA" RootHelper
-                            rotScriptCtrl.addNode "nodeB" controlsArray[1]
-                            rotScriptCtrl.script="rot=quatToEuler (nodeB.transform*inverse nodeA.transform).rotation order:7\n"+
-                                                       "quat (rot.x+rot.z) [-1,0,0]"
-                            HelperArray[1].rotation.controller.available.controller=rotScriptCtrl
-                            for j=1 to m do
-                            (
-                                difIter=((j-1)*l+1)
-                                minIter=(ceil difIter) 
-                                difIter=minIter-difIter
-                                maxIter=(ceil (j*l))
-                                if j!=1 then
-                                (
-                                    HelperArray[minIter].rotation.controller.available.controller=rotScriptCtrl
-                                    HelperArray[minIter].rotation.controller.weight[HelperArray[minIter].rotation.controller.count]=100.0*(1-difIter)/l
-                                )
-                                rotScriptCtrl=copy rotScriptCtrl
-                                rotScriptCtrl.setNode "nodeA" controlsArray[j]
-                                rotScriptCtrl.setNode "nodeB" controlsArray[j+1]
-                                if difIter!=0 then
-                                (
-                                    HelperArray[minIter].rotation.controller.available.controller=rotScriptCtrl
-                                    HelperArray[minIter].rotation.controller.weight[HelperArray[minIter].rotation.controller.count]=100.0*difIter/l
-                                )
-                                minIter+=1
-                                for i=minIter to maxIter do
-                                (
-                                    HelperArray[i].rotation.controller.available.controller=rotScriptCtrl
-                                    HelperArray[i].rotation.controller.weight[HelperArray[i].rotation.controller.count]=100.0/l
-                                )
-                            )
-                        )
-                        --If Average Type equals Euler Angles Average
-                        else
-                        (
-                             --Loops throught the Control Objects and constraint the bones between them (the weight is a static value in respect percent by number of controls 
-                             --instead dynamic distance calculation)
-                            m =(ControlsArray.count-1)
-                            l=nBones/m as float
-                            for j=1 to m do
-                            (
-                                difIter=((j-1)*l+1)
-                                minIter=(ceil difIter) 
-                                difIter=minIter-difIter
-                                rotScriptCtrl=rotation_script()
-                                rotScriptCtrl.addTarget "rotXA" controlsArray[j].rotation.controller.x_rotation.controller
-                                local scriptString="quat"
-                                if j!=1 then
-                                (
-                                    rotScriptCtrl.addTarget "rotXB" controlsArray[j-1].rotation.controller.x_rotation.controller
-                                    scriptString+=" ((rotXA-rotXB)*"+((1.0*(1-difIter)/l) as string)
-                                    if difIter !=0 then
-                                    (
-                                        rotScriptCtrl.addTarget "rotXC" controlsArray[j+1].rotation.controller.x_rotation.controller
-                                        scriptString+="+(rotXC-rotXA)*"+((1.0*difIter/l) as string)
-                                    )
-                                    scriptString+=")"
-                                )
-                                else
-                                    scriptString+=" rotXA"
-                                scriptString+=" [-1,0,0]" 
-                                rotScriptCtrl.script=scriptString
-                                HelperArray[minIter].rotation.controller.available.controller=rotScriptCtrl
-                                
-                                rotScriptCtrl=rotation_script()
-                                rotScriptCtrl.addTarget "rotXA" controlsArray[j].rotation.controller.x_rotation.controller
-                                rotScriptCtrl.addTarget "rotXB" controlsArray[j+1].rotation.controller.x_rotation.controller
-                                rotScriptCtrl.script="quat ((rotXB-rotXA)*"+((1.0/l) as string)+") [-1,0,0]"
-                                for i=minIter+1 to (ceil (j*l)) do
-                                    HelperArray[i].rotation.controller.available.controller=rotScriptCtrl
-                            )
-                        )
-                    )
-                    -- if "Average to" equals Spinner
-                    3:
-                    (
-                        RootHelper.modifiers[1].SplineChain.Roll.controller=bezier_float()
-                        for i=1 to nBones do
-                        (
-                            local rotCtrl=euler_xyz()
-                            HelperArray[i].rotation.controller.available.controller=rotCtrl
-                            rotCtrl.x_rotation.controller=float_script()
-                            rotCtrl.x_rotation.controller.addTarget "rollValue" RootHelper.modifiers[1].SplineChain.Roll.controller
-                            rotCtrl.x_rotation.controller.script="degtorad rollValue*"+(((i-1)/(nBones-1) as float) as string)
-                        )
-                    )
-                )
-            )
-
-            for i=1 to nBones do
-            (
-                boneArray[i].rotation.controller=orientation_constraint()
-                boneArray[i].rotation.controller.appendTarget helperArray[i] 100
-            )
-        )
-
-        chainBoneArray = deepCopy BoneArray
-        controlHelperArray = deepCopy HelperArray
-    ),
-
-    fn create_one_link_chain splineNode ControlsArray widthVar SquashBool:false = (
-        --some variables
-        local BoneArray=#()
-        local SplineChainDef
-        local rotScriptCtrl
-        local lengthVar=curveLength splineNode
-        local HelperArray=#()
-        local RootHelper=point centerMarker:false axisTripod:false cross:false box:true size:(widthVar * 1.5) wirecolor:green name:rootHelperName
-        RootHelper.transform=ControlsArray[1].transform
-        ControlsArray.parent=RootHelper
-        chainRootHelper = RootHelper
-
-        BoneArray = bone.create_bone #(ControlsArray[1], ControlsArray[ControlsArray.count]) boneName end:true delPoint:false parent:false size:widthVar
-        BoneArray[1].parent = RootHelper
-
-        for i = 1 to BoneArray.count do (
-            local helperVarName = name.replace_index controlHelperName ((i - 1) as string)
-            local HelperVar=point centerMarker:false axisTripod:false cross:false box:true size:(widthVar * 0.5) wirecolor:blue name:helperVarName
-            HelperVar.transform.position = BoneArray[i].transform.position
-
-            BoneArray[i].position.controller=position_constraint()
-            BoneArray[i].position.controller.appendTarget HelperVar 100
-
-            append HelperArray HelperVar
-        )
-
-        if SquashBool then BoneArray.boneScaleType=#squash
-        setInheritanceFlags HelperArray #{7,8,9}
-
-        HelperArray[1].position.controller=path_constraint()
-        HelperArray[1].position.controller.appendTarget splineNode 100
-        deletekeys HelperArray[1].position.controller.percent.controller
-        --the helper's percent over the spline depends on its position over the chain
-        HelperArray[1].position.controller.percent=0.0
-        HelperArray[1].position.controller=position_list()
-        HelperArray[2].position.controller=path_constraint()
-        HelperArray[2].position.controller.appendTarget splineNode 100
-        deletekeys HelperArray[2].position.controller.percent.controller
-        --the helper's percent over the spline depends on its position over the chain
-        HelperArray[2].position.controller.percent=100.0
-        HelperArray[2].position.controller=position_list()
-
-        HelperArray.parent=RootHelper
-
-        for i = 1 to HelperArray.count do (
-            HelperArray[i].position.controller.available.controller=position_xyz()
-            HelperArray[i].position.controller.active=HelperArray[i].position.controller.count
-        )
-
-        setTransformLockFlags HelperArray #{5,6,7,8,9}
-        local quatScriptCtrl
-        local scriptString=""
-        scriptString += "posThis=posThisCtrl.value*inverse nodeParent.transform\n"
-        scriptString += "posTarget=posTargetCtrl.value*inverse nodeParent.transform\n"
-        scriptString += "vector=posTarget-posThis\n"
-        scriptString += "axis=normalize (cross vector [1,0,0])\n"
-        scriptString += "angle=acos (normalize vector).x\n"
-
-        for i=1 to HelperArray.count do (
-            HelperArray[i].rotation.controller=rotation_list()
-            HelperArray[i].rotation.controller[2].controller=euler_xyz()
-            HelperArray[i].rotation.controller.active=2
-        )
-        quatScriptCtrl=rotation_script()
-        helperArray[1].rotation.controller[1].controller=quatScriptCtrl
-        quatScriptCtrl.addNode "nodeParent" RootHelper
-        quatScriptCtrl.addObject "posTargetCtrl" helperArray[2].position.controller
-        quatScriptCtrl.addObject "posThisCtrl" helperArray[1].position.controller
-        quatScriptCtrl.script=scriptString+"(quat angle axis)*nodeParent.transform.rotation"
-        scriptString+="(quat rotX [1,0,0])*(quat angle axis)*nodeParent.transform.rotation"
-
-        rotScriptCtrl=rotation_script()
-        rotScriptCtrl.addTarget "rotXA" controlsArray[1].rotation.controller.x_rotation.controller
-        rotScriptCtrl.script="quat rotXA [-1,0,0]"
-        HelperArray[1].rotation.controller.available.controller=rotScriptCtrl
-
-        boneArray[1].rotation.controller=orientation_constraint()
-        boneArray[1].rotation.controller.appendTarget helperArray[1] 100
-
-        chainBoneArray = deepCopy BoneArray
-        controlHelperArray = deepCopy HelperArray
-    ),
-
-    fn create = (
-        if linkNum > 1 then (
-            assign_splineIK()
-            create_chain spline splineHelperArray linkNum boneSize 0 SquashBool:squash
-        )
-        if linkNum == 1 then (
-            assign_splineIK()
-            create_one_link_chain spline splineHelperArray boneSize SquashBool:squash
-        )
-    ),
-
-    fn delAll = (
-        -- delete_bones_safely boneArray
-        -- delete_bones_safely controlHelperArray
-        -- delete_bones_safely splineHelperArray
-        -- delete_bones_safely #(spline)
-        -- delete_bones_safely #(rootHelper)
-        select chainBoneArray
-        selectmore controlHelperArray
-        selectmore splineHelperArray
-        selectmore spline
-        selectmore chainRootHelper
-
-        delete selection
-
-        reset()
-    )
-)
-
-struct _TwistBone (
-    name, anim, helper, bone, const, bip,
-
-    baseName = "",
-    filteringChar = " ",
-    bipObj = undefined,
-    upperArmNum = 0,
-    foreArmNum = 0,
-    thighNum = 0,
-    calfNum = 0,
-    boneSize = 2.0,
-    lUpperArmBoneArray = #(),
-    rUpperArmBoneArray = #(),
-    lForeArmBoneArray = #(),
-    rForeArmBoneArray = #(),
-    lThighBoneArray = #(),
-    rThighBoneArray = #(),
-    lCalfBoneArray = #(),
-    rCalfBoneArray = #(),
-
-
-    fn init inBip inBoneSize = (
-        if (isValidNode inBip) then (
-            if (classOf inBip) == Biped_Object then (
-                bip.get_bip_nodes inBip
-                bipObj = bip.com
-                baseName = bip.rootName
-                filteringChar = " "
-                upperArmNum = (bip.get_twist_bone_number inBip)[1]
-                foreArmNum = (bip.get_twist_bone_number inBip)[2]
-                thighNum = (bip.get_twist_bone_number inBip)[3]
-                calfNum = (bip.get_twist_bone_number inBip)[4]
-                
-                boneSize = inBoneSize
-
-                lUpperArmBoneArray = #()
-                rUpperArmBoneArray = #()
-                lForeArmBoneArray = #()
-                rForeArmBoneArray = #()
-                lThighBoneArray = #()
-                rThighBoneArray = #()
-                lCalfBoneArray = #()
-                rCalfBoneArray = #()
-
-                return true
-            )
-        )
-
-        return false
-    ),
-
-    fn create_simple_type noEnd:false = (
-        if bip.com == undefined then return false
-
-        local RLegAux = bip.rThigh
-        local LLegAux = bip.lThigh
-        local PelvisAux = bip.pelvis
-        RLegAux.parent=LLegAux.parent=PelvisAux
-
-        local bipLimbs=#()
-        bipLimbs[1]=#(#larm, 2, upperArmNum - 1, 1, " L UpperArm")
-        bipLimbs[2]=#(#rarm, 2, upperArmNum - 1, 1, " R UpperArm")
-        bipLimbs[3]=#(#larm, 3, foreArmNum - 1, 2, " L ForeArm")
-        bipLimbs[4]=#(#rarm, 3, foreArmNum - 1, 2, " R ForeArm")
-        bipLimbs[5]=#(#lleg, 1, thighNum - 1, 3, " L Thigh")
-        bipLimbs[6]=#(#rleg, 1, thighNum - 1, 3, " R Thigh")
-        bipLimbs[7]=#(#lleg, 2, calfNum - 1, 4, " L Calf")
-        bipLimbs[8]=#(#rleg, 2, calfNum - 1, 4, " R Calf")
-
-        local TBExpressionA = ""
-        TBExpressionA += "try(\n"
-        TBExpressionA += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionA += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionA += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionA += "(quat angle vector)*inverse TM.rotation)\n"
-        TBExpressionA += "catch((quat 0 0 0 1))"
-
-        local TBExpressionBa = ""
-        TBExpressionBa += "try(\n"
-        TBExpressionBa += "TM=(matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])*Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionBa += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionBa += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionBa += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionBa += "catch((quat 0 0 0 1))"
-
-        local TBExpressionBb = ""
-        TBExpressionBb += "try(\n"
-        TBExpressionBb += "TM=(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,0])*Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionBb += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionBb += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionBb += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionBb += "catch((quat 0 0 0 1))"
-
-        local TBExpressionC = ""
-        TBExpressionC += "try(\n"
-        TBExpressionC += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionC += "vector=normalize (cross -TM.row1 [1,0,0])\n"
-        TBExpressionC +=  "angle=acos -(normalize TM.row1).x\n"
-        TBExpressionC += "(quat 0 1 0 0)*(quat angle vector)*inverse TM.rotation)\n"
-        TBExpressionC += "catch((quat 0 0 0 1))"
-
-        local TBExpressionD = ""
-        TBExpressionD += "try(\n"
-        TBExpressionD += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionD += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionD += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionD += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionD += "catch((quat 0 0 0 1))"
-
-        local TBExtraExpressionA = ""
-        TBExtraExpressionA += "try(\n"
-        TBExtraExpressionA += "(Limb.transform*inverse LimbParent.transform).rotation\n"
-        TBExtraExpressionA += ")catch((quat 0 0 0 1))"
-        
-        local TBExtraExpressionB="try(dependson TB\nTB.rotation.controller[1].value\n)catch((quat 0 0 0 1))"
-
-        for index = 1 to bipLimbs.count do
-        (
-            local k = bipLimbs[index]
-            local boneChainArray = #()
-            if (k[3]>0) then
-            (
-                local Limb=biped.getNode bipObj.controller k[1] link:k[2]
-                local distanceVar=(distance limb limb.Children[1])
-
-                local TBExpression=""
-                local ControllerLimb=Limb
-                local weightVar=100
-                
-                case k[4] of
-                (
-                    1:(TBExpression=TBExpressionA)
-                    2:(
-                    if k[1]==#larm then TBExpression=TBExpressionBb else TBExpression=TBExpressionBa
-                    ControllerLimb=Limb.children[1]
-                    weightVar=100/k[3]
-                    )
-                    3:(TBExpression=TBExpressionC)
-                    4:(
-                    TBExpression=TBExpressionD
-                    ControllerLimb=Limb.children[1]
-                    weightVar=100/k[3]
-                    )
-                )
-                
-                local TwistBone=BoneSys.createBone Limb.transform.position Limb.transform.position [0,0,1]
-                local boneName = bip.rootName+k[5]+ "Twist"
-                TwistBone.name=boneName + " 0"
-                TwistBone.parent=Limb
-                --TwistBone.parent=Limb.parent
-                TwistBone.Length=distanceVar/(k[3]+1)
-                TwistBone.Width=distanceVar/8
-                TwistBone.Height=TwistBone.Width
-                TwistBone.taper=0
-                TwistBone.sidefins=off
-                TwistBone.frontfin=off
-                TwistBone.backfin=off
-                TwistBone.rotation.controller=Rotation_List()
-                TwistBone.rotation.controller[1].controller=rotation_script()
-                TwistBone.rotation.controller[1].AddNode "Limb" ControllerLimb
-                TwistBone.rotation.controller[1].SetExpression TBExpression
-                TwistBone.rotation.controller.weight[1]=weightVar
-                
-                append boneChainArray TwistBone
-                
-                local TBExtraController=rotation_script()
-                case of
-                (
-                    (k[4]==1 or k[4]==3):(
-                    TBExtraController.AddNode "Limb" Limb 
-                    TBExtraController.AddNode "LimbParent" TwistBone 
-                    TBExtraController.setExpression TBExtraExpressionA
-                    )
-                    (k[4]==2 or k[4]==4):(
-                    TBExtraController.AddNode "TB" TwistBone
-                    TBExtraController.setExpression TBExtraExpressionB
-                    )
-                )
-                
-                local PrevTBE=TwistBone
-                
-                local middleTwistBonesArray = #()
-                for j=2 to k[3] do
-                (
-                    local TwistBoneExtra=BoneSys.createBone [0,0,0] [1,0,0] [0,0,1]
-                    local matAux=matrix3 1
-                    matAux.position=[(distanceVar/(k[3]+1)),0,0]
-                    TwistBoneExtra.transform=matAux*PrevTBE.transform
-                    TwistBoneExtra.name=boneName + " " +((j-1) as string)
-                    TwistBoneExtra.parent=PrevTBE
-                    TwistBoneExtra.Length=distanceVar/(k[3]+1)
-                    TwistBoneExtra.Width=PrevTBE.Width
-                    TwistBoneExtra.Height=PrevTBE.Height
-                    TwistBoneExtra.taper=0
-                    TwistBoneExtra.sidefins=off
-                    TwistBoneExtra.frontfin=off
-                    TwistBoneExtra.backfin=off
-                    TwistBoneExtra.rotation.controller=Rotation_List()
-                    TwistBoneExtra.rotation.controller[1].controller=TBExtraController
-                    TwistBoneExtra.rotation.controller.weight[1]=100/k[3]
-                    PrevTBE=TwistBoneExtra
-                    
-                    append boneChainArray TwistBoneExtra
-                )
-                
-                local TwistBoneEnd = BoneSys.createBone [0,0,0] [1,0,0] [0,0,1] 
-                local matAux=matrix3 1
-                
-                matAux.position=[(distanceVar/(k[3]+1)),0,0]
-                TwistBoneEnd.transform=matAux*PrevTBE.transform
-                TwistBoneEnd.name=boneName + " " + (k[3] as string)
-                TwistBoneEnd.parent=getNodeByName (bip.rootName + k[5])
-                TwistBoneEnd.Length=distanceVar/(k[3]+1)
-                TwistBoneEnd.Width=PrevTBE.Width
-                TwistBoneEnd.Height=PrevTBE.Height
-                TwistBoneEnd.taper=0
-                TwistBoneEnd.sidefins=off
-                TwistBoneEnd.frontfin=off
-                TwistBoneEnd.backfin=off
-                
-                append boneChainArray TwistBoneEnd
-            )
-
-            case index of
-            (
-                1:(for item in boneChainArray do append lUpperArmBoneArray item)
-                2:(for item in boneChainArray do append rUpperArmBoneArray item)
-                3:(for item in boneChainArray do append lForeArmBoneArray item)
-                4:(for item in boneChainArray do append rForeArmBoneArray item)
-                5:(for item in boneChainArray do append lThighBoneArray item)
-                6:(for item in boneChainArray do append rThighBoneArray item)
-                7:(for item in boneChainArray do append lCalfBoneArray item)
-                8:(for item in boneChainArray do append rCalfBoneArray item)
-            )
-        )
-
-        -- sort forearm and calf bones' order and counting name
-        if foreArmNum > 0 then
-        (
-            local lForeArmObj = lForeArmBoneArray[1]
-            local rForeArmObj = rForeArmBoneArray[1]
-            local lForeArmEndObj = lForeArmBoneArray[lForeArmBoneArray.count]
-            local rForeArmEndObj = rForeArmBoneArray[rForeArmBoneArray.count]
-            
-            anim.move_local lForeArmObj lForeArmObj.length 0 0
-            anim.move_local rForeArmObj rForeArmObj.length 0 0
-            anim.move_local lForeArmEndObj -(lForeArmObj.length * (foreArmNum - 1)) 0 0
-            anim.move_local rForeArmEndObj -(rForeArmObj.length * (foreArmNum - 1)) 0 0
-
-            for i = 1 to (lForeArmBoneArray.count - 1) do lForeArmBoneArray[i].name = (bip.rootName + " L ForeArmTwist " + (i as string))
-            lForeArmEndObj.name = (bip.rootName + " L ForeArmTwist 0")
-            
-            for i = 1 to (lForeArmBoneArray.count - 1) do rForeArmBoneArray[i].name = (bip.rootName + " R ForeArmTwist " + ((i+1) as string))
-            rForeArmEndObj.name = (bip.rootName + " R ForeArmTwist 0")
-
-            local tempLForeArmArray = #(lForeArmEndObj)
-            local tempRForeArmArray = #(rForeArmEndObj)
-
-            for i = 1 to (lForeArmBoneArray.count - 1) do (
-                append tempLForeArmArray lForeArmBoneArray
-                append tempRForeArmArray rForeArmBoneArray
-            )
-            lForeArmBoneArray = #()
-            rForeArmBoneArray = #()
-
-            lForeArmBoneArray = deepCopy tempLForeArmArray
-            rForeArmBoneArray = deepCopy tempRForeArmArray
-        )
-        if calfNum > 0 then
-        (
-            local lCalfObj = lCalfBoneArray[1]
-            local rCalfObj = rCalfBoneArray[1]
-            local lCalfEndObj = lCalfBoneArray[lCalfBoneArray.count]
-            local rCalfEndObj = rCalfBoneArray[rCalfBoneArray.count]
-            
-            anim.move_local lCalfObj lCalfObj.length 0 0
-            anim.move_local rCalfObj rCalfObj.length 0 0
-            anim.move_local lCalfEndObj -(lCalfObj.length * (calfNum - 1)) 0 0
-            anim.move_local rCalfEndObj -(rCalfObj.length * (calfNum - 1)) 0 0
-
-            for i = 1 to (lCalfBoneArray.count - 1) do lCalfBoneArray[i].name = (bip.rootName + " L CalfTwist " + (i as string))
-            lCalfEndObj.name = (bip.rootName + " L CalfTwist 0")
-            
-            for i = 1 to (lCalfBoneArray.count - 1) do rCalfBoneArray[i].name = (bip.rootName + " R CalfTwist " + ((i+1) as string))
-            rCalfEndObj.name = (bip.rootName + " R CalfTwist 0")
-
-            local tempLCalfArray = #(lCalfEndObj)
-            local tempRCalfArray = #(rCalfEndObj)
-
-            for i = 1 to (lCalfBoneArray.count - 1) do (
-                append tempLCalfArray lCalfBoneArray
-                append tempRCalfArray rCalfBoneArray
-            )
-            lCalfBoneArray = #()
-            rCalfBoneArray = #()
-
-            lCalfBoneArray = deepCopy tempLCalfArray
-            rCalfBoneArray = deepCopy tempRCalfArray
-        )
-
-        bip.turn_on_figureMode bipObj
-        bipObj.controller.upperarmTwistLinks = 0
-        bipObj.controller.forearmTwistLinks = 0
-        bipObj.controller.thighTwistLinks = 0
-        bipObj.controller.calfTwistLinks = 0
-        bip.turn_off_figureMode bipObj
-    ),
-
-    fn create_bones inObj inTwistNum inExpression inExtraExpression inControllerLimb inWeightVar = (
-        local Limb = inObj
-        local distanceVar = (distance Limb Limb.children[1])
-
-        local TBExpression=""
-        local ControllerLimb = inControllerLimb
-        local weightVar = inWeightVar
-
-        TBExpression = inExpression
-
-        local boneChainArray = #()
-        
-        local TwistBone = BoneSys.createBone Limb.transform.position Limb.transform.position [0,0,1]
-        local boneName = (name.get_string inObj.name) + "Twist"
-        TwistBone.name = name.replace_index boneName "0"
-        TwistBone.parent = Limb
-        TwistBone.Length = distanceVar/inTwistNum
-        TwistBone.Width = distanceVar/8
-        TwistBone.Height = TwistBone.Width
-        TwistBone.taper = 0
-        TwistBone.sidefins = off
-        TwistBone.frontfin = off
-        TwistBone.backfin = off
-        TwistBone.rotation.controller = Rotation_List()
-        TwistBone.rotation.controller[1].controller = rotation_script()
-        TwistBone.rotation.controller[1].AddNode "Limb" ControllerLimb
-        TwistBone.rotation.controller[1].SetExpression TBExpression
-        TwistBone.rotation.controller.weight[1] = weightVar
-        
-        append boneChainArray TwistBone
-        
-        local TBExtraController = rotation_script()
-        if (matchPattern inExtraExpression pattern:"*\nTB.*") then (
-            TBExtraController.AddNode "TB" TwistBone
-        )
-        else (
-            TBExtraController.AddNode "Limb" Limb
-            TBExtraController.AddNode "LimbParent" TwistBone 
-        )
-        TBExtraController.setExpression inExtraExpression
-        
-        local PrevTBE = TwistBone
-        
-        local middleTwistBonesArray = #()
-        for j = 2 to (inTwistNum - 1) do
-        (
-            local TwistBoneExtra = BoneSys.createBone [0,0,0] [1,0,0] [0,0,1]
-            local matAux = matrix3 1
-            matAux.position = [(distanceVar/inTwistNum), 0, 0]
-            TwistBoneExtra.transform = matAux*PrevTBE.transform
-            TwistBoneExtra.name = name.replace_index boneName ((j-1) as string)
-            TwistBoneExtra.parent = PrevTBE
-            TwistBoneExtra.Length = distanceVar/inTwistNum
-            TwistBoneExtra.Width = PrevTBE.Width
-            TwistBoneExtra.Height = PrevTBE.Height
-            TwistBoneExtra.taper = 0
-            TwistBoneExtra.sidefins = off
-            TwistBoneExtra.frontfin = off
-            TwistBoneExtra.backfin = off
-            TwistBoneExtra.rotation.controller = Rotation_List()
-            TwistBoneExtra.rotation.controller[1].controller = TBExtraController
-            TwistBoneExtra.rotation.controller.weight[1] = 100/(inTwistNum - 1)
-            PrevTBE = TwistBoneExtra
-            
-            append boneChainArray TwistBoneExtra
-        )
-        
-        local TwistBoneEnd = BoneSys.createBone [0,0,0] [1,0,0] [0,0,1] 
-        local matAux = matrix3 1
-        
-        matAux.position = [(distanceVar/inTwistNum), 0, 0]
-        TwistBoneEnd.transform = matAux*PrevTBE.transform
-        TwistBoneEnd.name = name.replace_index boneName ((inTwistNum-1) as string)
-        TwistBoneEnd.parent = inObj
-        TwistBoneEnd.Length = distanceVar/inTwistNum
-        TwistBoneEnd.Width = PrevTBE.Width
-        TwistBoneEnd.Height = PrevTBE.Height
-        TwistBoneEnd.taper = 0
-        TwistBoneEnd.sidefins = off
-        TwistBoneEnd.frontfin = off
-        TwistBoneEnd.backfin = off
-        
-        append boneChainArray TwistBoneEnd
-
-        boneChainArray
-    ),
-
-    fn reorder_bones inBoneChainArray = (
-        local  boneChainArray = deepCopy inBoneChainArray
-
-        local foreArmBone = boneChainArray[1]
-        local foreArmEndBone = boneChainArray[boneChainArray.count]
-        
-        for i = 1 to (boneChainArray.count-1) do anim.move_local boneChainArray[i] foreArmBone.length 0 0
-        anim.move_local foreArmEndBone -(foreArmBone.length * (boneChainArray.count - 1)) 0 0
-
-        for i = 1 to (boneChainArray.count - 1) do boneChainArray[i].name = name.replace_index boneChainArray[i].name (i as string)
-        foreArmEndBone.name = name.replace_index foreArmEndBone.name "0"
-        
-        local tempForeArmArray = #(foreArmEndBone)
-        for i = 1 to (boneChainArray.count - 1) do append tempForeArmArray boneChainArray[i]
-        boneChainArray = #()
-        boneChainArray = deepCopy tempForeArmArray
-        tempForeArmArray = #()
-
-        boneChainArray
-    ),
-
-    fn create_upperArm_type inObj inTwistNum = (
-        if inObj.parent == undefined or inObj.children.count == 0 then return false
-
-        local TBExpressionA = ""
-        TBExpressionA += "try(\n"
-        TBExpressionA += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionA += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionA += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionA += "(quat angle vector)*inverse TM.rotation)\n"
-        TBExpressionA += "catch((quat 0 0 0 1))"
-
-        local TBExtraExpressionA = ""
-        TBExtraExpressionA += "try(\n"
-        TBExtraExpressionA += "(Limb.transform*inverse LimbParent.transform).rotation\n"
-        TBExtraExpressionA += ")catch((quat 0 0 0 1))"
-
-        create_bones inObj inTwistNum TBExpressionA TBExtraExpressionA inObj 100
-    ),
-
-    fn create_foreArm_type inObj inTwistNum side:#left = (
-        if inObj.parent == undefined or inObj.children.count == 0 then return false
-
-        local boneChainArray = #()
-        local TBExpressionBa = ""
-        TBExpressionBa += "try(\n"
-        TBExpressionBa += "TM=(matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])*Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionBa += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionBa += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionBa += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionBa += "catch((quat 0 0 0 1))"
-
-        local TBExpressionBb = ""
-        TBExpressionBb += "try(\n"
-        TBExpressionBb += "TM=(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,0])*Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionBb += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionBb += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionBb += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionBb += "catch((quat 0 0 0 1))"
-
-        local TBExtraExpressionB="try(dependson TB\nTB.rotation.controller[1].value\n)catch((quat 0 0 0 1))"
-
-        local TBExpression = ""
-
-        if side == #left then TBExpression = TBExpressionBb else TBExpression = TBExpressionBa
-
-        boneChainArray = create_bones inObj inTwistNum TBExpression TBExtraExpressionB (inObj.children[1]) (100/(inTwistNum - 1))
-
-        reorder_bones boneChainArray
-    ),
-
-    fn create_thigh_type inObj inTwistNum = (
-        if inObj.parent == undefined or inObj.children.count == 0 then return false
-
-        local TBExpressionC = ""
-        TBExpressionC += "try(\n"
-        TBExpressionC += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionC += "vector=normalize (cross -TM.row1 [1,0,0])\n"
-        TBExpressionC +=  "angle=acos -(normalize TM.row1).x\n"
-        TBExpressionC += "(quat 0 1 0 0)*(quat angle vector)*inverse TM.rotation)\n"
-        TBExpressionC += "catch((quat 0 0 0 1))"
-
-        local TBExtraExpressionA = ""
-        TBExtraExpressionA += "try(\n"
-        TBExtraExpressionA += "(Limb.transform*inverse LimbParent.transform).rotation\n"
-        TBExtraExpressionA += ")catch((quat 0 0 0 1))"
-
-        create_bones inObj inTwistNum TBExpressionC TBExtraExpressionA inObj 100
-    ),
-
-    fn create_calf_typ inObj inTwistNum side:#left = (
-        if inObj.parent == undefined or inObj.children.count == 0 then return false
-
-        local TBExpressionD = ""
-        TBExpressionD += "try(\n"
-        TBExpressionD += "TM=Limb.transform*inverse Limb.parent.transform\n"
-        TBExpressionD += "vector=normalize (cross TM.row1 [1,0,0])\n"
-        TBExpressionD += "angle=acos (normalize TM.row1).x\n"
-        TBExpressionD += "TM.rotation*(quat -angle vector))\n"
-        TBExpressionD += "catch((quat 0 0 0 1))"
-
-        local TBExtraExpressionB="try(dependson TB\nTB.rotation.controller[1].value\n)catch((quat 0 0 0 1))"
-
-        reorder_bones (create_bones inObj inTwistNum TBExpressionD TBExtraExpressionB inObj.children[1] 100/(inTwistNum - 1))
-    ),
-
-    fn create_bend_type = (
-    )
-)
-
-struct _Joystick (
-    joyName = "",
-    controlBox,
-    cursor,
-    caption,
-    minX = -100.0,
-    minY = -100.0,
-    maxX = 100.0,
-    maxY = 100.0,
-
-    fn reset = (
-        cursor.position.controller[2].value = [0,0,0]
-    ),
-
-    fn delete_all = (
-        delete caption
-        delete cursor
-        delete controlBox
-    )
-)
-
-struct _JoystickGenerator (
-    name, anim, const,
-
-    joyName = "",
-    controlBoxColor = color 0 198 255,
-    cursColor = color 255 194 7 ,
-    captionColor = color 255 85 0,
-    controlBox,
-    cursor,
-    caption = undefined,
-    minX = -100.0,
-    minY = -100.0,
-    maxX = 100.0,
-    maxY = 100.0,
-
-    fn gen_shapes inName inMinX inMinY inMaxX inMaxY noCaption:false = (
-        joyName = inName
-        minX = inMinX as Float
-        minY = inMinY as Float
-        maxX = inMaxX as Float
-        maxY = inMaxY as Float
-        
-        local sizeX = maxX - minX
-        local sizeY = maxY - minY
-
-        controlBox = Rectangle length:sizeY width:sizeX cornerRadius:((sizeX/20 + sizeY/20)/2) transform:(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,0])
-        controlBox.wirecolor = controlBoxColor
-        controlBox.name = name.replace_type joyName "Ctr"
-        controlBox.name = name.add_sufix_to_realName controlBox.name "Joystick"
-
-        cursor = Circle radius:((sizeX/10 + sizeY/10)/2) transform:(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,0])
-        cursor.wirecolor = cursColor
-        cursor.name = name.replace_type joyName "Ctr"
-        cursor.name = name.add_sufix_to_realName cursor.name "Cursor"
-        cursor.position = [-(maxX + minX)/2, 0, -(maxY + minY)/2]
-        
-        if noCaption == false then (
-            local displayCaptionText = (name.get_side joyName) + (name.get_filteringChar joyName) + (name.get_realName joyName)
-            caption = Text text:displayCaptionText size:((sizeX/2+sizeY/2)/4)  kerning:0 leading:0 transform:(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,sizeY/2])
-            caption.wirecolor = captionColor
-            caption.name = name.replace_type joyName "Ctr"
-            caption.name = name.add_sufix_to_realName caption.name "Caption"
-        )
-    ),
-
-    fn apply_constraints = (
-        if caption != undefined then caption.parent = controlBox
-        cursor.parent = controlBox
-
-        anim.freeze_transform cursor
-
-        local activeNum = cursor.position.controller.getActive()
-        cursor.position.controller[activeNum][1].controller = float_limit()
-        cursor.position.controller[activeNum][2].controller = float_limit()
-        
-        local xConst = cursor.position.controller[activeNum][1].controller
-        local yConst = cursor.position.controller[activeNum][2].controller
-        xConst.lower_limit = minX
-        xConst.upper_limit = maxX
-        yConst.lower_limit = minY
-        yConst.upper_limit = maxY
-    ),
-
-    fn add_customAttributes = (
-        local cursorAtt = attributes joystickCursorAtt (
-            parameters params rollout:joysticCursorAttRollout (
-                minVal type:#float
-                maxVal type:#float
-                xValue type:#float
-                yValue type:#float
-            )
-
-            rollout joysticCursorAttRollout "Joystick" (
-                button resetBtn "Reset"
-
-                on resetBtn pressed do $.position.controller[2].value = [0,0,0]
-            )
-        )
-
-        local cursorMod = EmptyModifier()
-        cursorMod.name = "Joystick Cursor"
-        addModifier cursor cursorMod
-        custAttributes.add cursor.modifiers["Joystick Cursor"] cursorAtt
-    ),
-
-    fn add_wireParam = (
-        paramWire.connect controlBox.baseObject[#Width] cursor.pos.controller.Zero_Pos_XYZ.controller.X_Position.controller[#Limits][#Upper_Limit] "Width/2"
-        paramWire.connect controlBox.baseObject[#Width] cursor.pos.controller.Zero_Pos_XYZ.controller.X_Position.controller[#Limits][#Lower_Limit] "-Width/2"
-        paramWire.connect controlBox.baseObject[#Length] cursor.pos.controller.Zero_Pos_XYZ.controller.Y_Position.controller[#Limits][#Upper_Limit] "Length/2"
-        paramWire.connect controlBox.baseObject[#Length] cursor.pos.controller.Zero_Pos_XYZ.controller.Y_Position.controller[#Limits][#Lower_Limit] "-Length/2"
-
-        paramWire.connect controlBox.baseObject[#Width] cursor.modifiers[#Joystick_Cursor].joystickCursorAtt[#width] "Width"
-        paramWire.connect controlBox.baseObject[#Length] cursor.modifiers[#Joystick_Cursor].joystickCursorAtt[#height] "Length"
-    ),
-
-    fn create inName inMinX inMinY inMaxX inMaxY noCaption:false = (
-        gen_shapes inName inMinX inMinY inMaxX inMaxY noCaption:noCaption
-        apply_constraints()
-        add_customAttributes()
-
-        local joystick = _Joystick joyName:joyName minX:inMinX minY:inMinY maxX:inManX maxY:inManY controlBox:controlBox cursor:cursor caption:caption
-        
-        joystick
-    ),
-
-    fn create_square inName inSize noCaption:false xMin:-100.0 yMin:-100.0 xMax:100 yMax:100 = (
-        local joystick = _Joystick()
-        joystick = create inName xMin yMin xMax yMax noCaption:noCaption
-        setTransformLockFlags joystick.cursor #{4,5,6,7,8,9}
-
-        in coordsys local scale joystick.controlBox [inSize/200.0, inSize/200.0, 1.0]
-
-        joystick
-    ),
-
-    fn create_horizontal inName inSize noCaption:false min:-100.0 max:100 = (
-        local joystick = _Joystick()
-        joystick = create inName min -10.0 max 10 noCaption:noCaption
-        setTransformLockFlags joystick.cursor #{2,3,4,5,6,7,8,9}
-
-        in coordsys local scale joystick.controlBox [inSize/200.0, inSize/200.0, 1.0]
-
-        joystick
-    ),
-
-    fn create_vertical inName inSize noCaption:false min:-100.0 max:100= (
-        local joystick = _Joystick()
-        joystick = create inName -10.0 min 10.0 max noCaption:noCaption
-        setTransformLockFlags joystick.cursor #{1,3,4,5,6,7,8,9}
-
-        in coordsys local scale joystick.controlBox [inSize / 200.0, inSize / 200.0, 1.0]
-
-        joystick
     )
 )
 
@@ -5867,17 +4133,56 @@ struct _Poly (
                 polyop.attach selPolyArray[selPolyArray.count] selPolyArray[i]
             )
         )
+    ),
+
+    fn detach_to_face inObj = (
+        local returnVal = false
+        local targetObj = inObj
+        if classOf inObj == Editable_Poly then (
+            local polyNum = polyop.getNumFaces targetObj
+            for i = 1 to polyNum do (
+                polyop.detachFaces targetObj #{i} asNode:false
+            )
+            returnVal = true
+        )
+
+        returnVal
     )
 )
 
+struct _MorphChannel (
+    index = 0,
+    name = "",
+    hasData = false
+)
+/*************************************************************/
+/*Morph library can deel with ONLY ONE Morpher modifier.
+/*If you want to use method, you should initialize.
+/*************************************************************/
 struct _Morph (
     channelMaxViewNum = 100,
+    morphModIndex = 0,
+    morphMod = undefined,
+    channelNum = 0,
+    channelArray = #(),
+
+    fn reset = (
+        channelMaxViewNum = 100
+        morphModIndex = 0
+        morphMod = undefined
+        channelNum = 0
+        channelArray = #()
+    ),
 
     fn get_modifier_index inObj = (
         local returnVal = 0
         if inObj.modifiers.count > 0 then (
             for i = 1 to inObj.modifiers.count do (
-                if classOf inObj.modifiers[i] == Morpher then returnVal = i
+                if classOf inObj.modifiers[i] == Morpher then (
+                    returnVal = i
+                    morphModIndex = i
+                    morphMod = inObj.modifiers[i]
+                )
             )
         )
 
@@ -5887,38 +4192,13 @@ struct _Morph (
     fn get_modifier inObj = (
         local returnVal = undefined
         local modIndex = get_modifier_index inObj
-        if modIndex > 0 then (
-            --max modify mode
-            --select inObj
-            --modPanel.setCurrentObject inObj.modifiers[modIndex]
-            returnVal = inObj.modifiers[modIndex]
-        )
+        if modIndex > 0 then returnVal = morphMod
 
         return returnval
     ),
 
-    fn add_target inObj inTarget inIndex = (
-        local returnVal = false
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
-        )
-        return returnVal
-    ),
-
-    fn add_targets inObj inTargetArray = (
-        local returnVal = false
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            for i = 1 to inTargetArray.count do (
-                add_target inObj inTargetArray[i] i
-            )
-        )
-    ),
-
-    fn get_channel_num inObj = (
+    fn get_channel_num = (
         local returnVal = 0
-        local morphMod = get_modifier inObj
         if morphMod != undefined then (
             local morphChannelExistance = true
             local morphChannelCounter = 0
@@ -5932,47 +4212,91 @@ struct _Morph (
                 )
                 morphChannelCounter = morphChannelCounter + channelMaxViewNum
             )
+            channelNum = returnVal
         )
 
         return returnVal
     ),
 
-    fn get_all_channel_name inObj = (
-        local returnVal = #()
-        local morphMod = get_modifier inObj
+    fn gen_all_channel_info = (
+        local returnVal = false
         if morphMod != undefined then (
-            local channelNum = get_channel_num inObj
-            for i = 1 to channelNum do (
-                append returnVal (WM3_MC_GetName morphMod i)
+            get_channel_num()
+            if channelNum > 0 then (
+                channelArray = #()
+                for i = 1 to channelNum do (
+                    local tempChannel = _MorphChannel()
+                    tempChannel.index = i
+                    tempChannel.hasData = WM3_MC_HasData morphMod i
+                    tempChannel.name = WM3_MC_GetName morphMod i
+                    append channelArray tempChannel
+                )
+                return true
+            )
+        )
+    ),
+
+    fn init inObj = (
+        local returnVal = false
+        if (get_modifier inObj) != undefined then (
+            returnVal = gen_all_channel_info()
+        )
+
+        return returnVal
+    ),
+
+    fn add_target inTarget inIndex = (
+        local returnVal = false
+        if morphMod != undefined then (
+            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
+            gen_all_channel_info()
+        )
+        return returnVal
+    ),
+
+    fn add_targets inTargetArray = (
+        local returnVal = false
+        if morphMod != undefined then (
+            for i = 1 to inTargetArray.count do (
+                WM3_MC_BuildFromNode morphMod i inTargetArray[i]
+            )
+            gen_all_channel_info()
+        )
+    ),
+
+    fn get_all_channel_name = (
+        local returnVal = #()
+        if channelArray.count > 0 then (
+            returnval = for item in channelArray collect item.name
+        )
+        return returnVal
+    ),
+
+    fn get_channel_name inIndex = (
+        local returnVal = ""
+        if channelArray.count > 0 then (
+            returnVal = channelArray[inIndex].name
+        )
+        return returnVal
+    ),
+
+    fn get_channel_index inName = (
+        local returnVal = 0
+        if channelArray.count > 0 then (
+            for item in channelArray do (
+                if item.name == inName then (
+                    returnval = item.index
+                    exit
+                )
             )
         )
         return returnVal
     ),
 
-    fn get_channel_name inObj inIndex = (
-        local returnVal = ""
-        local morphMod = get_modifier inObj
+    fn get_channel_value_by_name inName = (
+        local returnVal = 0.0
         if morphMod != undefined then (
-            returnVal = WM3_MC_GetName morphMod inIndex
-        )
-        return returnVal
-    ),
-
-    fn get_channel_index inObj inName = (
-        local returnVal = 0
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local allNameArray = get_all_channel_name inObj
-            returnVal = findItem allNameArray inName
-        )
-        return returnVal
-    ),
-
-    fn get_channel_value_by_name inObj inName = (
-        local returnVal = 0
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inName
+            local channelIndex = get_channel_index inName
             if channelIndex > 0 then (
                 returnVal = WM3_MC_GetValue morphMod channelIndex
             )
@@ -5980,20 +4304,18 @@ struct _Morph (
         return returnVal
     ),
 
-    fn get_channel_value_by_index inObj inIndex = (
+    fn get_channel_value_by_index inIndex = (
         local returnVal = 0
-        local morphMod = get_modifier inObj
         if morphMod != undefined then (
             returnVal = WM3_MC_GetValue morphMod channelIndex
         )
         return returnVal
     ),
 
-    fn set_cahnnel_value_by_name inObj inName inVal = (
+    fn set_cahnnel_value_by_name inName inVal = (
         local returnVal = false
-        local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inName
+            local channelIndex = get_channel_index inName
             if channelIndex > 0 then (
                 WM3_MC_SetValue morphMod channelIndex inVal
                 returnVal = true
@@ -6003,29 +4325,217 @@ struct _Morph (
         return returnVal
     ),
 
-    fn set_channel_name_by_name inObj inTargetName inNewName = (
+    fn set_channel_value_by_index inIndex inVal = (
         local returnVal = false
-        local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inTargetName
+            WM3_MC_SetValue morphMod inIndex inVal
+            returnVal = true
+        )
+
+        return returnVal
+    ),
+
+    fn set_channel_name_by_name inTargetName inNewName = (
+        local returnVal = false
+        if morphMod != undefined then (
+            local channelIndex = get_channel_index inTargetName
             if channelIndex > 0 then (
                 WM3_MC_SetName morphMod channelIndex inNewName
+                channelArray[channelIndex].name = inNewName
                 returnVal = true
             )
         )
         return returnVal
     ),
 
-    fn set_channel_name_by_index inObj inIndex inName = (
+    fn set_channel_name_by_index inIndex inName = (
         local returnVal = false
-        local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            if (WM3_MC_HasData morphMod inIndex) then (
-                WM3_MC_SetName morphMod inIndex inName
-                returnVal = true
-            )
+            WM3_MC_SetName morphMod inIndex inName
+            channelArray[inIndex].name = inNewName
+            returnVal = true
         )
         return returnVal
+    )
+)
+
+
+struct _XMLNode (
+    tag,
+    parent,
+    dotnetNode,
+
+    fn init inDnNode = (
+        dotnetNode = inDnNode
+        tag = inDnNode.LocalName
+        parent = inDnNode.ParentNode
+    ),
+
+    fn get_tag = (
+        return dotnetNode.Name
+    ),
+
+    fn set_tag inNewTag = (
+        try (dotnetNode.Name = inNewTag)
+        catch(false)
+    ),
+
+    fn get_text = (
+        return dotnetNode.InnerText
+    ),
+
+    fn set_text inText = (
+        dotnetNode.InnerText = inText
+    ),
+
+    fn add_attribute inAtt inVal = (
+        dotnetNode.SetAttribute inAtt inVal
+    ),
+
+    fn get_attribute inAtt = (
+        dotnetNode.GetAttribute inAtt
+    ),
+
+    fn set_attribute inAtt inNewVal = (
+        dotnetNode.SetAttribute inAtt inNewVal
+    ),
+
+    fn remove_attribute inAtt = (
+        dotnetNode.RemoveAttribute inAtt
+    ),
+
+    fn get_all_attribute = (
+        local returnVal = #()
+        local atts = dotnetNode.Attributes
+        for i = 0 to (atts.Count - 1) do (
+            local temp = #()
+            local item = (atts.ItemOf i)
+            append temp item.Name
+            append temp item.Value
+            append returnVal temp
+        )
+        return returnVal
+    ),
+
+    fn has_attribute inAtt = (
+        dotnetNode.HasAttribute inAtt
+    ),
+
+    fn append_child_node inNewNode = (
+        if classof inNewNode == _XMLNode then (
+            dotnetNode.AppendChild inNewNode.dotnetNode
+            return true
+        )
+        else return false
+    ),
+
+    fn get_child inIndex = (
+        local dNode = dotnetNode.ChildNodes.ItemOf inIndex
+        if dNode.Name != "#text" then (
+            local newNode = _XMLNode()
+            newNode.init dNode
+            return newNode
+        )
+        else return undefined
+    ),
+
+    fn get_children = (
+        local returnNodes = #()
+        for i = 0 to (dotnetNode.ChildNodes.Count - 1) do (
+            local dNode = dotnetNode.ChildNodes.ItemOf i
+            local newNode = _XMLNode()
+            newNode.init dNode
+            append returnNodes newNode
+        )
+        return returnNodes
+    ),
+
+    fn remove_child inChildNode = (
+        if classof inChildNode == _XMLNode then (
+            dotnetNode.RemoveChild inChildNode.dotnetNode
+            return true
+        )
+        else return false
+    )
+)
+struct _XMLDoc (
+    file = undefined,
+    rootNode = undefined,
+    dom = dotNetObject "System.Xml.XmlDocument",
+    loaded = false,
+
+    fn load_file inFullFileName = (
+        file = inFullFileName
+        doc = dom.Load file
+        loaded = true
+
+        return true
+    ),
+
+    fn save_file fileName:"" = (
+        if loaded then (
+            local saveFileFullName = ""
+            if fileName == "" then saveFileFullName = file
+            else saveFileFullName = fileName
+            dom.Save saveFileFullName
+            return true
+        )
+        else return false
+    ),
+
+    fn get_root_node = (
+        rootNode = _XMLNode()
+        rootNode.init dom.DocumentElement
+        return rootNode
+    ),
+
+    fn create_node inTag = (
+        local dNode = dom.CreateElement inTag
+        local newNode = _XMLNode()
+        newNode.init dNode
+        return newNode
+    ),
+
+    fn append_node inNewNode = (
+        if classof inNewNode == _XMLNode then (
+            dom.AppendChild inNewNode.dotnetNode
+            return true
+        )
+        else return false
+    ),
+
+    fn save_pretty fileName:"" = (
+        if loaded then (
+            local saveFileFullName = ""
+            if fileName == "" then saveFileFullName = file
+            else saveFileFullName = fileName
+
+            local writer = dotNetClass "System.Xml.XmlTextWriter"
+            local wSettings = dotNetObject "System.Xml.XmlWriterSettings"
+            wSettings.indent = true
+
+            local w = writer.create saveFileFullName wSettings
+            dom.writeContentTo w
+            w.close()
+            return true
+        )
+        else return false
+    ),
+
+    fn create_root_node = (
+        local rNode = create_node "RootNode"
+        append_node rNode
+        rNode = get_root_node()
+        return rNode
+    ),
+
+    fn create_file inFullFileName = (
+        local returnNode = undefined
+        file = inFullFileName
+        loaded = true
+
+        returnNode = create_root_node()
+        return returnNode
     )
 )
 
@@ -6117,19 +4627,13 @@ struct _JalLib (
 
     skin = _Skin(),
 
-    hip = _Hip(),
-    jointMid = _JointMidBone(),
-    muscleBone = _MuscleBone(),
-
-    twistBone = _TwistBone(),
-
-    joystick = _JoystickGenerator(),
-
     prog = _Progress(),
     roll = _Rollout(),
 
     poly = _Poly(),
     mor = _Morph(),
+
+    xml = _XMLDoc(),
 
     tools = _Tools(),
 
@@ -6151,34 +4655,6 @@ struct _JalLib (
 
         skin.name = name
         skin.prog = prog
-
-        hip.name = name
-        hip.anim = anim
-        hip.helper = helper
-        hip.bone = bone
-        hip.const = const
-        hip.bip = bip
-        jointMid.name = name
-        jointMid.anim = anim
-        jointMid.helper = helper
-        jointMid.bone = bone
-        jointMid.const = const
-        muscleBone.name = name
-        muscleBone.anim = anim
-        muscleBone.helper = helper
-        muscleBone.bone = bone
-        muscleBone.const = const
-
-        twistBone.name = name
-        twistBone.anim = anim
-        twistBone.helper = helper
-        twistBone.bone = bone
-        twistBone.const = const
-        twistBone.bip = bip
-
-        joystick.name = name
-        joystick.anim = anim
-        joystick.const = const
     )
 )
 
