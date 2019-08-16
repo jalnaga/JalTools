@@ -115,6 +115,7 @@ struct _Skin (
 
     fn get_vert_weight inputObj inVertIndex = (
         local returnVal = _SkinVert()
+        if skinMod == undefined then return returnVal
         if allBonesArray.count == 0 then (
             get_all_bones inputObj
             if allBonesArray.count == 0 then return returnVal
@@ -150,7 +151,6 @@ struct _Skin (
         if (get_all_bones inputObj) then (
             skinWeightsArray = #()
 
-            --prog.start_progress "Get Skin vertex weight"
             local numVerts = skinOps.GetNumberVertices skinMod
             for v = 1 to numVerts do (
                 local boneArray = #()
@@ -170,9 +170,7 @@ struct _Skin (
                     append weightArray boneWeight
                 )
                 append skinWeightsArray (_SkinVert index:v boneArray:boneArray boneIDArray:boneIDArray boneNameArray:boneNameArray weightArray:weightArray)
-                --prog.update_progress v numVerts
             )
-            --prog.end_progress()
         )
     ),
 
@@ -219,17 +217,14 @@ struct _Skin (
         local newBoneIndex = get_bone_index inputObj newBone
         local vertNum = skinOps.GetNumberVertices skinMod
 
-        --prog.start_progress "Replace Bones..."
         for v = 1 to vertNum do (
             local finedBoneID = findItem prevSkinWeightsArray[v].boneIDArray oriBoneIndex
             if finedBoneID != 0 then (
                 prevSkinWeightsArray[v].boneIDArray[finedBoneID] = newBoneIndex
                 skinOps.ReplaceVertexWeights skinMod v prevSkinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
             )
-            --prog.update_progress v vertNum
         )
         if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
-        --prog.end_progress()
 
         return true
     ),
@@ -244,17 +239,14 @@ struct _Skin (
         local newBoneIndex = get_bone_index inputObj newBone
         local vertNum = skinOps.GetNumberVertices skinMod
 
-        --prog.start_progress "Copy weights..."
         for v = 1 to vertNum do (
             local finedBoneID = findItem prevSkinWeightsArray[v].boneIDArray oriBoneIndex
             if finedBoneID != 0 then (
                 prevSkinWeightsArray[v].boneIDArray[finedBoneID] = newBoneIndex
                 skinOps.ReplaceVertexWeights skinMod v prevSkinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
             )
-            --prog.update_progress v vertNum
         )
         if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
-        --prog.end_progress()
 
         return true
     ),
@@ -271,7 +263,6 @@ struct _Skin (
             local delBones = #{1..allBonesArray.count}
             local prevSkinWeightsArray = deepCopy skinWeightsArray
 
-            --prog.start_progress "Replace multi bones..." totalStep:2
             local vertNum = skinOps.GetNumberVertices skinMod
             for i= 1 to oriBoneArray.count do (
                 local oriBoneIndex = get_bone_index inputObj oriBoneArray[i]
@@ -286,15 +277,12 @@ struct _Skin (
                         )
                     )
                 )
-                --prog.update_progress i oriBoneArray.count
             )
 
             for i = allBonesArray.count to 1 by -1 where (delBones[i] == false) do (
                 skinOps.SelectBone skinMod i
                 skinOps.RemoveBone skinMod
-                --prog.update_progress (allBonesArray.count - i + 1) allBonesArray.count inCurrentStep:2
             )
-            --prog.end_progress()
             return true
         )
 
@@ -340,14 +328,11 @@ struct _Skin (
         for i = 1 to targetObj.modifiers.count do (
             if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
         )
-        --prog.start_progress "Paste Skin..."
         local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
 
-            --prog.update_progress v targetObjNumVert
         )
-        --prog.end_progress()
     ),
 
     fn select_bone inObj inBoneObj = (

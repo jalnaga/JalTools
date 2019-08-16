@@ -6,5 +6,19 @@ struct _Poly (
                 polyop.attach selPolyArray[selPolyArray.count] selPolyArray[i]
             )
         )
+    ),
+
+    fn detach_to_face inObj = (
+        local returnVal = false
+        local targetObj = inObj
+        if classOf inObj == Editable_Poly then (
+            local polyNum = polyop.getNumFaces targetObj
+            for i = 1 to polyNum do (
+                polyop.detachFaces targetObj #{i} asNode:false
+            )
+            returnVal = true
+        )
+
+        returnVal
     )
 )
