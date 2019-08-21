@@ -7,16 +7,31 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
-    local facialCageMaxVertNum = 500
+    local facialCageMeshFullName = ""
+    local fCageMeshName = "FCage_000"
+    local univFaceMeshName = "UnivHead_000"
 
-    include "facialCage.ms"
-    local fCage = _FacialCage()
+    local xmlFile = ""
 
-    include "ui_facialBoneRollout.ms"
+    --local facialCageMaxVertNum = 500
+    --include "facialCage.ms"
+    --local fCage = _FacialCage()
+
+    --include "ui_facialBoneRollout.ms"
+    include "ui_facialCageInfoGenRollout.ms"
+    include "ui_facialCageGeneratorRollout.ms"
 
     on mainRollout open do
     (
-        AddSubRollout mainSub facialBoneRollout
+        local tool_path = getINISetting ((GetDir #userMacros) + "\\jalScriptLauncher\\ini\\scriptPath.ini") "ExternalScript" "ScriptPath"
+        tool_path = tool_path + "\\JalTools\\FacialCageTool"
+        facialCageMeshFullName = tool_path + "\\maxScene\\FCage.max"
+        xmlFile = tool_path + "\\data\\fCageInfo.xml"
+
+        AddSubRollout mainSub facialCageInfoGenRollout
+        AddSubRollout mainSub facialCageGeneratorRollout
+
+        facialCageInfoGenRollout.open = false
     )
 
     on mainRollout resized newSize do
@@ -33,7 +48,8 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
             mainSub.height = minHeight - subRollHeightOffset
         )
 
-        jal.roll.update_subroll_when_resized mainSub facialBoneRollout
+        jal.roll.update_subroll_when_resized mainSub facialCageInfoGenRollout
+        jal.roll.update_subroll_when_resized mainSub facialCageGeneratorRollout
     )
 )
 jal.tools.facialCageTool = mainRollout
