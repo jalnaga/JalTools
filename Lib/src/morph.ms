@@ -96,8 +96,9 @@ struct _Morph (
     fn add_target inTarget inIndex = (
         local returnVal = false
         if morphMod != undefined then (
-            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
-            gen_all_channel_info()
+            WM3_MC_BuildFromNode morphMod inIndex inTarget
+            returnVal = WM3_MC_HasData morphMod inIndex
+            if returnval != false then gen_all_channel_info()
         )
         return returnVal
     ),
