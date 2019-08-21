@@ -4,6 +4,11 @@ rollout mocapFileExportRollout "Mocap File Export"(
     spinner endSpn "End:" type:#integer range:[0, 100000, 100]
     button exportFileBtn "Export Mocap File"
 
+    on mocapFileExportRollout open do (
+        startSpn.value = animationRange.start
+        endSpn.value = animationRange.end
+    )
+
     on loadBtn pressed do (
         local mocapFile = getOpenFileName caption:"Load Mocap FBX:" types:"Autodesk (*.fbx)|*.fbx"
         if mocapFile != undefined then (
