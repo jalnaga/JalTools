@@ -4248,8 +4248,9 @@ struct _Morph (
     fn add_target inTarget inIndex = (
         local returnVal = false
         if morphMod != undefined then (
-            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
-            gen_all_channel_info()
+            WM3_MC_BuildFromNode morphMod inIndex inTarget
+            returnVal = WM3_MC_HasData morphMod inIndex
+            if returnval != false then gen_all_channel_info()
         )
         return returnVal
     ),
@@ -4461,11 +4462,14 @@ struct _XMLNode (
 struct _XMLDoc (
     file = undefined,
     rootNode = undefined,
-    dom = dotNetObject "System.Xml.XmlDocument",
+    --dom = dotNetObject "System.Xml.XmlDocument",
+    dom = undefined,
     loaded = false,
 
     fn load_file inFullFileName = (
         file = inFullFileName
+        dom = undefined
+        dom = dotNetObject "System.Xml.XmlDocument"
         doc = dom.Load file
         loaded = true
 
@@ -4478,6 +4482,7 @@ struct _XMLDoc (
             if fileName == "" then saveFileFullName = file
             else saveFileFullName = fileName
             dom.Save saveFileFullName
+            dom = undefined
             return true
         )
         else return false
@@ -4517,6 +4522,7 @@ struct _XMLDoc (
             local w = writer.create saveFileFullName wSettings
             dom.writeContentTo w
             w.close()
+            dom = undefined
             return true
         )
         else return false
@@ -4533,6 +4539,8 @@ struct _XMLDoc (
         local returnNode = undefined
         file = inFullFileName
         loaded = true
+        dom = undefined
+        dom = dotNetObject "System.Xml.XmlDocument"
 
         returnNode = create_root_node()
         return returnNode
@@ -4553,6 +4561,7 @@ struct _Tools (
     hairTool = undefined,
     faceCustomTool = undefined,
     facialCageTool = undefined,
+    facialMocapTool = undefined,
 
     fn delete_unwantedScripts = (
         local userStartScriptsDir = getDir #userStartupScripts
