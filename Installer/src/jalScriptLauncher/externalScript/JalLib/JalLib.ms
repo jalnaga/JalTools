@@ -3938,7 +3938,7 @@ struct _Skin (
         return false
     ),
 
-    fn copy_skin sourceObj targetObj = (
+    /*fn copy_skin sourceObj targetObj = (
         get_skin_weights sourceObj
         max modify mode
         select targetObj
@@ -3952,6 +3952,24 @@ struct _Skin (
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
 
+        )
+    ),*/
+
+    fn copy_skin sourceObj targetObj = (
+        local skinBoneArray = get_all_bones sourceObj
+        get_skin_weights sourceObj
+        max modify mode
+        select targetObj
+        addModifier targetObj (Skin())
+
+        local targetSkinMod
+        for i = 1 to targetObj.modifiers.count do (
+            if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
+        )
+        for item in skinBoneArray do skinOps.addbone targetSkinMod item 1
+        local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
+        for v = 1 to targetObjNumVert do (
+            skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
         )
     ),
 
