@@ -11,6 +11,8 @@ rollout mocapFileImportRollout "Mocap File Load" (
     )
 
     on assignMocapBtn pressed do (
+        clearSelection()
+        max create mode
         for item in fmc.allRigControllerArray do (
             if item.xController != undefined then deleteKeys item.xController #allKeys
             if item.yController != undefined then deleteKeys item.yController #allKeys

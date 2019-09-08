@@ -1,15 +1,11 @@
 rollout facialCageGeneratorRollout "Facial Cage Genereator" (
+    button addHMeshBtn "Add High polygon Head meshes..." height:30
+    MultiListBox addHMeshLst "" height:10
     button genFCageBtn "Make Facial Cages" height:50
 
     local mergedFCage = undefined
     local mergedUnivMesh = undefined
     local hMeshArray = #()
-
-    local targetMesh = undefined
-    local skinSourceMeshName = "FCage_SkinSourceHead"
-    local skinSourceMesh = undefined
-    local genFCageMesh = undefined
-
 
     fn get_merged_obj inMergeFile nameArray:#() = (
         local currentObjNum = objects.count
@@ -48,9 +44,9 @@ rollout facialCageGeneratorRollout "Facial Cage Genereator" (
         )
     )
 
-    fn gen_facialCage = (
-        genFCageMesh = undefined
-        targetMesh = undefined
+    on addHMeshBtn pressed do (
+        hMeshArray = #()
+        local excludeObjArray = #()
         local mergedMeshArray = get_merged_obj facialCageMeshFullName nameArray:#(univFaceMeshName)
         local testMorphMod = Morpher()
         if mergedMeshArray.count == 1 then (
@@ -58,74 +54,52 @@ rollout facialCageGeneratorRollout "Facial Cage Genereator" (
             addModifier mergedUnivMesh testMorphMod
             jal.mor.init mergedUnivMesh
         )
+        else (
+            messageBox "Data File Error!\n There is no UnivHead for Merging!!"
+            destroydialog jal.tools.facialCageTool
+        )
+
         local ePolyMeshArray = for item in selection where classOf item == Editable_Poly collect item
         if ePolyMeshArray.count > 0 then (
             for i = 1 to ePolyMeshArray.count do (
                 local result = jal.mor.add_target ePolyMeshArray[i] i
-                if result then targetMesh = ePolyMeshArray[i]
+                if result then append hMeshArray ePolyMeshArray[i]
+                else append excludeObjArray ePolyMeshArray[i]
+            )
+            if hMeshArray.count > 0 then addHMeshLst.items = for item in hMeshArray collect item.name
+            if excludeObjArray.count > 0 then (
+                local mssgStr = ""
+                for item in excludeObjArray do mssgStr += (item.name + "\n")
+                mssgStr += "are not added."
+                messageBox mssgStr
             )
         )
         else messageBox "There is no Editable_Poly Object"
         delete mergedUnivMesh
         mergedUnivMesh = undefined
-
-        local vertMatchInfo = load_vertMatchInfo()
-        local mergedMeshArray = get_merged_obj facialCageMeshFullName nameArray:#(fCageMeshName)
-        local generatedFCageMeshArray = #()
-        if mergedMeshArray.count == 1 then (
-            mergedFCage = mergedMeshArray[1]
-            local tempHMesh = snapshot targetMesh
-            local tempCageMesh = snapshot mergedFCage
-            convertToPoly tempHMesh
-            convertToPoly tempCageMesh
-            match_vert_pos tempCageMesh tempHMesh vertMatchInfo
-            tempCageMesh.name = tempHMesh.name + "_FCage"
-            append generatedFCageMeshArray tempCageMesh
-            delete tempHMesh
-            delete mergedFCage
-            mergedFCage = undefined
-
-            genFCageMesh = generatedFCageMeshArray[1]
-        )
-    )
-
-    fn merge_rig = (
-        skinSourceMesh = undefined
-
-        local rigObjArray = get_merged_obj facialRigFullName nameArray:#()
-        local rigObjNameArray = for item in rigObjArray collect item.name
-        local rigFCageIndex = findItem rigObjNameArray "Avg_FaceCustom_Cage"
-        local rigFCage = rigObjArray[rigFCageIndex]
-
-        local skinSourceIndex = findItem rigObjNameArray skinSourceMeshName
-        skinSourceMesh = rigObjArray[skinSourceIndex]
-
-        jal.mor.init rigFCage
-        jal.mor.add_target genFCageMesh 1
-        jal.mor.set_channel_value_by_index 1 100.0
-        delete genFCageMesh
-        genFCageMesh = undefined
-    )
-
-    fn copy_skin = (
-        select targetMesh
-        jal.skin.find_skin skinSourceMesh
-        jal.skin.get_all_bones skinSourceMesh
-        jal.skin.copy_skin skinSourceMesh targetMesh
-        delete skinSourceMesh
-        skinSourceMesh = undefined
     )
 
     on genFCageBtn pressed do (
-        local selObjArray = getCurrentSelection() as Array
-        if selObjArray.count == 1 then (
-            local prcStart = timeStamp()
-            gen_facialCage()
-            merge_rig()
-            copy_skin()
-            local prcEnd = timeStamp()
-            local msg = "Done!\n It takes " + (((prcEnd - prcStart) / 1000.0) as String) + " seconds."
-            messageBox msg
+        if addHMeshLst.items.count > 0 then (
+            local vertMatchInfo = load_vertMatchInfo()
+            local mergedMeshArray = get_merged_obj facialCageMeshFullName nameArray:#(fCageMeshName)
+            local generatedFCageMeshArray = #()
+            if mergedMeshArray.count == 1 then (
+                mergedFCage = mergedMeshArray[1]
+                for i = 1 to hMeshArray.count do (
+                    local tempHMesh = snapshot hMeshArray[i]
+                    local tempCageMesh = snapshot mergedFCage
+                    convertToPoly tempHMesh
+                    convertToPoly tempCageMesh
+                    match_vert_pos tempCageMesh tempHMesh vertMatchInfo
+                    tempCageMesh.name = tempHMesh.name + "_FCage"
+                    append generatedFCageMeshArray tempCageMesh
+                    delete tempHMesh
+                )
+                delete mergedFCage
+                mergedFCage = undefined
+                select generatedFCageMeshArray
+            )
         )
     )
 )

@@ -8,6 +8,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
     local subRollHeightOffset = 15
 
     local facialCageMeshFullName = ""
+    local facialRigFullName = ""
     local fCageMeshName = "FCage_000"
     local univFaceMeshName = "UnivHead_000"
 
@@ -26,6 +27,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         local tool_path = getINISetting ((GetDir #userMacros) + "\\jalScriptLauncher\\ini\\scriptPath.ini") "ExternalScript" "ScriptPath"
         tool_path = tool_path + "\\JalTools\\FacialCageTool"
         facialCageMeshFullName = tool_path + "\\maxScene\\FCage.max"
+        facialRigFullName = tool_path + "\\maxScene\\FCageRig.max"
         xmlFile = tool_path + "\\data\\fCageInfo.xml"
 
         AddSubRollout mainSub facialCageInfoGenRollout

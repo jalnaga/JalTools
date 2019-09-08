@@ -11,7 +11,7 @@ rollout mainRollout "Facial Mocap Tool" width:300 height:400 (
     include "facialMocapConverter.ms"
     include "wrinkleMapGen.ms"
 
-    local xDoc = _XMLDoc()
+    local xDoc = jal.xml
     local fmc = _FacialMocapConverter()
     local fwm = _FacialWrinkleMapGenerator()
 
