@@ -1,4 +1,4 @@
-rollout facialCageGeneratorRollout "Facial Cage Genereator" (
+rollout facialCageGeneratorRollout "Rigging" (
     button genFCageBtn "Make Facial Cages" height:50
 
     local mergedFCage = undefined

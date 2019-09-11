@@ -24,6 +24,8 @@ include "morph.ms"
 
 include "xml.ms"
 
+include "fileIO.ms"
+
 include "tools.ms"
 
 struct _JalLib (
@@ -52,6 +54,7 @@ struct _JalLib (
     mor = _Morph(),
 
     xml = _XMLDoc(),
+    fileIO = _FileIO(),
 
     tools = _Tools(),
 

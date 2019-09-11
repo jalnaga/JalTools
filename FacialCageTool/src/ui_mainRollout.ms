@@ -14,12 +14,12 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
 
     local xmlFile = ""
 
-    --local facialCageMaxVertNum = 500
-    --include "facialCage.ms"
-    --local fCage = _FacialCage()
+    include "facs.ms"
+    local facs = _Facs()
 
     --include "ui_facialBoneRollout.ms"
     include "ui_facialCageInfoGenRollout.ms"
+    include "ui_facsModifierRollout.ms"
     include "ui_facialCageGeneratorRollout.ms"
 
     on mainRollout open do
@@ -31,9 +31,11 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         xmlFile = tool_path + "\\data\\fCageInfo.xml"
 
         AddSubRollout mainSub facialCageInfoGenRollout
+        AddSubRollout mainSub facsModifierRollout
         AddSubRollout mainSub facialCageGeneratorRollout
 
         facialCageInfoGenRollout.open = false
+        facsModifierRollout.open = false
     )
 
     on mainRollout resized newSize do
@@ -51,6 +53,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         )
 
         jal.roll.update_subroll_when_resized mainSub facialCageInfoGenRollout
+        jal.roll.update_subroll_when_resized mainSub facsModifierRollout
         jal.roll.update_subroll_when_resized mainSub facialCageGeneratorRollout
     )
 )

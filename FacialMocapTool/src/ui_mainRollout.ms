@@ -7,7 +7,6 @@ rollout mainRollout "Facial Mocap Tool" width:300 height:400 (
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
-    include "xml.ms"
     include "facialMocapConverter.ms"
     include "wrinkleMapGen.ms"
 
