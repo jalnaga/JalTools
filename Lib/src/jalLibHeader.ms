@@ -76,5 +76,6 @@ struct _JalLib (
 
         skin.name = name
         skin.prog = prog
+        skin.xml = xml
     )
 )

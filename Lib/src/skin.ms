@@ -12,6 +12,7 @@ struct _SkinVert (
 
 struct _Skin (
     name,
+    xml,
 
     prog,
 
@@ -350,6 +351,119 @@ struct _Skin (
         local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
+        )
+    ),
+
+    fn save_to_file sourceObj inFileName selectedVertOnly:false = (
+        get_all_bones sourceObj
+        get_skin_weights sourceObj
+
+        xml.create_file inFileName
+        local rNode = xml.get_root_node()
+        local skinNode = xml.create_node "Skin"
+
+        local allBoneNode = xml.create_node "AllBoneArray"
+        local allBoneArrayStr = "#("
+        for item in allBonesArray do (
+            allBoneArrayStr += "$"
+            allBoneArrayStr += item.name
+            allBoneArrayStr += ","
+        )
+        allBoneArrayStr[allBoneArrayStr.count] = ")"
+        allBoneNode.set_text allBoneArrayStr
+        skinNode.append_child_node allBoneNode
+
+        local processSkinWeightArray = #()
+        if selectedVertOnly then (
+            local selVertArray = get_selected_skinVerts sourceObj
+            processSkinWeightArray = for vertIndex in selVertArray collect skinWeightsArray[vertIndex]
+        )
+        else (
+            processSkinWeightArray = for skinWeight in skinWeightsArray collect skinWeight
+        )
+
+        for skinWeight in processSkinWeightArray do (
+            local skinVertNode = xml.create_node "Vert"
+            skinVertNode.add_attribute "index" (skinWeight.index as String)
+            local boneArrayNode = xml.create_node "BoneArray"
+            local boneIDNode = xml.create_node "BoneIDArray"
+            local boneNameNode = xml.create_node "BoneNameArray"
+            local weightNode = xml.create_node "WeightArray"
+
+            local boneArrayStr = "#("
+            for skinBone in skinWeight.boneArray do (
+                boneArrayStr += "$"
+                boneArrayStr += skinBone.name
+                boneArrayStr += ","
+            )
+            boneArrayStr[boneArrayStr.count] = ")"
+            boneArrayNode.set_text boneArrayStr
+
+            local boneIDArrayStr = "#("
+            for skinBoneID in skinWeight.boneIDArray do (
+                boneIDArrayStr += (skinBoneID as String)
+                boneIDArrayStr += ","
+            )
+            boneIDArrayStr[boneIDArrayStr.count] = ")"
+            boneIDNode.set_text boneIDArrayStr
+
+            local boneNameArrayStr = "#("
+            for boneName in skinWeight.boneNameArray do (
+                boneNameArrayStr += boneName
+                boneNameArrayStr += ","
+            )
+            boneNameArrayStr[boneNameArrayStr.count] = ")"
+            boneNameNode.set_text boneNameArrayStr
+
+            weightArrayStr = "#("
+            for weight in skinWeight.weightArray do (
+                weightArrayStr += (weight as String)
+                weightArrayStr += ","
+            )
+            weightArrayStr[weightArrayStr.count] = ")"
+            weightNode.set_text weightArrayStr
+
+            skinVertNode.append_child_node boneArrayNode
+            skinVertNode.append_child_node boneIDNode
+            skinVertNode.append_child_node boneNameNode
+            skinVertNode.append_child_node weightNode
+
+            skinNode.append_child_node skinVertNode
+        )
+        rNode.append_child_node skinNode
+        xml.save_pretty()
+    ),
+
+    fn load_from_file targetObj inFileName selectedVertOnly:false = (
+        xml.load_file inFileName
+        max modify mode
+        local targetSkinMod
+        select targetObj
+        if not(selectedVertOnly) then (
+            addModifier targetObj (Skin())
+        )
+
+        for i = 1 to targetObj.modifiers.count do (
+            if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
+        )
+
+        local rNode = xml.get_root_node()
+        local skinNode = rNode.get_child 0
+        local allBoneArrayNode = skinNode.get_child 0
+        local loadedAllBoneArray = execute (allBoneArrayNode.get_text())
+
+        if not(selectedVertOnly) then (
+            for item in loadedAllBoneArray do skinOps.addbone targetSkinMod item 1
+        )
+        local processVertNum = (skinNode.get_children()).count - 1
+        for i = 1 to processVertNum do (
+            local skinVertNode = skinNode.get_child i
+            local vertIndex = (skinVertNode.get_attribute "index") as Integer
+            local boneIDArrayNode = skinVertNode.get_child 1
+            local weightArrayNode = skinVertNode.get_child 3
+            local loadedBoneArray = execute (boneIDArrayNode.get_text())
+            local loadedWeightArray = execute (weightArrayNode.get_text())
+            skinOps.ReplaceVertexWeights targetSkinMod vertIndex loadedBoneArray loadedWeightArray
         )
     ),
 
