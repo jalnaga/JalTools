@@ -3,8 +3,11 @@ struct _Constraint (
 
     fn collapse inObj = (
         if classof inObj != Biped_Object then (
+            inObj.position.controller =position_script()
             inObj.position.controller = Position_XYZ()
+            inObj.rotation.controller = rotation_script()
             inObj.rotation.controller = Euler_XYZ()
+            inObj.scale.controller = scale_script ()
             inObj.scale.controller = Bezier_Scale()
         )
     ),
