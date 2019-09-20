@@ -18,6 +18,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
     local facs = _Facs()
 
     include "ui_vertMatchRollout.ms"
+    include "ui_cageGenRollout.ms"
     include "ui_genFacsRollout.ms"
     include "ui_modFacsRollout.ms"
 
@@ -30,6 +31,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         vertMatchXml = tool_path + "\\data\\fCageInfo.xml"
 
         AddSubRollout mainSub vertMatchRollout
+        AddSubRollout mainSub cageGenRollout
         AddSubRollout mainSub genFacsRollout
         AddSubRollout mainSub modFacsRollout
     )
@@ -49,6 +51,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         )
 
         jal.roll.update_subroll_when_resized mainSub vertMatchRollout
+        jal.roll.update_subroll_when_resized mainSub cageGenRollout
         jal.roll.update_subroll_when_resized mainSub genFacsRollout
         jal.roll.update_subroll_when_resized mainSub modFacsRollout
     )

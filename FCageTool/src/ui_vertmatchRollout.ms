@@ -151,8 +151,6 @@ rollout vertMatchRollout "Template - Vertex Match Info Generator" (
                 )
                 rNode.append_child_node cageNode
                 jal.xml.save_pretty()
-                univMesh.name = univFaceMeshName
-                fCageMesh.name = fCageMeshName
             )
             else (
                 local vertSel = for i = 1 to matchVertsArray.count collect matchVertsArray[i][1]
