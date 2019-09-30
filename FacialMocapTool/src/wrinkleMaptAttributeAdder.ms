@@ -30,7 +30,7 @@
     )
 
     local cursorMod = EmptyModifier()
-    cursorMod.name = "WrinkleMap Value"
+    cursorMod.name = "Attribute Holder"
     addModifier $C_FC_Head_0_JNT cursorMod
-    custAttributes.add $C_FC_Head_0_JNT.modifiers["WrinkleMap Value"] wrinkleAtt
+    custAttributes.add $C_FC_Head_0_JNT.modifiers["Attribute Holder"] wrinkleAtt
 )

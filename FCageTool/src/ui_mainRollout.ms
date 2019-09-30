@@ -21,6 +21,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
     include "ui_cageGenRollout.ms"
     include "ui_genFacsRollout.ms"
     include "ui_modFacsRollout.ms"
+    include "ui_offsetRollout.ms"
 
     on mainRollout open do
     (
@@ -34,6 +35,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         AddSubRollout mainSub cageGenRollout
         AddSubRollout mainSub genFacsRollout
         AddSubRollout mainSub modFacsRollout
+        AddSubRollout mainSub offsetRollout
     )
 
     on mainRollout resized newSize do
@@ -54,6 +56,7 @@ rollout mainRollout "Facial Cage Tool" width:300 height:400 (
         jal.roll.update_subroll_when_resized mainSub cageGenRollout
         jal.roll.update_subroll_when_resized mainSub genFacsRollout
         jal.roll.update_subroll_when_resized mainSub modFacsRollout
+        jal.roll.update_subroll_when_resized mainSub offsetRollout
     )
 )
 jal.tools.facialCageTool = mainRollout
