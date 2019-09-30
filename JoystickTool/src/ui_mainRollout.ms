@@ -7,6 +7,10 @@ rollout mainRollout "Joystick Tool" width:280 height: 160(
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
 
+    include "joystick.ms"
+
+    local joystick = _JoystickGenerator()
+
     include "ui_joystickRollout.ms"
 
     on mainRollout open do
@@ -16,7 +20,7 @@ rollout mainRollout "Joystick Tool" width:280 height: 160(
 
     on mainRollout resized newSize do
     (
-        if newSize[1] > minWidth then 
+        if newSize[1] > minWidth then
         mainSub.width = newSize[1] - subRollWidthOffset
         else (
             mainRollout.width = minWidth
