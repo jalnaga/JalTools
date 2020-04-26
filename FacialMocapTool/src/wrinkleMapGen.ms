@@ -8,6 +8,8 @@ struct _FacialWrinkleMapGenerator (
     rBrowOutUpCtr = $R_BrowOutUp_00_Cur.position.controller[2].y_position.controller[1],
     lMouthFrownCtr = $L_MouthFrown_00_Cur.position.controller[2].y_position.controller[1],
     rMouthFrownCtr = $R_MouthFrown_00_Cur.position.controller[2].y_position.controller[1],
+    lMouthDimpleCtr = $L_MouthDimple_00_Cur.position.controller[2].x_position.controller[1],
+    rMouthDimpleCtr = $R_MouthDimple_00_Cur.position.controller[2].x_position.controller[1],
     lMouthStretchCtr = $L_MouthStretch_00_Cur.position.controller[2].x_position.controller[1],
     rMouthStretchCtr = $R_MouthStretch_00_Cur.position.controller[2].x_position.controller[1],
     lBrowDownCtr = $L_BrowDown_00_Cur.position.controller[2].y_position.controller[1],
@@ -31,9 +33,9 @@ struct _FacialWrinkleMapGenerator (
         local modArray = for item in inObj.modifiers collect item
         if modArray.count > 0 then (
             for item in modArray do (
-                if item.name == "WrinkleMap Value" then (
+                if item.name == "Attribute Holder" then (
                     headBone = inObj
-                    wrinkleAtt = headBone.modifiers["WrinkleMap Value"].wrinkleMap
+                    wrinkleAtt = headBone.modifiers["Attribute Holder"].wrinkleMap
                     returnval = true
                 )
             )
@@ -44,8 +46,8 @@ struct _FacialWrinkleMapGenerator (
     /*C_ForeHeadUp - C_BrowInUp_00_Cur 100% stretch
     L/R_ForeHeadUp - L/R_BrowOutUp_00_Cur 100% stretch
     L/R_MouthCorner - L/R_MouthFrown_00_Cur 100% stretch
-    L/R_Palza_Stretch - L/R_MouthStretch_00_Cur 100% stretch
-    L/R_MouthOut_Stretch - L/R_MouthStretch_00_Cur 100% stretch
+    L/R_Palza_Stretch - max L/R_MouthStretch_00_Cur 100% stretch L/R_MouthDimple_00_Cur 100% stretch
+    L/R_MouthOut_Stretch - L/R_MouthStretch_00_Cur 100% stretch -> rescale 0.0 ~ 1.0 -> 0.5 ~ 1.0
     L/R_NeckStraint - L/R_MouthStretch_00_Cur 100% stretch
     L/R_EyeBrowIn - L/R_BrowDown_00_Cur 60% L/R_NoseSneer_00_Cur 40% frown
     L/R_EyeInner - L/R_EyeSquint_00_Cur 100% frown
@@ -54,6 +56,24 @@ struct _FacialWrinkleMapGenerator (
     L/R_EyeCorner - L/R_CheekSquint_00_Cur 100% smile
     L/R_MouthOut_Smile -   L/R_MouthSmile_00_Cur 100% C_Mouth_00_Cur 60% smile
     L/R_Palza_Smile - L/R_MouthSmile_00_Cur 100% C_Mouth_00_Cur 60% smile*/
+    fn attVal_cal inAVal inBVal inAScale inBScale = (
+        local staticMaxVal = 100.0
+        local staticMinVal = 0.0
+        local returnVal = 0.0
+
+        local scaledVal = ((abs inAVal)*inAScale) + ((abs inBVal)*inBScale)
+        if scaledVal < inAVal or scaledVal < inBVal then scaledVal = amax inAVal inBVal
+        returnVal = amin staticMaxVal scaledVal
+
+        return returnVal
+    ),
+
+    fn remap_range inVal inPrevMin inPrevMax inNewMin inNewMax = (
+        local returnVal = inNewMin + (inVal - inPrevMin) * (inNewMax - inNewMin) / (inPrevMax - inPrevMin)
+
+        return returnVal
+    ),
+
     fn gen_value = (
         local lMouthValue = 0.0
         local rMouthValue = 0.0
@@ -64,14 +84,14 @@ struct _FacialWrinkleMapGenerator (
         wrinkleAtt.R_ForeHEadUp = abs rBrowOutUpCtr.value
         wrinkleAtt.L_MouthCorner = abs lMouthFrownCtr.value
         wrinkleAtt.R_MouthCorner = abs rMouthFrownCtr.value
-        wrinkleAtt.L_Palza_Stretch = abs lMouthStretchCtr.value
-        wrinkleAtt.R_Palza_Stretch = abs rMouthStretchCtr.value
+        wrinkleAtt.L_Palza_Stretch = attVal_cal lMouthStretchCtr.value lMouthDimpleCtr.value 0.6 0.4
+        wrinkleAtt.R_Palza_Stretch = attVal_cal rMouthStretchCtr.value rMouthDimpleCtr.value 0.6 0.4
         wrinkleAtt.L_MouthOut_Stretch = abs lMouthStretchCtr.value
         wrinkleAtt.R_MouthOut_Stretch = abs rMouthStretchCtr.value
-        wrinkleAtt.L_NeckStraint = abs lMouthStretchCtr.value
-        wrinkleAtt.R_NeckStraint = abs rMouthStretchCtr.value
-        wrinkleAtt.L_EyeBrowIn = abs (((lBrowDownCtr.value * 0.6) + (lNoseSneerCtr.value * 0.4))*0.5)
-        wrinkleAtt.R_EyeBrowIn = abs (((rBrowDownCtr.value * 0.6) + (rNoseSneerCtr.value * 0.4))*0.5)
+        wrinkleAtt.L_NeckStraint = amax 0.0 (remap_range (abs lMouthStretchCtr.value) 0.0 100.0 -60.0 100.0)
+        wrinkleAtt.R_NeckStraint = amax 0.0 (remap_range (abs rMouthStretchCtr.value) 0.0 100.0 -60.0 100.0)
+        wrinkleAtt.L_EyeBrowIn = attVal_cal lBrowDownCtr.value lNoseSneerCtr.value 0.6 0.4
+        wrinkleAtt.R_EyeBrowIn = attVal_cal rBrowDownCtr.value rNoseSneerCtr.value 0.6 0.4
         wrinkleAtt.L_EyeIn = abs lEyeSquintCtr.value
         wrinkleAtt.R_EyeIn = abs rEyeSquintCtr.value
         wrinkleAtt.L_Nose = abs lNoseSneerCtr.value
@@ -80,10 +100,10 @@ struct _FacialWrinkleMapGenerator (
         wrinkleAtt.R_MouthUp = abs lMouthUpperCtr.value
         wrinkleAtt.L_EyeCorner = abs lCheekSquintCtr.value
         wrinkleAtt.R_EyeCorner = abs rCheekSquintCtr.value
-        wrinkleAtt.L_MouthOut_Smile = amin 100.0 (abs (lMouthSmileCtr.value + (lMouthValue*0.6)))
-        wrinkleAtt.R_MouthOut_Smile = amin 100.0 (abs (rMouthSmileCtr.value + (rMouthValue*0.6)))
-        wrinkleAtt.L_Palza_Smile = amin 100.0 (abs (lMouthSmileCtr.value + (lMouthValue*0.6)))
-        wrinkleAtt.R_Palza_Smile = amin 100.0 (abs (rMouthSmileCtr.value + (rMouthValue*0.6)))
+        wrinkleAtt.L_MouthOut_Smile = attVal_cal lMouthSmileCtr.value lMouthValue 1.0 0.6
+        wrinkleAtt.R_MouthOut_Smile = attVal_cal rMouthSmileCtr.value rMouthValue 1.0 0.6
+        wrinkleAtt.L_Palza_Smile = attVal_cal lMouthSmileCtr.value lMouthValue 1.0 0.6
+        wrinkleAtt.R_Palza_Smile = attVal_cal rMouthSmileCtr.value rMouthValue 1.0 0.6
 
         wrinkleAtt.C_ForeHeadUp *= 0.01
         wrinkleAtt.L_ForeHEadUp *= 0.01

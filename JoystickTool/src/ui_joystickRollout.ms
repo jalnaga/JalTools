@@ -38,12 +38,12 @@ rollout joystickRollout "Joystcik Tool" (
 
     on createBtn pressed do (
         local bCaption = false
-        
+
         if joyName == "" then bCaption = true
         case typeRdo.state of (
-            1: jal.joystick.create_square joyName 5 noCaption:bCaption xMin:xMinSpn.value yMin:yMinSpn.value xMax:xMaxSpn.value yMax:yMaxSpn.value
-            2: jal.joystick.create_horizontal joyName 5 noCaption:bCaption min:xMinSpn.value max:xMaxSpn.value
-            3: jal.joystick.create_vertical joyName 5 noCaption:bCaption min:yMinSpn.value max:yMaxSpn.value
+            1: joystick.create_square joyName 5 noCaption:bCaption xMin:xMinSpn.value yMin:yMinSpn.value xMax:xMaxSpn.value yMax:yMaxSpn.value
+            2: joystick.create_horizontal joyName 5 noCaption:bCaption min:xMinSpn.value max:xMaxSpn.value
+            3: joystick.create_vertical joyName 5 noCaption:bCaption min:yMinSpn.value max:yMaxSpn.value
         )
     )
 )

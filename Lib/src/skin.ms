@@ -503,5 +503,20 @@ struct _Skin (
         )
 
         returnVal
+    ),
+
+    fn pare_mirror_bones inObj = (
+        get_all_bones inObj
+        if allBonesArray.count > 0 then (
+            local lBoneArray = for item in allBonesArray where (name.is_left item.name) collect item
+            local rBoneArray = for item in allBonesArray where (name.is_right item.name) collect item
+            local cBoneArray = for item in allBonesArray where (not(name.is_left item.name) and not(name.is_right item.name)) collect item
+            local paredBoneArray = #()
+            while lBoneArray.count == 0 do (
+                for item in lBoneArray do (
+                    local targetBoneName = name.replace_side item.name name.get_rightStr()
+                )
+            )
+        )
     )
 )

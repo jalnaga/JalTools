@@ -973,7 +973,7 @@ struct _Name (
     ),
 
     fn remove_side inStr = (
-        return (rplace_side inStr "")
+        return (replace_side inStr "")
     ),
 
     fn remove_index inStr = (

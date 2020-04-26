@@ -8,189 +8,6 @@
         local subRollWidthOffset = 25
         local subRollHeightOffset = 15
     
-        struct _XMLNode (
-            tag,
-            parent,
-            dotnetNode,
-        
-            fn init inDnNode = (
-                dotnetNode = inDnNode
-                tag = inDnNode.LocalName
-                parent = inDnNode.ParentNode
-            ),
-        
-            fn get_tag = (
-                return dotnetNode.Name
-            ),
-        
-            fn set_tag inNewTag = (
-                try (dotnetNode.Name = inNewTag)
-                catch(false)
-            ),
-        
-            fn get_text = (
-                return dotnetNode.InnerText
-            ),
-        
-            fn set_text inText = (
-                dotnetNode.InnerText = inText
-            ),
-        
-            fn add_attribute inAtt inVal = (
-                dotnetNode.SetAttribute inAtt inVal
-            ),
-        
-            fn get_attribute inAtt = (
-                dotnetNode.GetAttribute inAtt
-            ),
-        
-            fn set_attribute inAtt inNewVal = (
-                dotnetNode.SetAttribute inAtt inNewVal
-            ),
-        
-            fn remove_attribute inAtt = (
-                dotnetNode.RemoveAttribute inAtt
-            ),
-        
-            fn get_all_attribute = (
-                local returnVal = #()
-                local atts = dotnetNode.Attributes
-                for i = 0 to (atts.Count - 1) do (
-                    local temp = #()
-                    local item = (atts.ItemOf i)
-                    append temp item.Name
-                    append temp item.Value
-                    append returnVal temp
-                )
-                return returnVal
-            ),
-        
-            fn has_attribute inAtt = (
-                dotnetNode.HasAttribute inAtt
-            ),
-        
-            fn append_child_node inNewNode = (
-                if classof inNewNode == _XMLNode then (
-                    dotnetNode.AppendChild inNewNode.dotnetNode
-                    return true
-                )
-                else return false
-            ),
-        
-            fn get_child inIndex = (
-                local dNode = dotnetNode.ChildNodes.ItemOf inIndex
-                if dNode.Name != "#text" then (
-                    local newNode = _XMLNode()
-                    newNode.init dNode
-                    return newNode
-                )
-                else return undefined
-            ),
-        
-            fn get_children = (
-                local returnNodes = #()
-                for i = 0 to (dotnetNode.ChildNodes.Count - 1) do (
-                    local dNode = dotnetNode.ChildNodes.ItemOf i
-                    local newNode = _XMLNode()
-                    newNode.init dNode
-                    append returnNodes newNode
-                )
-                return returnNodes
-            ),
-        
-            fn remove_child inChildNode = (
-                if classof inChildNode == _XMLNode then (
-                    dotnetNode.RemoveChild inChildNode.dotnetNode
-                    return true
-                )
-                else return false
-            )
-        )
-        struct _XMLDoc (
-            file = undefined,
-            rootNode = undefined,
-            dom = dotNetObject "System.Xml.XmlDocument",
-            loaded = false,
-        
-            on create do (
-                --DotNet.LoadAssembly "System.Xml"
-            ),
-        
-            fn load_file inFullFileName = (
-                file = inFullFileName
-                doc = dom.Load file
-                loaded = true
-        
-                return true
-            ),
-        
-            fn save_file fileName:"" = (
-                if loaded then (
-                    local saveFileFullName = ""
-                    if fileName == "" then saveFileFullName = file
-                    else saveFileFullName = fileName
-                    dom.Save saveFileFullName
-                    return true
-                )
-                else return false
-            ),
-        
-            fn get_root_node = (
-                rootNode = _XMLNode()
-                rootNode.init dom.DocumentElement
-                return rootNode
-            ),
-        
-            fn create_node inTag = (
-                local dNode = dom.CreateElement inTag
-                local newNode = _XMLNode()
-                newNode.init dNode
-                return newNode
-            ),
-        
-            fn append_node inNewNode = (
-                if classof inNewNode == _XMLNode then (
-                    dom.AppendChild inNewNode.dotnetNode
-                    return true
-                )
-                else return false
-            ),
-        
-            fn save_pretty fileName:"" = (
-                if loaded then (
-                    local saveFileFullName = ""
-                    if fileName == "" then saveFileFullName = file
-                    else saveFileFullName = fileName
-        
-                    local writer = dotNetClass "System.Xml.XmlTextWriter"
-                    local wSettings = dotNetObject "System.Xml.XmlWriterSettings"
-                    wSettings.indent = true
-        
-                    local w = writer.create saveFileFullName wSettings
-                    dom.writeContentTo w
-                    w.close()
-                    return true
-                )
-                else return false
-            ),
-        
-            fn create_root_node = (
-                local rNode = create_node "RootNode"
-                append_node rNode
-                rNode = get_root_node()
-                return rNode
-            ),
-        
-            fn create_file inFullFileName = (
-                local returnNode = undefined
-                file = inFullFileName
-                loaded = true
-        
-                returnNode = create_root_node()
-                return returnNode
-            )
-        )
-
         struct _FacialCtrl (
             obj = undefined,
             xController = undefined,
@@ -225,6 +42,7 @@
             morphMod = undefined,
             allChannelNameArray = #("browDownLeft", "browDownRight", "browInnerUp", "browOuterUpLeft", "browOuterUpRight", "cheekPuff", "cheekSquintLeft", "cheekSquintRight", "eyeBlinkLeft", "eyeBlinkRight", "eyeLookDownLeft", "eyeLookDownRight", "eyeLookInLeft", "eyeLookInRight", "eyeLookOutLeft", "eyeLookOutRight", "eyeLookUpLeft", "eyeLookUpRight", "eyeSquintLeft", "eyeSquintRight", "eyeWideLeft", "eyeWideRight", "jawForward", "jawOpen", "jawLeft", "jawRight", "mouthClose", "mouthDimpleLeft", "mouthDimpleRight", "mouthFrownLeft", "mouthFrownRight", "mouthFunnel", "mouthLeft", "mouthRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthPucker", "mouthRollLower", "mouthRollUpper", "mouthShrugLower", "mouthShrugUpper", "mouthSmileLeft", "mouthSmileRight", "mouthStretchLeft", "mouthStretchRight", "mouthUpperUpLeft", "mouthUpperUpRight", "noseSneerLeft", "noseSneerRight"),
             controlObjArray = #($L_BrowDown_00_Cur, $R_BrowDown_00_Cur, $C_BrowInUp_00_Cur, $L_BrowOutUp_00_Cur, $R_BrowOutUp_00_Cur, $C_CheekPuff_00_Cur, $L_CheekSquint_00_Cur, $R_CheekSquint_00_Cur, $L_EyeBlink_00_Cur, $R_EyeBlink_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_EyeSquint_00_Cur, $R_EyeSquint_00_Cur, $L_EyeWide_00_Cur, $R_EyeWide_00_Cur, $C_Jaw_00_Cur, $C_JawOpen_00_Cur, $C_Jaw_00_Cur, $C_Jaw_00_Cur, $C_MouthClose_00_Cur, $L_MouthDimple_00_Cur, $R_MouthDimple_00_Cur, $L_MouthFrown_00_Cur, $R_MouthFrown_00_Cur, $C_MouthFunnel_00_Cur, $C_Mouth_00_Cur, $C_Mouth_00_Cur, $L_MouthLower_00_Cur, $R_MouthLower_00_Cur, $L_MouthPress_00_Cur, $R_MouthPress_00_Cur, $C_MouthPucker_00_Cur, $C_MouthRollLower_00_Cur, $C_MouthRollUpper_00_Cur, $C_MouthShrugLower_00_Cur, $C_MouthShrugUpper_00_Cur, $L_MouthSmile_00_Cur, $R_MouthSmile_00_Cur, $L_MouthStretch_00_Cur, $R_MouthStretch_00_Cur, $L_MouthUpper_00_Cur, $R_MouthUpper_00_Cur, $L_NoseSneer_00_Cur, $R_NoseSneer_00_Cur),
+            sourceHeadChannelNameArray = #(),
             allRigControllerArray = #(),
             channelValueSaveArray = #(),
         
@@ -244,13 +62,14 @@
                     local rightChar = "Right"
                     local rightPattern = "*_R"
         
-                    jal.prog.start_progress "Converting Morphtarget Name..." useDialog:false
-                    local nameArray = jal.mor.get_all_channel_name sourceHead
-                    local nameArrayCount = nameArray.count
-                    for i = 1 to nameArrayCount do (
+                    sourceHeadChannelNameArray = #()
+        
+                    jal.mor.init sourceHead
+                    local nameArray = jal.mor.get_all_channel_name()
+                    for i = 1 to nameArray.count do (
                         local oriName = nameArray[i]
                         local newName = oriName
-                        if (matchPattern oriName pattern:"*_*") == "_" then (
+                        if (matchPattern oriName pattern:"*_*") then (
                             local filteredNameArray = filterString oriName "_"
                             newName = filteredNameArray[1]
                             if (MatchPattern oriName pattern:leftPattern) then newName = newName + leftChar
@@ -258,10 +77,9 @@
                         )
                         if (WM3_MC_HasData morphMod i) then (
                             WM3_MC_SetName morphMod i newName
+                            append sourceHeadChannelNameArray newName
                         )
-                        jal.prog.update_progress i nameArrayCount inProgressText:"Converting Morphtarget Name..."
                     )
-                    jal.prog.end_progress()
                     return true
                 )
                 else return false
@@ -269,11 +87,12 @@
         
             fn get_channelValue = (
                 local returnArray = #()
+                local sortedArray = #()
                 if sourceHead != undefined then (
                     for item in allChannelNameArray do (
-                        local foundIndex = findItem allChannelNameArray item
+                        local foundIndex = findItem sourceHeadChannelNameArray item
                         local channelVal = WM3_MC_GetValue morphMod foundIndex
-                        append returnArray channelVal
+                        if foundIndex > 0 then append returnArray channelVal
                     )
                 )
         
@@ -414,6 +233,8 @@
             rBrowOutUpCtr = $R_BrowOutUp_00_Cur.position.controller[2].y_position.controller[1],
             lMouthFrownCtr = $L_MouthFrown_00_Cur.position.controller[2].y_position.controller[1],
             rMouthFrownCtr = $R_MouthFrown_00_Cur.position.controller[2].y_position.controller[1],
+            lMouthDimpleCtr = $L_MouthDimple_00_Cur.position.controller[2].x_position.controller[1],
+            rMouthDimpleCtr = $R_MouthDimple_00_Cur.position.controller[2].x_position.controller[1],
             lMouthStretchCtr = $L_MouthStretch_00_Cur.position.controller[2].x_position.controller[1],
             rMouthStretchCtr = $R_MouthStretch_00_Cur.position.controller[2].x_position.controller[1],
             lBrowDownCtr = $L_BrowDown_00_Cur.position.controller[2].y_position.controller[1],
@@ -437,9 +258,9 @@
                 local modArray = for item in inObj.modifiers collect item
                 if modArray.count > 0 then (
                     for item in modArray do (
-                        if item.name == "WrinkleMap Value" then (
+                        if item.name == "Attribute Holder" then (
                             headBone = inObj
-                            wrinkleAtt = headBone.modifiers["WrinkleMap Value"].wrinkleMap
+                            wrinkleAtt = headBone.modifiers["Attribute Holder"].wrinkleMap
                             returnval = true
                         )
                     )
@@ -450,8 +271,8 @@
             /*C_ForeHeadUp - C_BrowInUp_00_Cur 100% stretch
             L/R_ForeHeadUp - L/R_BrowOutUp_00_Cur 100% stretch
             L/R_MouthCorner - L/R_MouthFrown_00_Cur 100% stretch
-            L/R_Palza_Stretch - L/R_MouthStretch_00_Cur 100% stretch
-            L/R_MouthOut_Stretch - L/R_MouthStretch_00_Cur 100% stretch
+            L/R_Palza_Stretch - max L/R_MouthStretch_00_Cur 100% stretch L/R_MouthDimple_00_Cur 100% stretch
+            L/R_MouthOut_Stretch - L/R_MouthStretch_00_Cur 100% stretch -> rescale 0.0 ~ 1.0 -> 0.5 ~ 1.0
             L/R_NeckStraint - L/R_MouthStretch_00_Cur 100% stretch
             L/R_EyeBrowIn - L/R_BrowDown_00_Cur 60% L/R_NoseSneer_00_Cur 40% frown
             L/R_EyeInner - L/R_EyeSquint_00_Cur 100% frown
@@ -460,6 +281,24 @@
             L/R_EyeCorner - L/R_CheekSquint_00_Cur 100% smile
             L/R_MouthOut_Smile -   L/R_MouthSmile_00_Cur 100% C_Mouth_00_Cur 60% smile
             L/R_Palza_Smile - L/R_MouthSmile_00_Cur 100% C_Mouth_00_Cur 60% smile*/
+            fn attVal_cal inAVal inBVal inAScale inBScale = (
+                local staticMaxVal = 100.0
+                local staticMinVal = 0.0
+                local returnVal = 0.0
+        
+                local scaledVal = ((abs inAVal)*inAScale) + ((abs inBVal)*inBScale)
+                if scaledVal < inAVal or scaledVal < inBVal then scaledVal = amax inAVal inBVal
+                returnVal = amin staticMaxVal scaledVal
+        
+                return returnVal
+            ),
+        
+            fn remap_range inVal inPrevMin inPrevMax inNewMin inNewMax = (
+                local returnVal = inNewMin + (inVal - inPrevMin) * (inNewMax - inNewMin) / (inPrevMax - inPrevMin)
+        
+                return returnVal
+            ),
+        
             fn gen_value = (
                 local lMouthValue = 0.0
                 local rMouthValue = 0.0
@@ -470,14 +309,14 @@
                 wrinkleAtt.R_ForeHEadUp = abs rBrowOutUpCtr.value
                 wrinkleAtt.L_MouthCorner = abs lMouthFrownCtr.value
                 wrinkleAtt.R_MouthCorner = abs rMouthFrownCtr.value
-                wrinkleAtt.L_Palza_Stretch = abs lMouthStretchCtr.value
-                wrinkleAtt.R_Palza_Stretch = abs rMouthStretchCtr.value
+                wrinkleAtt.L_Palza_Stretch = attVal_cal lMouthStretchCtr.value lMouthDimpleCtr.value 0.6 0.4
+                wrinkleAtt.R_Palza_Stretch = attVal_cal rMouthStretchCtr.value rMouthDimpleCtr.value 0.6 0.4
                 wrinkleAtt.L_MouthOut_Stretch = abs lMouthStretchCtr.value
                 wrinkleAtt.R_MouthOut_Stretch = abs rMouthStretchCtr.value
-                wrinkleAtt.L_NeckStraint = abs lMouthStretchCtr.value
-                wrinkleAtt.R_NeckStraint = abs rMouthStretchCtr.value
-                wrinkleAtt.L_EyeBrowIn = abs (((lBrowDownCtr.value * 0.6) + (lNoseSneerCtr.value * 0.4))*0.5)
-                wrinkleAtt.R_EyeBrowIn = abs (((rBrowDownCtr.value * 0.6) + (rNoseSneerCtr.value * 0.4))*0.5)
+                wrinkleAtt.L_NeckStraint = amax 0.0 (remap_range (abs lMouthStretchCtr.value) 0.0 100.0 -60.0 100.0)
+                wrinkleAtt.R_NeckStraint = amax 0.0 (remap_range (abs rMouthStretchCtr.value) 0.0 100.0 -60.0 100.0)
+                wrinkleAtt.L_EyeBrowIn = attVal_cal lBrowDownCtr.value lNoseSneerCtr.value 0.6 0.4
+                wrinkleAtt.R_EyeBrowIn = attVal_cal rBrowDownCtr.value rNoseSneerCtr.value 0.6 0.4
                 wrinkleAtt.L_EyeIn = abs lEyeSquintCtr.value
                 wrinkleAtt.R_EyeIn = abs rEyeSquintCtr.value
                 wrinkleAtt.L_Nose = abs lNoseSneerCtr.value
@@ -486,10 +325,10 @@
                 wrinkleAtt.R_MouthUp = abs lMouthUpperCtr.value
                 wrinkleAtt.L_EyeCorner = abs lCheekSquintCtr.value
                 wrinkleAtt.R_EyeCorner = abs rCheekSquintCtr.value
-                wrinkleAtt.L_MouthOut_Smile = amin 100.0 (abs (lMouthSmileCtr.value + (lMouthValue*0.6)))
-                wrinkleAtt.R_MouthOut_Smile = amin 100.0 (abs (rMouthSmileCtr.value + (rMouthValue*0.6)))
-                wrinkleAtt.L_Palza_Smile = amin 100.0 (abs (lMouthSmileCtr.value + (lMouthValue*0.6)))
-                wrinkleAtt.R_Palza_Smile = amin 100.0 (abs (rMouthSmileCtr.value + (rMouthValue*0.6)))
+                wrinkleAtt.L_MouthOut_Smile = attVal_cal lMouthSmileCtr.value lMouthValue 1.0 0.6
+                wrinkleAtt.R_MouthOut_Smile = attVal_cal rMouthSmileCtr.value rMouthValue 1.0 0.6
+                wrinkleAtt.L_Palza_Smile = attVal_cal lMouthSmileCtr.value lMouthValue 1.0 0.6
+                wrinkleAtt.R_Palza_Smile = attVal_cal rMouthSmileCtr.value rMouthValue 1.0 0.6
         
                 wrinkleAtt.C_ForeHeadUp *= 0.01
                 wrinkleAtt.L_ForeHEadUp *= 0.01
@@ -532,7 +371,7 @@
         )
 
     
-        local xDoc = _XMLDoc()
+        local xDoc = jal.xml
         local fmc = _FacialMocapConverter()
         local fwm = _FacialWrinkleMapGenerator()
     
@@ -613,6 +452,8 @@
             )
         
             on assignMocapBtn pressed do (
+                clearSelection()
+                max create mode
                 for item in fmc.allRigControllerArray do (
                     if item.xController != undefined then deleteKeys item.xController #allKeys
                     if item.yController != undefined then deleteKeys item.yController #allKeys

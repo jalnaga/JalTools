@@ -32,6 +32,7 @@ struct _FacialMocapConverter (
     morphMod = undefined,
     allChannelNameArray = #("browDownLeft", "browDownRight", "browInnerUp", "browOuterUpLeft", "browOuterUpRight", "cheekPuff", "cheekSquintLeft", "cheekSquintRight", "eyeBlinkLeft", "eyeBlinkRight", "eyeLookDownLeft", "eyeLookDownRight", "eyeLookInLeft", "eyeLookInRight", "eyeLookOutLeft", "eyeLookOutRight", "eyeLookUpLeft", "eyeLookUpRight", "eyeSquintLeft", "eyeSquintRight", "eyeWideLeft", "eyeWideRight", "jawForward", "jawOpen", "jawLeft", "jawRight", "mouthClose", "mouthDimpleLeft", "mouthDimpleRight", "mouthFrownLeft", "mouthFrownRight", "mouthFunnel", "mouthLeft", "mouthRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthPucker", "mouthRollLower", "mouthRollUpper", "mouthShrugLower", "mouthShrugUpper", "mouthSmileLeft", "mouthSmileRight", "mouthStretchLeft", "mouthStretchRight", "mouthUpperUpLeft", "mouthUpperUpRight", "noseSneerLeft", "noseSneerRight"),
     controlObjArray = #($L_BrowDown_00_Cur, $R_BrowDown_00_Cur, $C_BrowInUp_00_Cur, $L_BrowOutUp_00_Cur, $R_BrowOutUp_00_Cur, $C_CheekPuff_00_Cur, $L_CheekSquint_00_Cur, $R_CheekSquint_00_Cur, $L_EyeBlink_00_Cur, $R_EyeBlink_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_Eye_00_Cur, $R_Eye_00_Cur, $L_EyeSquint_00_Cur, $R_EyeSquint_00_Cur, $L_EyeWide_00_Cur, $R_EyeWide_00_Cur, $C_Jaw_00_Cur, $C_JawOpen_00_Cur, $C_Jaw_00_Cur, $C_Jaw_00_Cur, $C_MouthClose_00_Cur, $L_MouthDimple_00_Cur, $R_MouthDimple_00_Cur, $L_MouthFrown_00_Cur, $R_MouthFrown_00_Cur, $C_MouthFunnel_00_Cur, $C_Mouth_00_Cur, $C_Mouth_00_Cur, $L_MouthLower_00_Cur, $R_MouthLower_00_Cur, $L_MouthPress_00_Cur, $R_MouthPress_00_Cur, $C_MouthPucker_00_Cur, $C_MouthRollLower_00_Cur, $C_MouthRollUpper_00_Cur, $C_MouthShrugLower_00_Cur, $C_MouthShrugUpper_00_Cur, $L_MouthSmile_00_Cur, $R_MouthSmile_00_Cur, $L_MouthStretch_00_Cur, $R_MouthStretch_00_Cur, $L_MouthUpper_00_Cur, $R_MouthUpper_00_Cur, $L_NoseSneer_00_Cur, $R_NoseSneer_00_Cur),
+    sourceHeadChannelNameArray = #(),
     allRigControllerArray = #(),
     channelValueSaveArray = #(),
 
@@ -51,13 +52,14 @@ struct _FacialMocapConverter (
             local rightChar = "Right"
             local rightPattern = "*_R"
 
-            jal.prog.start_progress "Converting Morphtarget Name..." useDialog:false
-            local nameArray = jal.mor.get_all_channel_name sourceHead
-            local nameArrayCount = nameArray.count
-            for i = 1 to nameArrayCount do (
+            sourceHeadChannelNameArray = #()
+
+            jal.mor.init sourceHead
+            local nameArray = jal.mor.get_all_channel_name()
+            for i = 1 to nameArray.count do (
                 local oriName = nameArray[i]
                 local newName = oriName
-                if (matchPattern oriName pattern:"*_*") == "_" then (
+                if (matchPattern oriName pattern:"*_*") then (
                     local filteredNameArray = filterString oriName "_"
                     newName = filteredNameArray[1]
                     if (MatchPattern oriName pattern:leftPattern) then newName = newName + leftChar
@@ -65,10 +67,9 @@ struct _FacialMocapConverter (
                 )
                 if (WM3_MC_HasData morphMod i) then (
                     WM3_MC_SetName morphMod i newName
+                    append sourceHeadChannelNameArray newName
                 )
-                jal.prog.update_progress i nameArrayCount inProgressText:"Converting Morphtarget Name..."
             )
-            jal.prog.end_progress()
             return true
         )
         else return false
@@ -76,11 +77,12 @@ struct _FacialMocapConverter (
 
     fn get_channelValue = (
         local returnArray = #()
+        local sortedArray = #()
         if sourceHead != undefined then (
             for item in allChannelNameArray do (
-                local foundIndex = findItem allChannelNameArray item
+                local foundIndex = findItem sourceHeadChannelNameArray item
                 local channelVal = WM3_MC_GetValue morphMod foundIndex
-                append returnArray channelVal
+                if foundIndex > 0 then append returnArray channelVal
             )
         )
 

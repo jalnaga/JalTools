@@ -1108,7 +1108,7 @@ struct _Name (
     ),
 
     fn remove_side inStr = (
-        return (rplace_side inStr "")
+        return (replace_side inStr "")
     ),
 
     fn remove_index inStr = (
@@ -1636,8 +1636,11 @@ struct _Constraint (
 
     fn collapse inObj = (
         if classof inObj != Biped_Object then (
+            inObj.position.controller =position_script()
             inObj.position.controller = Position_XYZ()
+            inObj.rotation.controller = rotation_script()
             inObj.rotation.controller = Euler_XYZ()
+            inObj.scale.controller = scale_script ()
             inObj.scale.controller = Bezier_Scale()
         )
     ),
@@ -3632,6 +3635,7 @@ struct _SkinVert (
 
 struct _Skin (
     name,
+    xml,
 
     prog,
 
@@ -3973,6 +3977,119 @@ struct _Skin (
         )
     ),
 
+    fn save_to_file sourceObj inFileName selectedVertOnly:false = (
+        get_all_bones sourceObj
+        get_skin_weights sourceObj
+
+        xml.create_file inFileName
+        local rNode = xml.get_root_node()
+        local skinNode = xml.create_node "Skin"
+
+        local allBoneNode = xml.create_node "AllBoneArray"
+        local allBoneArrayStr = "#("
+        for item in allBonesArray do (
+            allBoneArrayStr += "$"
+            allBoneArrayStr += item.name
+            allBoneArrayStr += ","
+        )
+        allBoneArrayStr[allBoneArrayStr.count] = ")"
+        allBoneNode.set_text allBoneArrayStr
+        skinNode.append_child_node allBoneNode
+
+        local processSkinWeightArray = #()
+        if selectedVertOnly then (
+            local selVertArray = get_selected_skinVerts sourceObj
+            processSkinWeightArray = for vertIndex in selVertArray collect skinWeightsArray[vertIndex]
+        )
+        else (
+            processSkinWeightArray = for skinWeight in skinWeightsArray collect skinWeight
+        )
+
+        for skinWeight in processSkinWeightArray do (
+            local skinVertNode = xml.create_node "Vert"
+            skinVertNode.add_attribute "index" (skinWeight.index as String)
+            local boneArrayNode = xml.create_node "BoneArray"
+            local boneIDNode = xml.create_node "BoneIDArray"
+            local boneNameNode = xml.create_node "BoneNameArray"
+            local weightNode = xml.create_node "WeightArray"
+
+            local boneArrayStr = "#("
+            for skinBone in skinWeight.boneArray do (
+                boneArrayStr += "$"
+                boneArrayStr += skinBone.name
+                boneArrayStr += ","
+            )
+            boneArrayStr[boneArrayStr.count] = ")"
+            boneArrayNode.set_text boneArrayStr
+
+            local boneIDArrayStr = "#("
+            for skinBoneID in skinWeight.boneIDArray do (
+                boneIDArrayStr += (skinBoneID as String)
+                boneIDArrayStr += ","
+            )
+            boneIDArrayStr[boneIDArrayStr.count] = ")"
+            boneIDNode.set_text boneIDArrayStr
+
+            local boneNameArrayStr = "#("
+            for boneName in skinWeight.boneNameArray do (
+                boneNameArrayStr += boneName
+                boneNameArrayStr += ","
+            )
+            boneNameArrayStr[boneNameArrayStr.count] = ")"
+            boneNameNode.set_text boneNameArrayStr
+
+            weightArrayStr = "#("
+            for weight in skinWeight.weightArray do (
+                weightArrayStr += (weight as String)
+                weightArrayStr += ","
+            )
+            weightArrayStr[weightArrayStr.count] = ")"
+            weightNode.set_text weightArrayStr
+
+            skinVertNode.append_child_node boneArrayNode
+            skinVertNode.append_child_node boneIDNode
+            skinVertNode.append_child_node boneNameNode
+            skinVertNode.append_child_node weightNode
+
+            skinNode.append_child_node skinVertNode
+        )
+        rNode.append_child_node skinNode
+        xml.save_pretty()
+    ),
+
+    fn load_from_file targetObj inFileName selectedVertOnly:false = (
+        xml.load_file inFileName
+        max modify mode
+        local targetSkinMod
+        select targetObj
+        if not(selectedVertOnly) then (
+            addModifier targetObj (Skin())
+        )
+
+        for i = 1 to targetObj.modifiers.count do (
+            if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
+        )
+
+        local rNode = xml.get_root_node()
+        local skinNode = rNode.get_child 0
+        local allBoneArrayNode = skinNode.get_child 0
+        local loadedAllBoneArray = execute (allBoneArrayNode.get_text())
+
+        if not(selectedVertOnly) then (
+            for item in loadedAllBoneArray do skinOps.addbone targetSkinMod item 1
+        )
+        local processVertNum = (skinNode.get_children()).count - 1
+        for i = 1 to processVertNum do (
+            local skinVertNode = skinNode.get_child i
+            local vertIndex = (skinVertNode.get_attribute "index") as Integer
+            local boneIDArrayNode = skinVertNode.get_child 1
+            local weightArrayNode = skinVertNode.get_child 3
+            local loadedBoneArray = execute (boneIDArrayNode.get_text())
+            local loadedWeightArray = execute (weightArrayNode.get_text())
+            skinOps.ReplaceVertexWeights targetSkinMod vertIndex loadedBoneArray loadedWeightArray
+        )
+    ),
+
     fn select_bone inObj inBoneObj = (
         local returnVal = false
 
@@ -3983,6 +4100,21 @@ struct _Skin (
         )
 
         returnVal
+    ),
+
+    fn pare_mirror_bones inObj = (
+        get_all_bones inObj
+        if allBonesArray.count > 0 then (
+            local lBoneArray = for item in allBonesArray where (name.is_left item.name) collect item
+            local rBoneArray = for item in allBonesArray where (name.is_right item.name) collect item
+            local cBoneArray = for item in allBonesArray where (not(name.is_left item.name) and not(name.is_right item.name)) collect item
+            local paredBoneArray = #()
+            while lBoneArray.count == 0 do (
+                for item in lBoneArray do (
+                    local targetBoneName = name.replace_side item.name name.get_rightStr()
+                )
+            )
+        )
     )
 )
 
@@ -4566,6 +4698,58 @@ struct _XMLDoc (
 )
 
 
+struct _FileIO (
+    fn get_merged_obj inMergeFile nameArray:#() = (
+        local currentObjNum = objects.count
+        local returnVal = #()
+        if nameArray.count == 0 then mergeMaxFile inMergeFile #neverReparent #AutoRenameDups
+        else mergeMaxFile inMergeFile nameArray #neverReparent #AutoRenameDups
+        if objects.count > currentObjNum then (
+            local lasObjNum = objects.count
+            returnVal = for objIndex = (currentObjNum+1) to lasObjNum collect (objects[objIndex])
+        )
+
+        returnVal
+    ),
+
+    fn get_fbx_classNum import:true export:false = (
+        local exportClass = exporterPlugin.classes
+        local importClass = importerPlugin.classes
+        local returnVal = 0
+
+        if export then (
+            for i = 1 to exportClass.count do (
+                if exportClass[i] == FBXEXP then (
+                    returnVal = i
+                )
+            )
+        )
+
+        if import then (
+            for i = 1 to importClass.count do (
+                if importClass[i] == FBXIMP then (
+                    returnVal = i
+                )
+            )
+        )
+
+        return returnVal
+    ),
+
+    fn get_fbx_importer_class = (
+        local retrunVal = importerPlugin.classes
+        local index = get_fbx_classNum import:true export:false
+        return returnVal[index]
+    ),
+
+    fn get_fbx_exporter_class = (
+        local retrunVal = exporterPlugin.classes
+        local index = get_fbx_classNum import:false export:true
+        return returnVal[index]
+    )
+)
+
+
 struct _Tools (
     handyTool = undefined,
     namingTool = undefined,
@@ -4661,6 +4845,7 @@ struct _JalLib (
     mor = _Morph(),
 
     xml = _XMLDoc(),
+    fileIO = _FileIO(),
 
     tools = _Tools(),
 
@@ -4682,6 +4867,7 @@ struct _JalLib (
 
         skin.name = name
         skin.prog = prog
+        skin.xml = xml
     )
 )
 
