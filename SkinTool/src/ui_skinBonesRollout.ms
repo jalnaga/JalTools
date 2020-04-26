@@ -31,6 +31,7 @@ rollout skinBonesRollout "Skin Bones" (
             checkbox removeOriCkb "Remove Original Bone" checked:true align:#left
             pickButton pickReplaceBoneBtn "Pick a Bone from Scene" autoDisplay:true width:250
         )
+        checkbox selVertOnlyCkb "Selected Verts Only:" checked:false
         button okBtn "OK" across:2 width:50 offset:[0, 10]
         button cancelBtn "Cancel" width:50 offset:[0, 10]
 
@@ -75,13 +76,23 @@ rollout skinBonesRollout "Skin Bones" (
         on okBtn pressed do (
             if boneInSkinLst.selection > 0 then (
                 if pickReplaceBoneBtn.object != undefined then (
-                    jalSkin.replace_bone selSkinObj selBoneArray[1] pickReplaceBoneBtn.object removeOldBone:removeOriCkb.checked
+                    if selVertOnlyCkb.checked then (
+                        jalSkin.replace_bone_selected_vertices_only selSkinObj selBoneArray[1] pickReplaceBoneBtn.object removeOldBone:removeOriCkb.checked
+                    )
+                    else (
+                        jalSkin.replace_bone selSkinObj selBoneArray[1] pickReplaceBoneBtn.object removeOldBone:removeOriCkb.checked
+                    )
 
                     destroydialog singleRoll
                 )
                 else (
                     if selBoneArray[1] != jalSkin.allBonesArray[boneInSkinLst.selection] then (
-                        jalSkin.copy_weight_between_bones_in_skin selSkinObj selBoneArray[1] jalSkin.allBonesArray[boneInSkinLst.selection] removeOldBone:false
+                        if selVertOnlyCkb.checked then (
+                            jalSkin.copy_weight_between_bones_in_skin_selected_vertices_olny selSkinObj selBoneArray[1] jalSkin.allBonesArray[boneInSkinLst.selection] removeOldBone:false
+                        )
+                        else (
+                            jalSkin.copy_weight_between_bones_in_skin selSkinObj selBoneArray[1] jalSkin.allBonesArray[boneInSkinLst.selection] removeOldBone:false
+                        )
 
                         destroydialog singleRoll
                     )

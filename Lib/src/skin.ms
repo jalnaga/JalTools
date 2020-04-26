@@ -149,33 +149,6 @@ struct _Skin (
     ),
 
     fn get_skin_weights inputObj = (
-        if (get_all_bones inputObj) then (
-            skinWeightsArray = #()
-
-            local numVerts = skinOps.GetNumberVertices skinMod
-            for v = 1 to numVerts do (
-                local boneArray = #()
-                local boneIDArray = #()
-                local boneNameArray = #()
-                local weightArray = #()
-                local boneNum = skinOps.getVertexWeightCount skinMod v
-
-                for i = 1 to boneNum do (
-                    local boneID = skinOps.getVertexWeightBoneID skinMod v i
-                    local boneName = skinOps.GetBoneName skinMod boneID 0
-                    local boneSysID = findItem allBoneNamesArray boneName
-                    local boneWeight = skinOps.getVertexWeight skinMod v i
-                    append boneArray allBonesArray[boneSysID]
-                    append boneIDArray boneID
-                    append boneNameArray boneName
-                    append weightArray boneWeight
-                )
-                append skinWeightsArray (_SkinVert index:v boneArray:boneArray boneIDArray:boneIDArray boneNameArray:boneNameArray weightArray:weightArray)
-            )
-        )
-    ),
-
-    fn get_skin_weights inputObj = (
         local returnVal = #()
         if allBonesArray.count > 0 then (
             skinWeightsArray = #()
@@ -230,6 +203,34 @@ struct _Skin (
         return true
     ),
 
+    fn replace_bone_selected_vertices_only inputObj oriBone newBone removeOldBone:true = (
+        if (find_skin inputObj) == 0 then return false
+        skinOps.addbone skinMod newBone 1
+        get_all_bones inputObj
+        if allBonesArray.count < 2 then return false
+
+        local selSkinWeightVerts = get_selected_skinVerts inputObj
+        if selSkinWeightVerts.count < 1 then return false
+
+        get_skin_weights inputObj
+        local prevSkinWeightsArray = deepCopy skinWeightsArray
+        local oriBoneIndex = get_bone_index inputObj oriBone
+        if oriBoneIndex == 0 then return false
+        local newBoneIndex = get_bone_index inputObj newBone
+
+        for v = 1 to selSkinWeightVerts.count do (
+            local selVertIndex = selSkinWeightVerts[v]
+            local finedBoneID = findItem prevSkinWeightsArray[selVertIndex].boneIDArray oriBoneIndex
+            if finedBoneID != 0 then (
+                prevSkinWeightsArray[selVertIndex].boneIDArray[finedBoneID] = newBoneIndex
+                skinOps.ReplaceVertexWeights skinMod selVertIndex prevSkinWeightsArray[selVertIndex].boneIDArray skinWeightsArray[selVertIndex].weightArray
+            )
+        )
+        if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
+
+        return true
+    ),
+
     fn copy_weight_between_bones_in_skin inputObj oriBone newBone removeOldBone:false = (
         if (find_skin inputObj) == 0 then return false
 
@@ -245,6 +246,31 @@ struct _Skin (
             if finedBoneID != 0 then (
                 prevSkinWeightsArray[v].boneIDArray[finedBoneID] = newBoneIndex
                 skinOps.ReplaceVertexWeights skinMod v prevSkinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
+            )
+        )
+        if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
+
+        return true
+    ),
+
+    fn copy_weight_between_bones_in_skin_selected_vertices_olny inputObj oriBone newBone removeOldBone:false = (
+        if (find_skin inputObj) == 0 then return false
+
+        local selSkinWeightVerts = get_selected_skinVerts inputObj
+        if selSkinWeightVerts.count < 1 then return false
+
+        get_skin_weights inputObj
+        local prevSkinWeightsArray = deepCopy skinWeightsArray
+        local oriBoneIndex = get_bone_index inputObj oriBone
+        if oriBoneIndex == 0 then return false
+        local newBoneIndex = get_bone_index inputObj newBone
+
+        for v = 1 to selSkinWeightVerts.count do (
+            local selVertIndex = selSkinWeightVerts[v]
+            local finedBoneID = findItem prevSkinWeightsArray[selVertIndex].boneIDArray oriBoneIndex
+            if finedBoneID != 0 then (
+                prevSkinWeightsArray[selVertIndex].boneIDArray[finedBoneID] = newBoneIndex
+                skinOps.ReplaceVertexWeights skinMod selVertIndex prevSkinWeightsArray[selVertIndex].boneIDArray skinWeightsArray[selVertIndex].weightArray
             )
         )
         if removeOldBone == true then skinOps.removebone skinMod oriBoneIndex
