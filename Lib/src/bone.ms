@@ -169,7 +169,7 @@ struct _Bone (
     ),
 
     fn create_bone inPointArray inName end:true delPoint:false parent:false size:2 normals:#() = (
-        local filteringChar = name.get_filteringChar inName
+        local filteringChar = name.str.get_filteringChar inName
         local tempBone = undefined
         local newBone = undefined
 

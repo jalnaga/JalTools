@@ -30,6 +30,7 @@ include "tools.ms"
 
 struct _JalLib (
     str = _String(),
+    nameManager = _Name_Idf_Manager(),
     name = _Name(),
     anim = _Anim(),
 
@@ -59,6 +60,7 @@ struct _JalLib (
     tools = _Tools(),
 
     on create do (
+        name.str = str
         helper.name = name
 
         const.name = name

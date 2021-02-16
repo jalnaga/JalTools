@@ -29,8 +29,9 @@ struct _FacialCage (
                     local row1 = (getNormal selMesh i) * cageMesh.objectTransform.rotation
                     local row2 = normalize (cross row1 [0,0,-1])
                     local row3 = normalize (cross row1 row2)
+
+                    helperMatrix = matrix3 row1 row2 row3 vertPos
                 )
-                else helperMatrix = matrix3 row1 row2 row3 vertPos
 
                 local genPoint = jal.helper.create_point (jal.name.gen_uniqueName "Point") size:0.3
                 genPoint.transform = helperMatrix

@@ -4,14 +4,24 @@ struct _String (
         #(t, substring inStr (t.count+1) -1)
     ),
 
-    fn compare_string inStr1 inStr2 = (
+    fn sort_By_Alphabet_function inStr1 inStr2 = (
         stricmp inStr1 inStr2
+    ),
+
+    fn sort_By_Name_function inObj1 inObj2 = (
+        stricmp inObj1.name inObj2.name
     ),
 
     fn sort_by_alphabet inArray = (
         local returnArray = deepCopy inArray
-        qSort returnArray compare_string
+        qSort returnArray sort_By_Alphabet_function
         return returnArray
+    ),
+
+    fn sort_by_name inArray = (
+        local returnArray = deepCopy inArray
+        qSort returnArray sort_By_Name_function
+        returnArray
     ),
 
     fn is_upper_case inChar = (
@@ -127,6 +137,14 @@ struct _String (
             local targetLength = inTargetStr.count
             returnVal = replace inStr targetStartIndex targetLength inNewStr
         )
+
+        returnVal
+    ),
+
+    fn gen_uniqueName inStr = (
+        local patternStr = replace_index inStr "*"
+        local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
+        local returnVal = replace_index inStr ((returnArray.count+1) as String)
 
         returnVal
     )
