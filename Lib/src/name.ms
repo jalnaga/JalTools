@@ -87,10 +87,11 @@ struct _Name (
     indexIdf = _Name_Idf order:100 char:#("") desc:#("Index"),
     nubIdf = _Name_Idf order:101 char:#("Nub") desc:#("Nub"),
 
-    idf_manager = _Name_Idf_Manager str:str idfArray:#(),
+    idfManager = _Name_Idf_Manager str:str idfArray:#(),
 
     __nonRealNameArray = #(),
     __nameIdfsNum = 0,
+    __paddingNum = 2,
 
     __namePartsOrder = #(#npBase, #npType, #npSide, #npFrontBack, #npRealName, #npIndex),
     __nameParts = #("Base", "Type", "Side", "FrontBack", "RealName", "Index"),
@@ -101,7 +102,7 @@ struct _Name (
 -- New way
     fn gen_nonRealNameArray = (
         __nonRealNameArray = #()
-        for item in idf_manager.idfArray do (
+        for item in idfManager.idfArray do (
             for char in item.char do (
                 if char != "" and char != nubIdf.char[1] then append __nonRealNameArray char
             )
@@ -112,29 +113,29 @@ struct _Name (
 
     fn load_setting_from_ini = (
         __iniFile = (getFilenamePath (getThisScriptFilename())) +"\\NameTool.ini"
-        idf_manager.idfArray = #()
-        local nameIdfsNum = execute (getINISetting __iniFile "NameIdf" "NameIdfsNum")
-        __nameIdfsNum = nameIdfsNum
+        idfManager.idfArray = #()
+        __nameIdfsNum = execute (getINISetting __iniFile "NameIdf" "NameIdfsNum")
+        __paddingNum = execute (getINISetting __iniFile "DefaultSetting" "PaddingNum")
 
         for i = 1 to __nameIdfsNum do (
             local idf = _Name_Idf()
             idf.order = execute (getINISetting __iniFile "NameIdf" ("NameIdf"+(i as String)+".order"))
             idf.char = filterString (getINISetting __iniFile "NameIdf" ("NameIdf"+(i as String)+".char")) ","
             idf.desc = filterString (getINISetting __iniFile "NameIdf" ("NameIdf"+(i as String)+".desc")) ","
-            append idf_manager.idfArray idf
+            append idfManager.idfArray idf
         )
 
-        idf_manager.sort_idf()
-        realNameIdf = idf_manager.get_idf "RealName"
-        indexIdf = idf_manager.get_idf "Index"
-        nubIdf = idf_manager.get_idf "Nub"
+        idfManager.sort_idf()
+        realNameIdf = idfManager.get_idf "RealName"
+        indexIdf = idfManager.get_idf "Index"
+        nubIdf = idfManager.get_idf "Nub"
 
         gen_nonRealNameArray()
     ),
 
     fn set_nubStr inStr = (
         nubIdf.char[1] = inStr
-        idf_manager.set_idf "Nub" nubIdf
+        idfManager.set_idf "Nub" nubIdf
     ),
 
     fn get_nubStr = (
@@ -142,40 +143,40 @@ struct _Name (
     ),
 
     fn set_leftStr inStr = (
-        local foundIdf = idf_manager.get_idf "Left"
+        local foundIdf = idfManager.get_idf "Left"
         if foundIdf.order > 0 then (
             foundIdf.char[1] = inStr
-            idf_manager.set_idf "Left" foundIdf
+            idfManager.set_idf "Left" foundIdf
         )
     ),
 
     fn set_rightStr inStr = (
-        local foundIdf = idf_manager.get_idf "Right"
+        local foundIdf = idfManager.get_idf "Right"
         if foundIdf.order > 0 then (
             foundIdf.char[2] = inStr
-            idf_manager.set_idf "Right" foundIdf
+            idfManager.set_idf "Right" foundIdf
         )
     ),
 
     fn set_frontStr inStr = (
-        local foundIdf = idf_manager.get_idf "Front"
+        local foundIdf = idfManager.get_idf "Front"
         if foundIdf.order > 0 then (
             foundIdf.char[1] = inStr
-            idf_manager.set_idf "Front" foundIdf
+            idfManager.set_idf "Front" foundIdf
         )
     ),
 
     fn set_backStr inStr = (
-        local foundIdf = idf_manager.get_idf "Back"
+        local foundIdf = idfManager.get_idf "Back"
         if foundIdf.order > 0 then (
             foundIdf.char[2] = inStr
-            idf_manager.set_idf "Back" foundIdf
+            idfManager.set_idf "Back" foundIdf
         )
     ),
 
     fn get_leftStr = (
         local returnVal = ""
-        local foundIdf = idf_manager.get_idf "Left"
+        local foundIdf = idfManager.get_idf "Left"
         if foundIdf.order > 0 then (
             returnVal = foundIdf.char[1]
         )
@@ -184,7 +185,7 @@ struct _Name (
 
     fn get_rightStr = (
         local returnVal = ""
-        local foundIdf = idf_manager.get_idf "Right"
+        local foundIdf = idfManager.get_idf "Right"
         if foundIdf.order > 0 then (
             returnVal = foundIdf.char[2]
         )
@@ -193,7 +194,7 @@ struct _Name (
 
     fn get_frontStr = (
         local returnVal = ""
-        local foundIdf = idf_manager.get_idf "Front"
+        local foundIdf = idfManager.get_idf "Front"
         if foundIdf.order > 0 then (
             returnVal = foundIdf.char[1]
         )
@@ -202,7 +203,7 @@ struct _Name (
 
     fn get_backStr = (
         local returnVal = ""
-        local foundIdf = idf_manager.get_idf "Back"
+        local foundIdf = idfManager.get_idf "Back"
         if foundIdf.order > 0 then (
             returnVal = foundIdf.char[2]
         )
@@ -210,25 +211,25 @@ struct _Name (
     ),
 
     fn get_base_part_index = (
-        local returnVal = (idf_manager.get_idf "Base").order
+        local returnVal = (idfManager.get_idf "Base").order
 
         returnVal
     ),
 
     fn get_type_part_index = (
-        local returnVal = (idf_manager.get_idf "Type").order
+        local returnVal = (idfManager.get_idf "Type").order
 
         returnVal
     ),
 
     fn get_side_part_index = (
-        local returnVal = (idf_manager.get_idf "Left").order
+        local returnVal = (idfManager.get_idf "Left").order
 
         returnVal
     ),
 
     fn get_front_back_part_index = (
-        local returnVal = (idf_manager.get_idf "Front").order
+        local returnVal = (idfManager.get_idf "Front").order
 
         returnVal
     ),
@@ -348,7 +349,7 @@ struct _Name (
         local refinedNameArray = split_into_refined_nameArray inStr
 
         for item in refinedNameArray[1] do (
-            local foundIndex = idf_manager.find_idf item
+            local foundIndex = idfManager.find_idf item
             if foundIndex > 0 then returnArray[foundIndex] = item
         )
         returnArray[realNameIdf.order] = combine_nameArray refinedNameArray[2] filChar
@@ -371,7 +372,7 @@ struct _Name (
 
     fn get_side inStr = (
         local returnVal = ""
-        local sideIdf = idf_manager.get_idf "Left"
+        local sideIdf = idfManager.get_idf "Left"
         if sideIdf.order != 0 then (
             local tempNameArray = convert_name_to_nameArray inStr
             returnVal = tempNameArray[sideIdf.order]
@@ -381,7 +382,7 @@ struct _Name (
 
     fn get_frontBack inStr = (
         local returnVal = ""
-        local frontBackIdf = idf_manager.get_idf "Front"
+        local frontBackIdf = idfManager.get_idf "Front"
         if frontBackIdf.order != 0 then (
             local tempNameArray = convert_name_to_nameArray inStr
             returnVal = tempNameArray[frontBackIdf.order]
@@ -415,7 +416,7 @@ struct _Name (
 
     fn get_base inStr = (
         local returnVal = ""
-        local baseIdf = idf_manager.get_idf "Base"
+        local baseIdf = idfManager.get_idf "Base"
         if baseIdf.order > 0 then (
             local tempNameArray = convert_name_to_nameArray inStr
             returnVal = tempNameArray[baseIdf.order]
@@ -425,7 +426,7 @@ struct _Name (
 
     fn get_type inStr = (
         local returnVal = ""
-        local typeIdf = idf_manager.get_idf "Type"
+        local typeIdf = idfManager.get_idf "Type"
         if typeIdf.order > 0 then (
             local tempNameArray = convert_name_to_nameArray inStr
             returnVal = tempNameArray[typeIdf.order]
@@ -558,7 +559,7 @@ struct _Name (
         returnVal
     ),
 
-    fn convert_digit_into_padding_string inDigit inPaddingNum:3 = (
+    fn convert_digit_into_padding_string inDigit inPaddingNum:__paddingNum = (
         local formatStr = "0" + (inPaddingNum as String) + "d"
         local digitNum = 0
         local returnVal = ""
@@ -571,13 +572,13 @@ struct _Name (
         returnVal
     ),
 
-    fn set_index_padding_num inStr inPaddingNum:3 = (
+    fn set_index_padding_num inStr inPaddingNum:__paddingNum = (
         local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
         local indexStr = get_index inStr
 
-        if indexStr != "" then (
+        if indexStr != "" and indexStr != nubIdf.char[1] then (
             if indexStr != nubIdf.char[1] then indexStr = convert_digit_into_padding_string indexStr inPaddingNum:inPaddingNum
 
             nameArray[indexIndex] = indexStr
@@ -592,7 +593,7 @@ struct _Name (
             if index.count > 0 then return index.count
         )
 
-        return 1
+        return __paddingNum
     ),
 
     fn increase_index inStr inAmount = (
@@ -690,6 +691,13 @@ struct _Name (
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
         if indexIndex != 0 then (
+            local indexStr = get_index inStr
+            nameArray[indexIndex] = ""
+            nameArray[nubIdf.order] = ""
+
+            if (jal.name.is_nub inNewIndex) then indexIndex = nubIdf.order
+            if (jal.str.is_digit inNewIndex) then indexIndex = indexIdf.order
+
             nameArray[indexIndex] = inNewIndex
             returnVal = combine_nameArray nameArray filChar
 

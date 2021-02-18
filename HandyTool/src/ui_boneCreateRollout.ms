@@ -61,16 +61,34 @@ rollout boneCreateRollout "Bone Tools" (
         button okBtn "OK" across:2 width:50
         button cancelBtn "Cancel" width:50
 
+        local defaultBoneName = ""
         local boneNameSide = ""
         local boneNameFilteringChar = " "
 
         fn update_boneNameResult = (
-            boneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:"0" inFilChar:boneNameFilteringChar
+            local indexStr = jal.name.convert_digit_into_padding_string 0
+            boneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:indexStr inFilChar:boneNameFilteringChar
             resultTxt.text = boneName
             boneName = jal.name.replace_index boneName ""
         )
 
-        on boneNameRollout open do boneNameSetted = false
+        on boneNameRollout open do (
+            local baseIdf = jal.name.idfManager.get_idf "Base"
+            boneBaseNameTxt.text = baseIdf.char[1]
+
+            local sideRdoLabels = #("(None)")
+            local sideIdf = jal.name.idfManager.get_idf "Left"
+            local frontBackIdf = jal.name.idfManager.get_idf "Front"
+            for item in sideIdf.char do append sideRdoLabels item
+            for item in frontBackIdf.char do append sideRdoLabels item
+            sideRdo.labels = sideRdoLabels
+
+            defaultBoneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:indexStr inFilChar:boneNameFilteringChar
+
+            update_boneNameResult()
+
+            boneNameSetted = false
+        )
 
         on boneBaseNameTxt changed inText do update_boneNameResult()
         on boneNameTxt changed inText do update_boneNameResult()
@@ -99,7 +117,7 @@ rollout boneCreateRollout "Bone Tools" (
             local isBoneExist = 0
             local nameCheckBonesArray = for item in objects where (classOf item) == BoneGeometry collect item
             for item in nameCheckBonesArray do (
-                if (matchPattern item.name pattern:(boneName + (jal.name.get_filteringChar boneName) + "*")) then isBoneExist += 1
+                if (matchPattern item.name pattern:(boneName + (jal.str.get_filteringChar boneName) + "*")) then isBoneExist += 1
             )
             if isBoneExist > 0 then (
                 messageBox "Same Name Bones already exist!"
@@ -113,7 +131,7 @@ rollout boneCreateRollout "Bone Tools" (
 
         on cancelBtn pressed do (
             boneNameSetted = false
-            boneName = "Bip001 TempBone 0"
+            boneName = defaultBoneName
             destroydialog boneNameRollout
         )
     )
@@ -158,9 +176,9 @@ rollout boneCreateRollout "Bone Tools" (
                 if ctrlKeyPressed then (
                     if selArray.count == 0 or selArray.count == 1 then (
                         local tempStartPointName = jal.name.replace_type boneName "Dum"
-                        tempStartPointName = jal.name.replace_index tempStartPointName "0" keepPadding:false
+                        tempStartPointName = jal.name.replace_index tempStartPointName "0" keepPadding:true
                         local tempEndPointName = jal.name.replace_type boneName "Dum"
-                        tempEndPointName = jal.name.replace_index tempEndPointName "1" keepPadding:false
+                        tempEndPointName = jal.name.replace_index tempEndPointName "1" keepPadding:true
 
                         local tempStartPoint = jal.helper.create_point tempStartPointName pos:[0,0,0]
                         local tempEndPoint = jal.helper.create_point tempEndPointName pos:[simpleBoneLength,0,0]
@@ -179,7 +197,7 @@ rollout boneCreateRollout "Bone Tools" (
 
                         for i = 1 to selArray.count do (
                             local tempPointName = jal.name.replace_type boneName "Dum"
-                            tempPointName = jal.name.replace_index tempPointName ((i - 1) as String) keepPadding:false
+                            tempPointName = jal.name.replace_index tempPointName ((i - 1) as String) keepPadding:true
                             append pointNameArray tempPointName
                         )
                         for i = 1 to selArray.count do (
@@ -229,7 +247,13 @@ rollout boneCreateRollout "Bone Tools" (
                 )
                 for item in nonBoneArray do jal.bone.create_nub_bone_on_obj item
             )
-            else jal.bone.create_nub_bone "Temp Nub" 2
+            else (
+                local filChar = jal.str.get_filteringChar boneName
+                local tempBoneName = ""
+                if boneNameFilteringChar == filChar then tempBoneName = boneName
+                else tempBoneName = boneName + boneNameFilteringChar + (jal.name.get_nubStr())
+                jal.bone.create_nub_bone tempBoneName 2
+            )
         )
     )
 

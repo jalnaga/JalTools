@@ -7,8 +7,15 @@ macroscript jal_create_helper category:"jalTools" tooltip:"create Helper" autoUn
         radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
         button okBtn "OK"
 
+        on helperTypeRollout open do (
+            local typeIdf = jal.name.idfManager.get_idf "Type"
+            local typeRdoLabels = for item in typeIdf.char collect item
+            helperTypeRdo.labels = typeRdoLabels
+        )
+
         on okBtn pressed do (
-            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
+            local typeIdf = jal.name.idfManager.get_idf "Type"
+            local typeStrArray = for item in typeIdf.char collect item
             local genHelpers = jal.helper.create_helper()
             for item in genHelpers do (
                 item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
@@ -73,9 +80,16 @@ macroscript jal_create_two_helper category:"jalTools" tooltip:"create Two Helper
         radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
         button okBtn "OK"
 
+        on helperTypeRollout open do (
+            local typeIdf = jal.name.idfManager.get_idf "Type"
+            local typeRdoLabels = for item in typeIdf.char collect item
+            helperTypeRdo.labels = typeRdoLabels
+        )
+
         on okBtn pressed do (
-            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
-            local genHelpers = jal.helper.create_helper makeTwo:true
+            local typeIdf = jal.name.idfManager.get_idf "Type"
+            local typeStrArray = for item in typeIdf.char collect item
+            local genHelpers = jal.helper.create_helper()
             for item in genHelpers do (
                 item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
             )

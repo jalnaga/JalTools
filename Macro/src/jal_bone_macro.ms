@@ -21,16 +21,34 @@ macroscript jal_boneCreate category:"jalTools" tooltip:"Bone Create" autoUndoEna
         button okBtn "OK" across:2 width:50
         button cancelBtn "Cancel" width:50
 
+        local defaultBoneName = ""
         local boneNameSide = ""
         local boneNameFilteringChar = " "
 
         fn update_boneNameResult = (
-            boneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:"0" inFilChar:boneNameFilteringChar
+            local indexStr = jal.name.convert_digit_into_padding_string 0
+            boneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:indexStr inFilChar:boneNameFilteringChar
             resultTxt.text = boneName
             boneName = jal.name.replace_index boneName ""
         )
 
-        on boneNameRollout open do boneNameSetted = false
+        on boneNameRollout open do (
+            local baseIdf = jal.name.idfManager.get_idf "Base"
+            boneBaseNameTxt.text = baseIdf.char[1]
+
+            local sideRdoLabels = #("(None)")
+            local sideIdf = jal.name.idfManager.get_idf "Left"
+            local frontBackIdf = jal.name.idfManager.get_idf "Front"
+            for item in sideIdf.char do append sideRdoLabels item
+            for item in frontBackIdf.char do append sideRdoLabels item
+            sideRdo.labels = sideRdoLabels
+
+            defaultBoneName = jal.name.combine inBase:boneBaseNameTxt.text inSide:boneNameSide inRealName:boneNameTxt.text inIndex:indexStr inFilChar:boneNameFilteringChar
+
+            update_boneNameResult()
+
+            boneNameSetted = false
+        )
 
         on boneBaseNameTxt changed inText do update_boneNameResult()
         on boneNameTxt changed inText do update_boneNameResult()
@@ -59,7 +77,7 @@ macroscript jal_boneCreate category:"jalTools" tooltip:"Bone Create" autoUndoEna
             local isBoneExist = 0
             local nameCheckBonesArray = for item in objects where (classOf item) == BoneGeometry collect item
             for item in nameCheckBonesArray do (
-                if (matchPattern item.name pattern:(boneName + (jal.name.get_filteringChar boneName) + "*")) then isBoneExist += 1
+                if (matchPattern item.name pattern:(boneName + (jal.str.get_filteringChar boneName) + "*")) then isBoneExist += 1
             )
             if isBoneExist > 0 then (
                 messageBox "Same Name Bones already exist!"
@@ -73,7 +91,7 @@ macroscript jal_boneCreate category:"jalTools" tooltip:"Bone Create" autoUndoEna
 
         on cancelBtn pressed do (
             boneNameSetted = false
-            boneName = "Bip001 TempBone 0"
+            boneName = defaultBoneName
             destroydialog boneNameRollout
         )
     )
@@ -91,20 +109,29 @@ macroscript jal_boneCreate category:"jalTools" tooltip:"Bone Create" autoUndoEna
 )
 
 macroscript jal_boneNubCreate category:"jalTools" tooltip:"Bone Nub Create" autoUndoEnabled:true (
-    local selArray = getCurrentSelection() as Array
-    if selArray.count > 0 then (
-        local lastBoneArray = #()
-        local nonBoneArray = #()
+    undo "Jal Nub Create" on (
+        local selArray = getCurrentSelection() as Array
+        if selArray.count > 0 then (
+            local lastBoneArray = #()
+            local nonBoneArray = #()
 
-        for item in selArray do (
-            if (classOf item == BoneGeometry) then append lastBoneArray item
-            else append nonBoneArray item
-        )
+            for item in selArray do (
+                if (classOf item == BoneGeometry) then append lastBoneArray item
+                else append nonBoneArray item
+            )
 
-        for item in lastBoneArray do (
-            if item.children.count == 0 then jal.bone.create_end_bone item
+            for item in lastBoneArray do (
+                if keyboard.controlPressed then jal.bone.create_end_bone item
+                else if item.children.count == 0 then jal.bone.create_end_bone item
+            )
+            for item in nonBoneArray do jal.bone.create_nub_bone_on_obj item
         )
-        for item in nonBoneArray do jal.bone.create_nub_bone_on_obj item
+        else (
+            local filChar = jal.str.get_filteringChar boneName
+            local tempBoneName = ""
+            if boneNameFilteringChar == filChar then tempBoneName = boneName
+            else tempBoneName = boneName + boneNameFilteringChar + (jal.name.get_nubStr())
+            jal.bone.create_nub_bone tempBoneName 2
+        )
     )
-    else jal.bone.create_nub_bone "Temp Nub" 2
 )
