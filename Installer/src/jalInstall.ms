@@ -122,7 +122,6 @@ fn copy_script_files = (
     local System_IO_File = dotNetClass "System.IO.File"
 
     try (
-        copy_directory (tempDir + "\\script") userScriptDir
         copy_directory (tempDir + "\\startupScript") userStartupScriptDir
         copy_directory (tempDir + "\\ini") prefsDir
         copy_directory (tempDir + "\\macroscripts") userMcrDir
@@ -152,19 +151,24 @@ fn copy_external_scripts inFolder = (
 )
 
 fn install inFolder = (
+    local returnVal = false
     if (not check_max_version()) then (
         messageBox "맥스 버전이 낮어!!!!"
-        return false
+        returnVal = false
+        return returnVal
     )
 
     if (not check_dotnet_version()) then (
         messageBox "닷넷 버전이 낮어!!!!"
-        return false
+        returnVal = false
+        return returnVal
     )
 
-    remove_script_files()
-    copy_script_files()
-    copy_external_scripts inFolder
+    returnVal = remove_script_files()
+    returnVal = copy_script_files()
+    returnVal = copy_external_scripts inFolder
+
+    returnVal
 )
 
 fn uninstall = (
@@ -232,16 +236,17 @@ rollout ScriptLoaderInstall "Script Launcher Installation" (
 
     on install_btn pressed do
     (
-        install externalDestDir
+        if (install externalDestDir) == true then (
+            createDialog InstallCompleteRollout modal:true lockWidth:true lockHeight:true style:#(#style_sysmenu, #style_toolwindow) width:450 height:100
+        )
         clear_tempDir()
-        createDialog InstallCompleteRollout modal:true lockWidth:true lockHeight:true style:#(#style_sysmenu, #style_toolwindow)
     )
 
     on uninstall_btn pressed do
     (
         uninstall()
         clear_tempDir()
-        createDialog UninstallCompleteRollout modal:true lockWidth:true lockHeight:true style:#(#style_sysmenu, #style_toolwindow)
+        createDialog UninstallCompleteRollout modal:true lockWidth:true lockHeight:true style:#(#style_sysmenu, #style_toolwindow) width:450 height:100
     )
 
     on close_btn pressed do
