@@ -140,7 +140,7 @@ struct _Helper (
                 genPoint.transform = item.transform
                 genPoint.parent = item.parent
                 item.parent = genPoint
-                item.name = name.replace_type item.name "P"
+                genPoint.name = name.replace_type genPoint.name "P"
             )
         )
     ),
