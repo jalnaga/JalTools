@@ -1,11 +1,13 @@
 struct _Constraint (
-    name, helper,
+    str, name, helper,
 
     fn collapse inObj = (
         if classof inObj != Biped_Object then (
+            local tempTransform = inObj.transform
             inObj.position.controller = Position_XYZ()
             inObj.rotation.controller = Euler_XYZ()
             inObj.scale.controller = Bezier_Scale()
+            inObj.transform = tempTransform
         )
     ),
 
@@ -246,9 +248,9 @@ struct _Constraint (
         inObj.rotation.controller.Available.controller = targetRotConstraint
         inObj.rotation.controller.setActive inObj.rotation.controller.count
 
-        local rotPointName = name.replace_type inObj.name "Dum"
+        local rotPointName = name.replace_type inObj.name (name.get_dummyStr())
         local rotMeasurePointNmae = name.increase_index rotPointName 1
-        local rotExpName = name.replace_type inObj.name "Exp"
+        local rotExpName = name.replace_type inObj.name (name.get_exposeTMStr())
         rotExpName = name.replace_index rotExpName "0"
 
         local rotPoint = helper.create_point rotPointName size:2 boxToggle:on crossToggle:off
@@ -290,12 +292,12 @@ struct _Constraint (
 
         local objName = name.get_string oriObj.name
         local indexNum = name.get_index_as_digit oriObj.name
-        local fChar = name.get_filteringChar objName
-        local dummyName = name.add_prefix_to_realName objName "Dummy" filteringChar:fChar
+        local fChar = str.get_filteringChar objName
+        local dummyName = name.add_prefix_to_realName objName (name.get_dummyStr()) filteringChar:fChar
 
         local lookAtPoint = helper.create_point (dummyName + fChar + (indexNum as String)) size:2 boxToggle:on crossToggle:off
         local lookAtMasuerPoint = helper.create_point (dummyName + fChar + ((indexNum + 1) as String)) size:3 boxToggle:on crossToggle:off
-        local lookAtExpPoint = ExposeTm name:(dummyName + "Exp" + fChar + "0") size:3 boxToggle:off crossToggle:on wirecolor:(color 14 255 2)
+        local lookAtExpPoint = ExposeTm name:(dummyName + (name.get_exposeTMStr()) + fChar + "0") size:3 boxToggle:off crossToggle:on wirecolor:(color 14 255 2)
 
         lookAtPoint.transform = oriObj.transform
         lookAtMasuerPoint.transform = oriObj.transform

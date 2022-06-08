@@ -15,7 +15,7 @@ rollout nameListRollout "Name List" (
     )
 
     on nameListRollout open do (
-        callbacks.addScript #selectionSetChanged "__nameRepNameListRollout.update_UI()" id:#jalnameRepNameListRolloutUIUpdate
+        callbacks.addScript #selectionSetChanged "jal.tools.nameReplaceTool.nameListRollout.update_UI()" id:#jalnameRepNameListRolloutUIUpdate
         update_ui()
     )
 
@@ -32,6 +32,6 @@ rollout nameListRollout "Name List" (
             local tempObjCollection = for item in selArray where (matchPattern item.name pattern:selName) collect item
             join renameObjArray tempObjCollection
         )
-        __nameRepNameReplaceRollout.update_UI()
+        jal.tools.nameReplaceTool.replaceNameRollout.update_UI()
     )
 )

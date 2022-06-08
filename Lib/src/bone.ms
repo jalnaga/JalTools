@@ -7,7 +7,7 @@
 /*     constraint.ms
 /*******************************/
 struct _Bone (
-    name, anim, helper, const,
+    str, name, anim, helper, const,
 
     fn remove_ik inBone = (
         if (not IsProperty inBone "pos") or (not IsProperty inBone "rotation") then HDIKSys.RemoveChain inBone
@@ -74,7 +74,7 @@ struct _Bone (
         )
 
         ooscale = bone.objectOffsetScale
-        if (ooscale[axisIndex] < 0) and ((not ask) or (queryBox "마이너스 방향본 수정할깝쇼? 이게 맞냐?" title:bone.Name)) do
+        if (ooscale[axisIndex] < 0) and ((not ask) or (queryBox "Correct negative scale?" title:bone.Name)) do
         (
             ooscale[axisIndex] = -ooscale[axisIndex]
             axisIndex = axisIndex+2
@@ -85,16 +85,13 @@ struct _Bone (
     ),
 
     fn reset_scale_of_selected_bones ask = (
-        local bones = #()
+        local bones = for item in selection where classof item == BoneGeometry collect item
         bones = sort_bones_as_hierarchy selection
 
         -- reset scale for all bones in the bones array
         --print "***resetting***"
         for i = 1 to bones.count do
         (
-            --print "----"
-            --print bones[i]
-            --print selection[bones[i].index]
             ResetScale bones[i]
             if ask do correct_negative_stretch bones[i] false
         )
@@ -169,7 +166,7 @@ struct _Bone (
     ),
 
     fn create_bone inPointArray inName end:true delPoint:false parent:false size:2 normals:#() = (
-        local filteringChar = name.get_filteringChar inName
+        local filteringChar = str.get_filteringChar inName
         local tempBone = undefined
         local newBone = undefined
 
@@ -480,6 +477,72 @@ struct _Bone (
         return returnBones
     ),
 
+    fn create_skin_bone_from_bip inBoneArray skipNub:true skinBoneBaseName:"b" = (
+        local bones = #()
+        local skinBoneFilteringChar = "_"
+        local returnBones = #()
+
+        for i = 1 to inBoneArray.count do (
+            local boneLength = 2.0
+            local childrenBones = for item in inBoneArray[i].children where ((classOf item) == Biped_Object) and (not(matchPattern item.name pattern:"*Twist*")) collect item
+            if childrenBones.count == 1 then boneLength = distance inBoneArray[i] childrenBones[1]
+            if childrenBones.count > 1 then (
+                local childNamePattern = ""
+                if (matchPattern inBoneArray[i].name pattern:"*Spine*") then childNamePattern = "*Neck"
+                if (matchPattern inBoneArray[i].name pattern:"*Pelvis") then childNamePattern = "*Spine"
+                if (matchPattern inBoneArray[i].name pattern:"*Head") then childNamePattern = "*HeadNub"
+                for distTargetBone in inBoneArray do (
+                    if (matchPattern distTargetBone.name pattern:childNamePattern) then boneLength = distance inBoneArray[i] distTargetBone
+                )
+            )
+            local skinBone = BoneSys.createBone inBoneArray[i].transform.translation (inBoneArray[i].transform.translation+6) inBoneArray[i].dir
+            skinBone.transform = inBoneArray[i].transform
+
+            skinBone.width = 1
+            skinBone.height = 1
+            skinBone.taper = 90
+            skinBone.length = boneLength
+            skinBone.frontfin = off
+            skinBone.backfin = off
+            skinBone.sidefins = off
+            skinBone.wireColor = color 255 88 199
+
+            skinBone.name = name.replace_base inBoneArray[i].name skinBoneBaseName
+            skinBone.name = name.replace_filteringChar skinBone.name skinBoneFilteringChar
+
+            --const.assign_pos_const skinBone inBoneArray[i]
+            --const.assign_rot_const skinBone inBoneArray[i]
+
+            skinBone.boneEnable = true
+            skinBone.renderable = false
+            skinBone.boneScaleType=#none
+
+            append bones skinBone
+        )
+
+        for i = 1 to inBoneArray.count do (
+            local oriParentObj = inBoneArray[i].parent
+            if oriParentObj != undefined then (
+                local skinBoneParentObjName = name.replace_base oriParentObj.name skinBoneBaseName
+                skinBoneParentObjName = name.replace_filteringChar skinBoneParentObjName skinBoneFilteringChar
+                bones[i].parent = getNodeByName skinBoneParentObjName
+            )
+            else bones[i].parent = undefined
+        )
+
+        if skipNub then (
+            for item in bones do (
+                if not (matchPattern item.name pattern:"*Nub") then append returnBones item
+                else delete item
+            )
+        )
+        else returnBones = deepCopy bones
+
+        bones = #()
+
+        return returnBones
+    ),
+
     fn set_bone_on inBone = (
         if (classOf inBone == BoneGeometry) then (
             inBone.boneEnable = true
@@ -494,12 +557,34 @@ struct _Bone (
 
     fn set_bone_on_selection = (
         local selArray = getCurrentSelection() as array
-        for item in selArray do item.boneEnable = true
+        for item in selArray do set_bone_on item
     ),
 
     fn set_bone_off_selection = (
         local selArray = getCurrentSelection() as array
-        for item in selArray do item.boneEnable = false
+        for item in selArray do set_bone_off item
+    ),
+
+    fn set_freeze_length_on inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneFreezeLength = true
+        )
+    ),
+
+    fn set_freeze_length_off inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneFreezeLength = false
+        )
+    ),
+
+    fn set_freeze_length_on_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do set_freeze_length_on item
+    ),
+
+    fn set_freeze_length_off_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do set_freeze_length_off item
     )
 )
 

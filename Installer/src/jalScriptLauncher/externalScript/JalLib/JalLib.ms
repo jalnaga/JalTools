@@ -139,19 +139,27 @@ struct _Name (
     /*    [Base] [Type] [Side] [RealName] [Index]
     /*    ex) Bip001 Dummy L SpineA 001
     /*************************************************/
-    __namePartsOrder = #(#npBase, #npType, #npSide, #npFrontBack, #npRealName, #npIndex),
+    str,
     __nameParts = #("Base", "Type", "Side", "FrontBack", "RealName", "Index"),
+    __paddingNum = 3,
     __nubStr = "Nub",
     __sideStrArray = #("L", "R"),
     __frontBackStrArray = #("F", "B"),
+    __parentStr = "P",
+    __dummyStr = "Dum",
+    __exposeTMStr  = "Exp",
+    __targetStr ="T",
+    __iKStr ="IK",
+    __typeStrArray = #("P", "Dum", "Exp", "IK", "T"),
+    __baseStrArray = #("b", "Bip001"),
     __iniFile = "",
+
+    fn set_paddingNum inNum = (
+        __paddingNum = inNum
+    ),
 
     fn set_nubStr inStr = (
         __nubStr = inStr
-    ),
-
-    fn get_nubStr = (
-        return __nubStr
     ),
 
     fn set_leftStr inStr = (
@@ -168,6 +176,54 @@ struct _Name (
 
     fn set_backStr inStr = (
         __frontBackStrArray[2] = inStr
+    ),
+
+    fn set_typeStr inStrArray = (
+        __typeStrArray = for item in inStrArray collect item
+    ),
+
+    fn set_parentStr inStr = (
+        __parentStr = inStr
+    ),
+    fn set_dummyStr inStr = (
+        __dummyStr = inStr
+    ),
+    fn set_exposeTMStr inStr = (
+        __exposeTMStr  = inStr
+    ),
+    fn set_targetStr inStr = (
+        __targetStr = inStr
+    ),
+    fn set_IKStr inStr = (
+        __iKStr = inStr
+    ),
+
+    fn set_baseStr inStrArray = (
+        __baseStrArray = for item in inStrArray collect item
+    ),
+
+    fn get_paddingNum = (
+        __paddingNum
+    ),
+
+    fn get_nubStr = (
+        __nubStr
+    ),
+
+    fn get_parentStr = (
+        __parentStr
+    ),
+    fn get_dummyStr = (
+        __dummyStr
+    ),
+    fn get_exposeTMStr = (
+        __exposeTMStr
+    ),
+    fn get_targetStr = (
+        __targetStr
+    ),
+    fn get_IKStr = (
+        __iKStr
     ),
 
     fn get_leftStr = (
@@ -187,128 +243,43 @@ struct _Name (
     ),
 
     fn get_base_part_index = (
-        local returnVal = findItem __namePartsOrder #npBase
+        local returnVal = findItem __nameParts "Base"
 
         returnVal
     ),
 
     fn get_type_part_index = (
-        local returnVal = findItem __namePartsOrder #npType
+        local returnVal = findItem __nameParts "Type"
 
         returnVal
     ),
 
     fn get_side_part_index = (
-        local returnVal = findItem __namePartsOrder #npSide
+        local returnVal = findItem __nameParts "Side"
 
         returnVal
     ),
 
     fn get_front_back_part_index = (
-        local returnVal = findItem __namePartsOrder #npFrontBack
+        local returnVal = findItem __nameParts "FrontBack"
 
         returnVal
     ),
 
     fn get_realName_part_index = (
-        local returnVal = findItem __namePartsOrder #npRealName
+        local returnVal = findItem __nameParts "RealName"
 
         returnVal
     ),
 
     fn get_index_part_index = (
-        local returnVal = findItem __namePartsOrder #npIndex
+        local returnVal = findItem __nameParts "Index"
 
         returnVal
     ),
 
-    fn set_name_parts_order inOrder = (
-        __nameParts = inOrder
-        __namePartsOrder[(findItem __nameParts "Base")] = #npBase
-        __namePartsOrder[(findItem __nameParts "Type")] = #npType
-        __namePartsOrder[(findItem __nameParts "Side")] = #npSide
-        __namePartsOrder[(findItem __nameParts "FrontBack")] = #npFrontBack
-        __namePartsOrder[(findItem __nameParts "RealName")] = #npRealName
-        __namePartsOrder[(findItem __nameParts "Index")] = #npIndex
-    ),
-
-    fn split_nameParts_to_refined_nameArray = (
-        local realNameIndex = get_realName_part_index()
-        local beforeRealNameArray = for i = 1 to (realNameIndex - 1) collect __namePartsOrder[i]
-        local afterRealNameArray = for i = (realNameIndex + 1) to __namePartsOrder.count collect __namePartsOrder[i]
-        local returnArray = #(beforeRealNameArray, #(#npRealName), afterRealNameArray)
-
-        returnArray
-    ),
-
-    fn split_into_string_and_digit inStr = (
-        t = trimRight inStr "0123456789"
-        #(t, substring inStr (t.count+1) -1)
-    ),
-
-    fn is_upper_case inChar = (
-        if inChar == toLower inChar then return false else return true
-    ),
-
-    fn is_lower_case inChar = (
-        if inChar == toLower inChar then return true else return false
-    ),
-
-    fn get_filteringChar inStr = (
-        if (matchPattern inStr pattern:"* *") then return " "
-        if (matchPattern inStr pattern:"*_*") then return "_"
-        return ""
-    ),
-
-    fn filter_by_filteringChar inStr = (
-        local filChar = get_filteringChar inStr
-        local returnArray = #()
-        local splittedPart = ""
-        splittedPart += inStr[1]
-        for i = 2 to inStr.count do (
-            if (inStr[i] == filChar) then (
-                append returnArray splittedPart
-                i = i + 1
-                splittedPart = ""
-            )
-            else splittedPart += inStr[i]
-        )
-        if splittedPart != "" then append returnArray splittedPart
-
-        returnArray
-    ),
-
-    fn filter_by_upper_case inStr = (
-        local returnArray = #()
-        local splittedPart = ""
-        splittedPart += inStr[1]
-        for i = 2 to inStr.count do (
-            if (is_upper_case inStr[i]) then (
-                append returnArray splittedPart
-                splittedPart = inStr[i]
-            )
-            else splittedPart += inStr[i]
-        )
-        if splittedPart != "" then append returnArray splittedPart
-
-        returnArray
-    ),
-
-    fn has_digit inStr = (
-        local digitStr = (split_into_string_and_digit inStr)[2]
-        if digitStr != "" then return true
-        else return false
-    ),
-
-    fn is_digit inStr = (
-        local returnVal = false
-        if (has_digit inStr) then (
-            local splittedStrArray = split_into_string_and_digit inStr
-            if splittedStrArray[1] =="" and splittedStrArray[2] != "" then returnVal = true
-            else returnVal = false
-        )
-
-        returnVal
+    fn set_name_parts_order inStrArray = (
+        __nameParts = for item in inStrArray collect item
     ),
 
     fn is_side_char inChar = (
@@ -323,464 +294,254 @@ struct _Name (
         returnVal
     ),
 
-    fn filter_name inStr = (
-        local nameArray = #()
-        local filChar = get_filteringChar inStr
-        if filChar == "" then (
-            nameArray = filter_by_upper_case inStr
-            local tempArray = #()
-            for item in nameArray do (
-                if (has_digit item) then (
-                    local splittedStrArray = split_into_string_and_digit item
-                    append tempArray splittedStrArray[1]
-                    append tempArray splittedStrArray[2]
-                )
-                else append tempArray item
-            )
-            nameArray = deepCopy tempArray
-        )
-        else nameArray = filter_by_filteringChar inStr
-
-        nameArray
+    fn is_type_char inChar = (
+        local returnVal = false
+        if (findItem __typeStrArray inChar) != 0 then returnVal = true
+        returnVal
     ),
 
-    fn refine_nameArray_empty inNameArray = (
-        local nameArray = #()
-        for item in inNameArray do (
-            if item != "" then append nameArray item
-        )
-
-        return nameArray
+    fn is_base_char inChar = (
+        local returnVal = false
+        if (findItem __baseStrArray inChar) != 0 then returnVal = true
+        returnVal
     ),
 
-    fn refine_nameArray_longer_than_nameParts inNameArray = (
-        local nameArray = deepCopy inNameArray
-        local beforeRealNameArray = #()
-        local tempAfterRealNameArray = #()
-        local afterRealNameArray = #()
-        local returnArray = #()
-
-        for i = 1 to (get_realName_part_index() - 1) do (
-            local k = 1
-            while nameArray.count > 0 do (
-                case __namePartsOrder[i] of (
-                    #npBase:(
-                        if nameArray[k] != "" then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npType:(
-                        if nameArray[k] != "" then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npSide:(
-                        if (is_side_char nameArray[k]) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npFrontBack:(
-                        if (is_frontBack_char nameArray[k]) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npIndex:(
-                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    default: (
-                        k += 1
-                        exit
-                    )
-                )
-            )
-        )
-
-        for i = __namePartsOrder.count to (get_realName_part_index() + 1) by -1 do (
-            local k = nameArray.count
-            while nameArray.count > 1 do (
-                case __namePartsOrder[i] of (
-                    #npBase:(
-                        if nameArray[k] != "" then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npType:(
-                        if nameArray[k] != "" then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npSide:(
-                        if (is_side_char nameArray[k]) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npFrontBack:(
-                        if (is_frontBack_char nameArray[k]) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npIndex:(
-                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    default: (
-                        k -= 1
-                        exit
-                    )
-                )
-            )
-        )
-        afterRealNameArray = for i = tempAfterRealNameArray.count to 1 by -1 collect tempAfterRealNameArray[i]
-
-        returnArray = #(beforeRealNameArray, nameArray, afterRealNameArray)
-        returnArray
-    ),
-
-    fn refine_nameArray_shorter_than_nameParts inNameArray = (
-        local nameArray = deepCopy inNameArray
-        local beforeRealNameArray = #()
-        local tempAfterRealNameArray = #()
-        local afterRealNameArray = #()
-        local returnArray = #()
-
-        for i = __namePartsOrder.count to (get_realName_part_index()) by -1 do (
-            local k = nameArray.count
-            while nameArray.count > 0 do (
-                case __namePartsOrder[i] of (
-                    #npBase:(
-                        if nameArray[k] != "" then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npType:(
-                        if nameArray[k] != "" then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npSide:(
-                        if (is_side_char nameArray[k]) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npFrontBack:(
-                        if (is_frontBack_char nameArray[k]) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    #npIndex:(
-                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
-                            append tempAfterRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k -= 1
-                            exit
-                        )
-                    )
-                    default: (
-                        k -= 1
-                        exit
-                    )
-                )
-            )
-        )
-        afterRealNameArray = for i = tempAfterRealNameArray.count to 1 by -1 collect tempAfterRealNameArray[i]
-
-        for i = 1 to (get_realName_part_index() - 1) do (
-            local k = 1
-            while nameArray.count > 1 do (
-                case __namePartsOrder[i] of (
-                    #npBase:(
-                        if nameArray[k] != "" then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npType:(
-                        if nameArray[k] != "" then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npSide:(
-                        if (is_side_char nameArray[k]) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npFrontBack:(
-                        if (is_frontBack_char nameArray[k]) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    #npIndex:(
-                        if (is_digit nameArray[k]) or (nameArray[k] == __nubStr) then (
-                            append beforeRealNameArray nameArray[k]
-                            nameArray = deleteItem nameArray k
-                            exit
-                        )
-                        else (
-                            k += 1
-                            exit
-                        )
-                    )
-                    default: (
-                        k += 1
-                        exit
-                    )
-                )
-            )
-        )
-
-        returnArray = #(beforeRealNameArray, nameArray, afterRealNameArray)
-        returnArray
-    ),
-
-    fn refine_nameArray inNameArray = (
-        local returnArray = #(#(), #(), #())
-        if (get_realName_part_index()) > 1 then (
-            if inNameArray.count < __nameParts.count then returnArray = refine_nameArray_shorter_than_nameParts inNameArray
-            else returnArray = refine_nameArray_longer_than_nameParts inNameArray
-        )
-        else returnArray = #(#(), inNameArray, #())
-        returnArray
-    ),
-
-    fn split_into_refined_nameArray inStr = (
-        local splittedNameArray = filter_name inStr
-        local nameArray = refine_nameArray splittedNameArray
-        nameArray
-    ),
-
-    fn combine_nameArray inNameArray inFilChar = (
-        local returnStr = ""
-        local copiedNameArray = deepCopy inNameArray
-        local refinedNameArray = refine_nameArray_empty copiedNameArray
-        if refinedNameArray.count > 1 then (
-            for i = 1 to refinedNameArray.count - 1 do (
-                returnStr += refinedNameArray[i]
-                returnStr += inFilChar
-            )
-
-            returnStr += refinedNameArray[refinedNameArray.count]
-        )
-        if refinedNameArray.count == 1 then returnStr = refinedNameArray[1]
-
-        return returnStr
+    fn is_index_char inChar = (
+        local returnVal = false
+        if (str.is_digit inChar) or (__nubStr == inChar) then returnVal = true
+        returnVal
     ),
 
     fn get_char_type inChar = (
         local returnVal = undefined
-        if (is_digit inChar) then returnVal = #npIndex
-        if (is_side_char inChar) then returnVal = #npSide
-        if (is_frontBack_char inChar) then returnVal = #npFrontBack
+        if (is_index_char inChar) then returnVal = "Index"
+        if (is_side_char inChar) then returnVal = "Side"
+        if (is_frontBack_char inChar) then returnVal = "FrontBack"
+        if (is_type_char inChar) then returnVal = "Type"
+        if (is_base_char inChar) then returnVal = "Base"
         returnVal
     ),
 
-    fn match_nameArray_as_namePartsOrder inNameArray inNamePartsOrder = (
-        local returnArray = for item in inNamePartsOrder collect ""
-        local nameArray = deepCopy inNameArray
-        local lastType = inNamePartsOrder[inNamePartsOrder.count]
-        local lastChar = nameArray[nameArray.count]
-        local lastCharType = get_char_type lastChar
-        local lastCharPos = 0
-        local basePos = findItem inNamePartsOrder #npBase
-        local typePos = findItem inNamePartsOrder #npType
+    fn get_base inStr = (
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local returnStr = ""
 
-        if nameArray.count == inNamePartsOrder.count then returnArray = for item in nameArray collect item
-        else (
-            if lastCharType != undefined then (
-                lastCharPos = findItem inNamePartsOrder lastCharType
-                if lastCharPos < nameArray.count then lastCharPos = inNamePartsOrder.count
-            )
-            if lastCharPos == 0 then (
-                if basePos < typePos then lastCharPos = typePos
-                if basePos > typePos then lastCharPos = basePos
-            )
+        local baseIndex = get_base_part_index()
+        local realNameIndex = get_realName_part_index()
 
-            for i = lastCharPos to 1 by -1 do (
-                while nameArray.count > 0 do (
-                    local charType = get_char_type nameArray[nameArray.count]
-                    if charType == inNamePartsOrder[i] then (
-                        returnArray[i] = nameArray[nameArray.count]
-                        nameArray = deleteItem nameArray nameArray.count
+        local foundResult = 0
+        for item in __baseStrArray do foundResult += (findItem nameArray item)
+
+        if foundResult > 0 then (
+            if baseIndex < realNameIndex then (
+                for i = 1 to baseIndex do (
+                    if (is_base_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
                     )
-                    else (
-                        if inNamePartsOrder[i] == #npBase or inNamePartsOrder[i] == #npType then (
-                            returnArray[i] = nameArray[nameArray.count]
-                            nameArray = deleteItem nameArray nameArray.count
-                        )
+                )
+            )
+            if baseIndex > realNameIndex then (
+                for i = nameArray.count to (nameArray.count - baseIndex) by -1 do (
+                    if (is_base_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
                     )
-                    i -= 1
                 )
             )
         )
 
-        if basePos != 0 and typePos != 0 then (
-            if returnArray[basePos] == "" and returnArray[typePos] != "" then (
-                returnArray[basePos] = returnArray[typePos]
-                returnArray[typePos] = ""
+        returnStr
+    ),
+
+    fn get_type inStr = (
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local returnStr = ""
+
+        local typeIndex = get_type_part_index()
+        local realNameIndex = get_realName_part_index()
+
+        local foundResult = 0
+        for item in __typeStrArray do foundResult += (findItem nameArray item)
+
+        if foundResult > 0 then (
+            if typeIndex < realNameIndex then (
+                for i = 1 to typeIndex do (
+                    if (is_type_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+
+            if typeIndex > realNameIndex then (
+                for i = nameArray.count to (nameArray.count - typeIndex) by -1 do (
+                    if (is_type_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
             )
         )
 
-        returnArray
+        returnStr
+    ),
+
+    fn get_side inStr = (
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local returnStr = ""
+
+        local sideIndex = get_side_part_index()
+        local realNameIndex = get_realName_part_index()
+
+        local foundResult = 0
+        for item in __sideStrArray do foundResult += (findItem nameArray item)
+
+        if foundResult > 0 then (
+            if sideIndex < realNameIndex then (
+                for i = 1 to sideIndex do (
+                    if (is_side_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+
+            if sideIndex > realNameIndex then (
+                for i = nameArray.count to (nameArray.count - sideIndex) by -1 do (
+                    if (is_side_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+        )
+
+        returnStr
+    ),
+
+    fn get_frontBack inStr = (
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local returnStr = ""
+
+        local frontBackIndex = get_front_back_part_index()
+        local realNameIndex = get_realName_part_index()
+
+        local foundResult = 0
+        for item in __frontBackStrArray do foundResult += (findItem nameArray item)
+
+        if foundResult > 0 then (
+            if frontBackIndex < realNameIndex then (
+                for i = 1 to frontBackIndex do (
+                    if (is_frontBack_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+
+            if frontBackIndex > realNameIndex then (
+                for i = nameArray.count to (nameArray.count - frontBackIndex) by -1 do (
+                    if (is_frontBack_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+        )
+
+        returnStr
+    ),
+
+    fn get_index inStr = (
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local returnStr = ""
+
+        local indexIndex = get_index_part_index()
+        local realNameIndex = get_realName_part_index()
+
+        local foundResult = 0
+        for item in nameArray do if (is_index_char item) then foundResult += 1
+
+        if foundResult > 0 then (
+            if indexIndex < realNameIndex then (
+                for i = 1 to indexIndex do (
+                    if (is_index_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+
+            if indexIndex > realNameIndex then (
+                for i = nameArray.count to (nameArray.count - indexIndex) by -1 do (
+                    if (is_index_char nameArray[i]) then (
+                        returnStr = nameArray[i]
+                        exit
+                    )
+                )
+            )
+        )
+
+        returnStr
     ),
 
     fn get_realName inStr = (
-        local filChar = get_filteringChar inStr
-        local nameArray = split_into_refined_nameArray inStr
-        local realNameArray = nameArray[2]
+        local filChar = str.get_filteringChar inStr
+        local nameArray = str.split_to_array inStr
+        local realNameArray = #()
         local returnStr = ""
-        returnStr = combine_nameArray realNameArray filChar
+
+        local baseStr = get_base inStr
+        local typeStr = get_type inStr
+        local sideStr = get_side inStr
+        local frontBackStr = get_frontBack inStr
+        local indexStr = get_index inStr
+
+        local nonRealNameArray = #(baseStr, typeStr, sideStr, frontBackStr, indexStr)
+        for i = 1 to nonRealNameArray.count do (
+            if nonRealNameArray[i] != "" then (
+                local foundIndex = findItem nameArray nonRealNameArray[i]
+                nameArray = deleteItem nameArray foundIndex
+            )
+        )
+
+        returnStr = str.combine nameArray filChar:filChar
 
         returnStr
     ),
 
     fn convert_name_to_nameArray inStr = (
-        local returnArray = for item in __namePartsOrder collect ""
-        local filChar = get_filteringChar inStr
-        local refinedNameArray = split_into_refined_nameArray inStr
-        local refinedNamePartsArray = split_nameParts_to_refined_nameArray()
-        local beforeRealNameArray = for item in refinedNamePartsArray[1] collect ""
-        local realNameArray = #((combine_nameArray refinedNameArray[2] filChar))
-        local afterRealNameArray = for item in refinedNamePartsArray[3] collect ""
+        local returnArray = for item in __nameParts collect ""
+        local filChar = str.get_filteringChar inStr
 
-        if refinedNameArray[1].count > 0 then beforeRealNameArray = match_nameArray_as_namePartsOrder refinedNameArray[1] refinedNamePartsArray[1]
-        if refinedNameArray[3].count > 0 then afterRealNameArray = match_nameArray_as_namePartsOrder refinedNameArray[3] refinedNamePartsArray[3]
-        returnArray = join beforeRealNameArray realNameArray
-        returnArray = join returnArray afterRealNameArray
+        local baseIndex = get_base_part_index()
+        local typeIndex = get_type_part_index()
+        local sideIndex = get_side_part_index()
+        local frontBackIndex = get_front_back_part_index()
+        local indexIndex = get_index_part_index()
+        local realNameIndex = get_realName_part_index()
+
+        local baseStr = get_base inStr
+        local typeStr = get_type inStr
+        local sideStr = get_side inStr
+        local frontBackStr = get_frontBack inStr
+        local indexStr = get_index inStr
+        local realNameStr = get_realName inStr
+
+        returnArray[baseIndex] = baseStr
+        returnArray[typeIndex] = typeStr
+        returnArray[sideIndex] = sideStr
+        returnArray[frontBackIndex] = frontBackStr
+        returnArray[realNameIndex] = realNameStr
+        returnArray[indexIndex] = indexStr
 
         returnArray
-    ),
-
-    fn get_side inStr = (
-        local tempNameArray = convert_name_to_nameArray inStr
-        local sideStr = tempNameArray[(get_side_part_index())]
-
-        sideStr
-    ),
-
-    fn get_frontBack inStr = (
-        local tempNameArray = convert_name_to_nameArray inStr
-        local frontBackStr = tempNameArray[(get_front_back_part_index())]
-
-        frontBackStr
-    ),
-
-    fn get_index inStr = (
-        local tempNameArray = convert_name_to_nameArray inStr
-        local indexStr = tempNameArray[(get_index_part_index())]
-
-        indexStr
     ),
 
     fn is_nub inStr = (
@@ -799,38 +560,24 @@ struct _Name (
         else return false
     ),
 
-    fn get_base inStr = (
-        local tempNameArray = convert_name_to_nameArray inStr
-        local baseStr = tempNameArray[(get_base_part_index())]
-
-        baseStr
-    ),
-
-    fn get_type inStr = (
-        local tempNameArray = convert_name_to_nameArray inStr
-        local typeStr = tempNameArray[(get_type_part_index())]
-
-        typeStr
-    ),
-
     fn get_string inStr = (
         local returnStr = ""
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexOrder = get_index_part_index()
         local returnNameArray = deleteItem nameArray indexOrder
 
-        returnStr = combine_nameArray returnNameArray filChar
+        returnStr = str.combine returnNameArray filChar:filChar
         returnStr
     ),
 
     fn set_index_as_nub inStr = (
         local returnName = ""
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexOrder = get_index_part_index()
         nameArray[indexOrder] = __nubStr
-        returnName = combine_nameArray nameArray filChar
+        returnName = str.combine nameArray filChar:filChar
         returnName
     ),
 
@@ -874,11 +621,11 @@ struct _Name (
 
     fn get_nonRealName inStr = (
         local returnStr = ""
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local realNameIndex = get_realName_part_index()
         nameArray[realNameIndex] = ""
-        returnStr = combine_nameArray nameArray filChar
+        returnStr = str.combine nameArray filChar:filChar
 
         returnStr
     ),
@@ -901,12 +648,12 @@ struct _Name (
 
         local partsIndexArray = #(baseIndex, typeIndex, sideIndex, frontBackIndex, realNameIndex, indexIndex)
         local partsArray = #(base, type, side, frontBack, realName, index)
-        local combinedNameArray = for item in __namePartsOrder collect ""
+        local combinedNameArray = for item in __nameParts collect ""
         for i = 1 to partsIndexArray.count do (
             if partsIndexArray[i] != 0 then combinedNameArray[partsIndexArray[i]] = partsArray[i]
         )
 
-        returnStr = combine_nameArray combinedNameArray inFilChar
+        returnStr = str.combine combinedNameArray filChar:inFilChar
 
         returnStr
     ),
@@ -914,56 +661,55 @@ struct _Name (
     fn add_fix inStr inPart inFix pos:#npPosPrefix = (
         local returnStr = inStr
         if inFix != "" then (
-            local filChar = get_filteringChar inStr
+            local filChar = str.get_filteringChar inStr
             local nameArray = convert_name_to_nameArray inStr
             local partIndex = 0
             case inPart of (
-                #npBase: partIndex = get_base_part_index()
-                #npType: partIndex = get_type_part_index()
-                #npSide: partIndex = get_side_part_index()
-                #npFrontBack: partIndex = get_front_back_part_index()
-                #npRealName: partIndex = get_realName_part_index()
-                #npIndex: partIndex = get_index_part_index()
+                "Base": partIndex = get_base_part_index()
+                "Type": partIndex = get_type_part_index()
+                "Side": partIndex = get_side_part_index()
+                "FrontBack": partIndex = get_front_back_part_index()
+                "RealName": partIndex = get_realName_part_index()
+                "index": partIndex = get_index_part_index()
             )
             if partIndex != 0 then (
                 if pos == #npPosPrefix then nameArray[partIndex] = inFix + nameArray[partIndex]
                 if pos == #npPosSufix then nameArray[partIndex] = nameArray[partIndex] + inFix
             )
-            returnStr = combine_nameArray nameArray filChar
+            returnStr = str.combine nameArray filChar:filChar
         )
 
         returnStr
     ),
 
     fn add_prefix_to_realName inStr inPrefix = (
-        local returnVal = add_fix inStr #npRealName inPreFix pos:#npPosPrefix
+        local returnVal = add_fix inStr "RealName" inPreFix pos:#npPosPrefix
         returnVal
     ),
 
     fn add_sufix_to_realName inStr inSufix = (
-        local returnVal = add_fix inStr #npRealName inSufix pos:#npPosSufix
+        local returnVal = add_fix inStr "RealName" inSufix pos:#npPosSufix
         returnVal
     ),
 
-    fn convert_digit_into_padding_string inDigit inPaddingNum:3 = (
+    fn convert_digit_into_padding_string inDigit inPaddingNum:__paddingNum = (
         local formatStr = "0" + (inPaddingNum as String) + "d"
         local digitNum = 0
         local returnVal = ""
         if (classOf inDigit) == integer then digitNum = inDigit
         if (classOf inDigit) == String then (
-            if (is_digit inDigit) then digitNum = execute inDigit
+            if (str.is_digit inDigit) then digitNum = execute inDigit
         )
         returnVal = formattedPrint digitNum format:formatStr
 
         returnVal
     ),
 
-    fn set_index_padding_num inStr inPaddingNum:3 = (
-        local filChar = get_filteringChar inStr
+    fn set_index_padding_num inStr inPaddingNum:__paddingNum = (
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
         local indexStr = get_index inStr
-        local index = -999
 
         if indexStr != "" then (
             if indexStr != __nubStr then indexStr = convert_digit_into_padding_string indexStr inPaddingNum:inPaddingNum
@@ -971,7 +717,7 @@ struct _Name (
             nameArray[indexIndex] = indexStr
         )
 
-        return (combine_nameArray nameArray filChar)
+        return (str.combine nameArray filChar:filChar)
     ),
 
     fn get_index_padding_num inStr = (
@@ -985,13 +731,13 @@ struct _Name (
 
     fn increase_index inStr inAmount = (
         local newName = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
 
         if indexIndex != 0 then (
             local indexStr = ""
-            local indexPaddingNum = 3
+            local indexPaddingNum = __paddingNum
             local indexNum = -9999
 
             case nameArray[indexIndex] of (
@@ -1008,7 +754,7 @@ struct _Name (
             else indexStr = __nubStr
             nameArray[indexIndex] = indexStr
 
-            newName = combine_nameArray nameArray filChar
+            newName = str.combine nameArray filChar:filChar
         )
 
         newName
@@ -1017,17 +763,17 @@ struct _Name (
     fn replace_filteringChar inStr inNewFilChar = (
         local nameArray = convert_name_to_nameArray inStr
 
-        return (combine_nameArray nameArray inNewFilChar)
+        return (str.combine nameArray filChar:inNewFilChar)
     ),
 
     fn replace_base inStr inNewBase = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local baseIndex = get_base_part_index()
         if baseIndex != 0 then (
             nameArray[baseIndex] = inNewBase
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
         )
 
         returnVal
@@ -1035,12 +781,12 @@ struct _Name (
 
     fn replace_type inStr inNewType = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local typeIndex = get_type_part_index()
         if typeIndex != 0 then (
             nameArray[typeIndex] = inNewType
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
         )
 
         returnVal
@@ -1048,12 +794,12 @@ struct _Name (
 
     fn replace_side inStr inNewSide = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local sideIndex = get_side_part_index()
         if sideIndex != 0 then (
             nameArray[sideIndex] = inNewSide
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
         )
 
         returnVal
@@ -1061,12 +807,12 @@ struct _Name (
 
     fn replace_frontBack inStr inNewFrontBack = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local frontBackIndex = get_front_back_part_index()
         if frontBackIndex != 0 then (
             nameArray[frontBackIndex] = inNewFrontBack
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
         )
 
         returnVal
@@ -1074,12 +820,12 @@ struct _Name (
 
     fn replace_index inStr inNewIndex keepPadding:true = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
         if indexIndex != 0 then (
             nameArray[indexIndex] = inNewIndex
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
 
             if keepPadding then (
                 local indexPaddingNum = get_index_padding_num inStr
@@ -1092,12 +838,12 @@ struct _Name (
 
     fn replace_realName inStr inNewRealName = (
         local returnVal = inStr
-        local filChar = get_filteringChar inStr
+        local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local realNameIndex = get_realName_part_index()
         if realNameIndex != 0 then (
             nameArray[realNameIndex] = inNewRealName
-            returnVal = combine_nameArray nameArray filChar
+            returnVal = str.combine nameArray filChar:filChar
         )
 
         returnVal
@@ -1121,14 +867,26 @@ struct _Name (
         returnName
     ),
 
-    fn gen_mirroring_name inStr = (
-        local returnName = inStr
-        if (is_left inStr) then returnName = replace_side inStr "R"
-        if (is_right inStr) then returnName = replace_side inStr "L"
-        if (is_front inStr) then returnName = replace_side inStr "B"
-        if (is_back inStr) then returnName = replace_side inStr "F"
+    fn gen_uniqueName inStr = (
+        local patternStr = replace_index inStr "*"
+        local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
+        local returnVal = replace_index inStr ((returnArray.count+1) as String)
 
-        if returnName == inStr then returnName = increase_index inStr 1
+        returnVal
+    ),
+
+    fn gen_mirroring_name inStr axis:1 = (
+        local returnName = inStr
+        if (has_side inStr) and (axis == 1) then (
+            if (is_left inStr) then returnName = replace_side inStr (get_rightStr())
+            if (is_right inStr) then returnName = replace_side inStr (get_leftStr())
+        )
+        if (has_front_back inStr) and (axis == 2) then (
+            if (is_front inStr) then returnName = replace_frontBack inStr (get_backStr())
+            if (is_back inStr) then returnName = replace_frontBack inStr (get_frontStr())
+        )
+
+        if returnName == inStr then returnName = gen_uniqueName inStr
 
         return returnName
     ),
@@ -1158,12 +916,14 @@ struct _Name (
         sortedNameArray
     ),
 
-    fn gen_uniqueName inStr = (
-        local patternStr = replace_index inStr "*"
-        local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
-        local returnVal = replace_index inStr ((returnArray.count+1) as String)
+    fn compare_name inObjA inObjB = (
+        stricmp inObjA.name inObjB.name
+    ),
 
-        returnVal
+    fn sort_by_name inArray = (
+        local returnArray = deepCopy inArray
+        qSort returnArray compare_name
+        return returnArray
     ),
 
     fn find_and_replace inStr inTargetStr inNewStr = (
@@ -1186,14 +946,34 @@ struct _Name (
         local nubStr = getINISetting __iniFile "DefaultSetting" "NubStr"
         local namePartsOrder = filterString (getINISetting __iniFile "DefaultSetting" "NamePartsOrder") " "
         local numPaddingNum = (getINISetting __iniFile "DefaultSetting" "PaddingNum") as integer
-        local iniSideStrArray = filterString (getINISetting __iniFile "DefaultSetting" "SideStrArray") " "
-        local iniFrontBackStrArray = filterString (getINISetting __iniFile "DefaultSetting" "FrontBackStrArray") " "
+        local iniSideStrArray = filterString (getINISetting __iniFile "Side" "SideStrArray") " "
+        local iniFrontBackStrArray = filterString (getINISetting __iniFile "Side" "FrontBackStrArray") " "
+
+        local typeSections = getINISetting __iniFile "Type"
+        local typeStrArray = for item in typeSections collect (getINISetting __iniFile "Type" item)
+        local iniParentStr = getINISetting __iniFile "Type" "Parent"
+        local iniDummyStr = getINISetting __iniFile "Type" "Dummy"
+        local iniExposeTMStr = getINISetting __iniFile "Type" "ExposeTM"
+        local iniTargetStr = getINISetting __iniFile "Type" "Target"
+        local iniIKStr = getINISetting __iniFile "Type" "IK"
+
+        local baseSections = getINISetting __iniFile "Base"
+        local baseStrArray = for item in baseSections collect (getINISetting __iniFile "Base" item)
+
         set_name_parts_order namePartsOrder
+        set_paddingNum numPaddingNum
         set_nubStr nubStr
         set_leftStr iniSideStrArray[1]
         set_rightStr iniSideStrArray[2]
         set_frontStr iniFrontBackStrArray[1]
         set_backStr iniFrontBackStrArray[2]
+        set_parentStr iniParentStr
+        set_dummyStr iniDummyStr
+        set_exposeTMStr iniExposeTMStr
+        set_targetStr iniTargetStr
+        set_IKStr iniIKStr
+        set_typeStr typeStrArray
+        set_baseStr baseStrArray
     )
 )
 
@@ -1217,9 +997,11 @@ struct _Anim (
 
     fn reset_transform_controller inObj = (
         if classof inObj != Biped_Object then (
+            local tempTransform = inObj.transform
             inObj.position.controller = Position_XYZ()
             inObj.rotation.controller = Euler_XYZ()
             inObj.scale.controller = Bezier_Scale()
+            inObj.transform = tempTransform
         )
     ),
 
@@ -1390,6 +1172,42 @@ struct _Anim (
         delete rotConstDum
     
         returnTransform
+    ),
+
+    fn get_all_keys obj: = with undo off (
+      if obj==unsupplied then obj = objects
+      mapkeys obj (fn CollectKeys t k = (append k t; t)) (keys=#()) #allkeys
+      return keys
+    ),
+
+    fn get_start_end_keys obj: = with undo off (
+      keys = get_all_keys obj:obj
+      return #(amin keys, amax keys)
+    ),
+
+    fn delete_all_keys obj: = (
+      if obj==unsupplied then obj = objects
+      deleteKeys obj #allKeys
+    ),
+
+    mapped fn save_xform inObjs = (
+       try (
+           setUserProp inObjs #WorldSpaceMatrix (inObjs.transform as string)
+           if inObjs.parent != undefined then (
+               setUserProp inObjs #ParentSpaceMatrix ((inObjs.transform * inverse inObjs.parent.transform) as string)
+           )
+       )
+       catch ()
+    ),
+
+    mapped fn set_xform inObjs space:#World = (
+       try (
+           case space of (
+               #World: inObjs.transform = execute(getUserProp inObjs #WorldSpaceMatrix)
+               #Parent: inObjs.transform = (execute(getUserProp inObjs #ParentSpaceMatrix)) * inObjs.parent.transform
+           )
+       )
+       catch ()
     )
 )
 
@@ -1426,10 +1244,10 @@ struct _Helper (
     fn gen_helper_name_from_obj inObj makeTwo:false isExp:false = (
         local pointName = ""
         local targetName = ""
-        local typeName = "Dum"
+        local typeName = name.get_dummyStr()
         local tempName = ""
 
-        if isExp then typeName = "Exp"
+        if isExp then typeName = name.get_exposeTMStr()
 
         tempName = name.replace_type inObj.name typeName
         if (name.get_type inObj.name) == typeName then (
@@ -1536,7 +1354,7 @@ struct _Helper (
                 genPoint.transform = item.transform
                 genPoint.parent = item.parent
                 item.parent = genPoint
-                item.name = name.replace_type item.name "P"
+                genPoint.name = name.replace_type genPoint.name (name.get_parentStr())
             )
         )
     ),
@@ -1632,13 +1450,15 @@ struct _Helper (
 )
 
 struct _Constraint (
-    name, helper,
+    str, name, helper,
 
     fn collapse inObj = (
         if classof inObj != Biped_Object then (
+            local tempTransform = inObj.transform
             inObj.position.controller = Position_XYZ()
             inObj.rotation.controller = Euler_XYZ()
             inObj.scale.controller = Bezier_Scale()
+            inObj.transform = tempTransform
         )
     ),
 
@@ -1879,9 +1699,9 @@ struct _Constraint (
         inObj.rotation.controller.Available.controller = targetRotConstraint
         inObj.rotation.controller.setActive inObj.rotation.controller.count
 
-        local rotPointName = name.replace_type inObj.name "Dum"
+        local rotPointName = name.replace_type inObj.name (name.get_dummyStr())
         local rotMeasurePointNmae = name.increase_index rotPointName 1
-        local rotExpName = name.replace_type inObj.name "Exp"
+        local rotExpName = name.replace_type inObj.name (name.get_exposeTMStr())
         rotExpName = name.replace_index rotExpName "0"
 
         local rotPoint = helper.create_point rotPointName size:2 boxToggle:on crossToggle:off
@@ -1923,12 +1743,12 @@ struct _Constraint (
 
         local objName = name.get_string oriObj.name
         local indexNum = name.get_index_as_digit oriObj.name
-        local fChar = name.get_filteringChar objName
-        local dummyName = name.add_prefix_to_realName objName "Dummy" filteringChar:fChar
+        local fChar = str.get_filteringChar objName
+        local dummyName = name.add_prefix_to_realName objName (name.get_dummyStr()) filteringChar:fChar
 
         local lookAtPoint = helper.create_point (dummyName + fChar + (indexNum as String)) size:2 boxToggle:on crossToggle:off
         local lookAtMasuerPoint = helper.create_point (dummyName + fChar + ((indexNum + 1) as String)) size:3 boxToggle:on crossToggle:off
-        local lookAtExpPoint = ExposeTm name:(dummyName + "Exp" + fChar + "0") size:3 boxToggle:off crossToggle:on wirecolor:(color 14 255 2)
+        local lookAtExpPoint = ExposeTm name:(dummyName + (name.get_exposeTMStr()) + fChar + "0") size:3 boxToggle:off crossToggle:on wirecolor:(color 14 255 2)
 
         lookAtPoint.transform = oriObj.transform
         lookAtMasuerPoint.transform = oriObj.transform
@@ -2077,7 +1897,7 @@ struct _Constraint (
 /*     constraint.ms
 /*******************************/
 struct _Bone (
-    name, anim, helper, const,
+    str, name, anim, helper, const,
 
     fn remove_ik inBone = (
         if (not IsProperty inBone "pos") or (not IsProperty inBone "rotation") then HDIKSys.RemoveChain inBone
@@ -2144,7 +1964,7 @@ struct _Bone (
         )
 
         ooscale = bone.objectOffsetScale
-        if (ooscale[axisIndex] < 0) and ((not ask) or (queryBox "마이너스 방향본 수정할깝쇼? 이게 맞냐?" title:bone.Name)) do
+        if (ooscale[axisIndex] < 0) and ((not ask) or (queryBox "Correct negative scale?" title:bone.Name)) do
         (
             ooscale[axisIndex] = -ooscale[axisIndex]
             axisIndex = axisIndex+2
@@ -2155,16 +1975,13 @@ struct _Bone (
     ),
 
     fn reset_scale_of_selected_bones ask = (
-        local bones = #()
+        local bones = for item in selection where classof item == BoneGeometry collect item
         bones = sort_bones_as_hierarchy selection
 
         -- reset scale for all bones in the bones array
         --print "***resetting***"
         for i = 1 to bones.count do
         (
-            --print "----"
-            --print bones[i]
-            --print selection[bones[i].index]
             ResetScale bones[i]
             if ask do correct_negative_stretch bones[i] false
         )
@@ -2239,7 +2056,7 @@ struct _Bone (
     ),
 
     fn create_bone inPointArray inName end:true delPoint:false parent:false size:2 normals:#() = (
-        local filteringChar = name.get_filteringChar inName
+        local filteringChar = str.get_filteringChar inName
         local tempBone = undefined
         local newBone = undefined
 
@@ -2550,6 +2367,72 @@ struct _Bone (
         return returnBones
     ),
 
+    fn create_skin_bone_from_bip inBoneArray skipNub:true skinBoneBaseName:"b" = (
+        local bones = #()
+        local skinBoneFilteringChar = "_"
+        local returnBones = #()
+
+        for i = 1 to inBoneArray.count do (
+            local boneLength = 2.0
+            local childrenBones = for item in inBoneArray[i].children where ((classOf item) == Biped_Object) and (not(matchPattern item.name pattern:"*Twist*")) collect item
+            if childrenBones.count == 1 then boneLength = distance inBoneArray[i] childrenBones[1]
+            if childrenBones.count > 1 then (
+                local childNamePattern = ""
+                if (matchPattern inBoneArray[i].name pattern:"*Spine*") then childNamePattern = "*Neck"
+                if (matchPattern inBoneArray[i].name pattern:"*Pelvis") then childNamePattern = "*Spine"
+                if (matchPattern inBoneArray[i].name pattern:"*Head") then childNamePattern = "*HeadNub"
+                for distTargetBone in inBoneArray do (
+                    if (matchPattern distTargetBone.name pattern:childNamePattern) then boneLength = distance inBoneArray[i] distTargetBone
+                )
+            )
+            local skinBone = BoneSys.createBone inBoneArray[i].transform.translation (inBoneArray[i].transform.translation+6) inBoneArray[i].dir
+            skinBone.transform = inBoneArray[i].transform
+
+            skinBone.width = 1
+            skinBone.height = 1
+            skinBone.taper = 90
+            skinBone.length = boneLength
+            skinBone.frontfin = off
+            skinBone.backfin = off
+            skinBone.sidefins = off
+            skinBone.wireColor = color 255 88 199
+
+            skinBone.name = name.replace_base inBoneArray[i].name skinBoneBaseName
+            skinBone.name = name.replace_filteringChar skinBone.name skinBoneFilteringChar
+
+            --const.assign_pos_const skinBone inBoneArray[i]
+            --const.assign_rot_const skinBone inBoneArray[i]
+
+            skinBone.boneEnable = true
+            skinBone.renderable = false
+            skinBone.boneScaleType=#none
+
+            append bones skinBone
+        )
+
+        for i = 1 to inBoneArray.count do (
+            local oriParentObj = inBoneArray[i].parent
+            if oriParentObj != undefined then (
+                local skinBoneParentObjName = name.replace_base oriParentObj.name skinBoneBaseName
+                skinBoneParentObjName = name.replace_filteringChar skinBoneParentObjName skinBoneFilteringChar
+                bones[i].parent = getNodeByName skinBoneParentObjName
+            )
+            else bones[i].parent = undefined
+        )
+
+        if skipNub then (
+            for item in bones do (
+                if not (matchPattern item.name pattern:"*Nub") then append returnBones item
+                else delete item
+            )
+        )
+        else returnBones = deepCopy bones
+
+        bones = #()
+
+        return returnBones
+    ),
+
     fn set_bone_on inBone = (
         if (classOf inBone == BoneGeometry) then (
             inBone.boneEnable = true
@@ -2564,12 +2447,34 @@ struct _Bone (
 
     fn set_bone_on_selection = (
         local selArray = getCurrentSelection() as array
-        for item in selArray do item.boneEnable = true
+        for item in selArray do set_bone_on item
     ),
 
     fn set_bone_off_selection = (
         local selArray = getCurrentSelection() as array
-        for item in selArray do item.boneEnable = false
+        for item in selArray do set_bone_off item
+    ),
+
+    fn set_freeze_length_on inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneFreezeLength = true
+        )
+    ),
+
+    fn set_freeze_length_off inBone = (
+        if (classOf inBone == BoneGeometry) then (
+            inBone.boneFreezeLength = false
+        )
+    ),
+
+    fn set_freeze_length_on_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do set_freeze_length_on item
+    ),
+
+    fn set_freeze_length_off_selection = (
+        local selArray = getCurrentSelection() as array
+        for item in selArray do set_freeze_length_off item
     )
 )
 
@@ -2578,6 +2483,8 @@ struct _Bone (
 
 
 struct _Bip (
+    anim, name, bone,
+
     rootName = "",
 
     com,
@@ -3020,6 +2927,72 @@ struct _Bip (
 
     fn turn_off_figureMode inBip = (
         inBip.controller.figureMode = false
+    ),
+
+    fn link_base_skeleton = (
+        setWaitCursor()
+        local skinBoneBaseName = "b"
+
+        local bip_skel = get_bips()
+        local base_skel = #()
+        for i = 1 to bip_skel.count do (
+            local baseSkeletonName = name.replace_base bip_skel[i].name skinBoneBaseName
+            baseSkeletonName = name.replace_filteringChar baseSkeletonName "_"
+            local baseSkel = getNodeByName baseSkeletonName
+            if (isValidObj baseSkel) then (
+                base_skel[i] = baseSkel
+            )
+        )
+
+        anim.save_xform bip_skel
+        anim.set_xform bip_skel
+
+        anim.save_xform base_skel
+        anim.set_xform base_skel
+
+        for i = 1 to base_skel.count do (
+            if base_skel[i] != undefined then (
+                base_skel[i].scale.controller = (scaleXYZ())
+                base_skel[i].controller = (link_constraint())
+
+                anim.set_xform #(base_skel[i]) space:#world
+                base_skel[i].transform.controller.AddTarget (bip_skel[i]) 0
+            )
+        )
+        for i = 1 to base_skel.count do if base_skel[i] != undefined then base_skel[i].boneEnable = true
+        setArrowCursor()
+    ),
+
+    fn unlink_base_skeleton = (
+        setWaitCursor()
+        local skinBoneBaseName = "b"
+
+        local bip_skel = get_bips()
+        local base_skel = #()
+        for i = 1 to bip_skel.count do (
+            local baseSkeletonName = name.replace_base bip_skel[i].name skinBoneBaseName
+            baseSkeletonName = name.replace_filteringChar baseSkeletonName "_"
+            local baseSkel = getNodeByName baseSkeletonName
+            if (isValidObj baseSkel) then (
+                base_skel[i] = baseSkel
+            )
+        )
+
+        anim.save_xform bip_skel
+        anim.set_xform bip_skel
+
+        anim.save_xform base_skel
+        anim.set_xform base_skel
+
+        for i = 1 to base_skel.count do
+        (
+            if base_skel[i] != undefined then (
+                base_skel[i].controller = (prs())
+                anim.set_xform #(base_skel[i]) space:#world
+            )
+        )
+        for i = 1 to base_skel.count do if base_skel[i] != undefined then base_skel[i].boneEnable = true
+        setArrowCursor()
     )
 )
 
@@ -3052,7 +3025,7 @@ struct _Mirror (
         local pivotTm = (matrix3 1)
         local mirrorAxisIndex = axis
         local flipAxisIndex = flip
-        local copyObjName = name.gen_mirroring_name inObj.name
+        local copyObjName = name.gen_mirroring_name inObj.name axis:axis
 
         if pivotObj != undefined then pivotTm = pivotObj.transform
         if negative == true then flipAxisIndex = 4
@@ -3182,7 +3155,7 @@ struct _Mirror (
             reflection.frontfinsize       = original.frontfinsize
             reflection.frontfinstarttaper = original.frontfinstarttaper
             reflection.height             = original.height
-            if (name.has_side original.name) then reflection.name = name.gen_mirroring_name original.name
+            if ((name.has_side original.name) or (name.has_front_back original.name)) then reflection.name = (name.gen_mirroring_name original.name axis:mAxis)
             else reflection.name = name.add_sufix_to_realName original.name "Mirrored"
             reflection.sidefins           = original.sidefins 
             reflection.sidefinsendtaper   = original.sidefinsendtaper
@@ -3348,6 +3321,30 @@ struct _Layer (
         )
 
         returnVal
+    ),
+
+    fn rename_layer_from_index layer_index search_for replace_with = (
+        cur_layer = LayerManager.getLayer layer_index
+        layer_name =  cur_layer.name
+        find_at = findString layer_name search_for
+
+        if find_at != undefined then
+        (
+            found_string = substring layer_name find_at search_for.count
+            new_name = (substituteString layer_name found_string replace_with)
+            cur_layer.setName new_name
+        )
+    ),
+
+    fn is_valid_layer layer_name: layer_index: = (
+        local layer =
+        (
+            if layer_name!=unsupplied then ( LayerManager.getLayerFromName layer_name )
+            else if layer_index!=unsupplied then ( LayerManager.getLayer layer_index )
+            else(undefined)
+        )
+        if layer != undefined then ( return true )
+        else ( return false )
     )
 )
 
@@ -3641,6 +3638,12 @@ struct _Skin (
     allBonesArray = #(),
     skinWeightsArray = #(),
 
+    fn has_skin obj:selection[1] = ( if (for m in obj.modifiers where classOf m == Skin collect m).count != 0 then True else false ),
+
+    fn is_valide_bone n = ( superClassOf n == GeometryClass or classOf n == BoneGeometry or superClassOf n == helper),
+
+    fn get_skin_mod obj:selection[1] = (for mod in obj.modifiers where (classOf mod == Skin) collect mod),
+
     fn find_skin inputObj = (
         local returnVal = 0
         if inputObj.modifiers.count == 0 then return returnVal
@@ -3710,6 +3713,17 @@ struct _Skin (
         returnVal
     ),
 
+    fn get_bones_from_skin objs skinModIndex = (
+        infList = #()
+        -- filter
+        fn is_bone n = (superClassOf n == GeometryClass or classOf n == BoneGeometry or superClassOf n == helper)
+
+        for obj in objs where isValidNode obj do (
+            for n in (refs.dependsOn obj.modifiers[skinModIndex]) where isValidNode n and is_bone n do appendIfUnique infList n
+        )
+        return infList
+    ),
+
     fn get_bone_index inputObj targetBone = (
         local returnVal = 0
         if allBonesArray.count > 0 then (
@@ -3764,36 +3778,6 @@ struct _Skin (
         returnVal.weightArray = deepCopy weightArray
 
         returnVal
-    ),
-
-    fn get_skin_weights inputObj = (
-        if (get_all_bones inputObj) then (
-            skinWeightsArray = #()
-
-            --prog.start_progress "Get Skin vertex weight"
-            local numVerts = skinOps.GetNumberVertices skinMod
-            for v = 1 to numVerts do (
-                local boneArray = #()
-                local boneIDArray = #()
-                local boneNameArray = #()
-                local weightArray = #()
-                local boneNum = skinOps.getVertexWeightCount skinMod v
-
-                for i = 1 to boneNum do (
-                    local boneID = skinOps.getVertexWeightBoneID skinMod v i
-                    local boneName = skinOps.GetBoneName skinMod boneID 0
-                    local boneSysID = findItem allBoneNamesArray boneName
-                    local boneWeight = skinOps.getVertexWeight skinMod v i
-                    append boneArray allBonesArray[boneSysID]
-                    append boneIDArray boneID
-                    append boneNameArray boneName
-                    append weightArray boneWeight
-                )
-                append skinWeightsArray (_SkinVert index:v boneArray:boneArray boneIDArray:boneIDArray boneNameArray:boneNameArray weightArray:weightArray)
-                --prog.update_progress v numVerts
-            )
-            --prog.end_progress()
-        )
     ),
 
     fn get_skin_weights inputObj = (
@@ -3960,14 +3944,10 @@ struct _Skin (
         for i = 1 to targetObj.modifiers.count do (
             if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
         )
-        --prog.start_progress "Paste Skin..."
         local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
-
-            --prog.update_progress v targetObjNumVert
         )
-        --prog.end_progress()
     ),
 
     fn select_bone inObj inBoneObj = (
@@ -3980,6 +3960,250 @@ struct _Skin (
         )
 
         returnVal
+    ),
+
+    fn optimize_skin SkinMod boneLimit:8 skinTolerance:0.01 = (
+        local ListOfBones = #()
+
+        --Skin Modifier Setup
+        SkinMod.enableDQ = false
+        SkinMod.bone_Limit = boneLimit
+        SkinMod.clearZeroLimit = skinTolerance
+        skinOps.RemoveZeroWeights SkinMod
+        SkinMod.clearZeroLimit = 0
+
+        if skinOps.getNumberBones SkinMod > 1 do
+        (
+            ListOfBones = #{1..skinOps.GetNumberBones SkinMod}
+            for v = 1 to skinOps.GetNumberVertices SkinMod do
+            (
+                for b = 1 to (skinOps.GetVertexWeightCount SkinMod v) do
+                (
+                    ListOfBones[skinOps.GetVertexWeightBoneID SkinMod v b] = false
+                )
+            )
+
+            ListOfBones = ListOfBones as array
+            for i = 1 to ListOfBones.count do
+            (
+                skinOps.SelectBone SkinMod ListOfBones[ListOfBones.count-i+1] -- Max 2014 sp5 hack
+                skinOps.removebone SkinMod ListOfBones[ListOfBones.count-i+1]
+            )
+            if skinOps.getNumberBones SkinMod > 1 do skinOps.SelectBone SkinMod 1
+            Format "Obj:% Removed:% Left:%\n" $.name ListOfBones.count (skinOps.GetNumberBones SkinMod)
+        )
+    ),
+
+    fn optimize_skin_process objs:(selection as array) optimAllSkinMod:False bLimit:8 sTolerance:0.01 = (
+        max modify mode
+        if objs.count != 0 then
+        (
+            for obj in objs where (has_skin obj:obj) == True do
+            (
+                local modID = for m=1 to obj.modifiers.count where classOf obj.modifiers[m] == Skin collect m
+
+                if optimAllSkinMod == False then modID = #(modID[1])
+                for each in modID do
+                (
+                    modPanel.setCurrentObject obj.modifiers[each]
+                    optimize_skin obj.modifiers[each] boneLimit:bLimit skinTolerance:sTolerance
+                )
+            )
+            select objs
+        )
+    ),
+
+    fn sel_vert_from_bones skin_mod threshold:0.01 = (
+        local FinalVerts2Sel = #()
+        if skin_mod != undefined then (
+            leBone = skinops.getSelectedBone skin_mod
+            svc = skinOps.GetNumberVertices skin_mod
+
+            for o = 1 to svc do (
+                local lv
+                lv = skinOps.GetVertexWeightCount skin_mod o
+                for k = 1 to lv where (skinOps.GetVertexWeightBoneID skin_mod o k) == leBone do (
+                    if skinOps.GetVertexWeight skin_mod o k >= threshold then (
+                        appendIfUnique FinalVerts2Sel o
+                    )
+                )
+            )
+            skinOps.SelectVertices skin_mod FinalVerts2Sel
+        )
+
+        FinalVerts2Sel
+    ),
+
+    fn make_rigid_skin skin_mod vert_list = (
+        WeightArray = #()
+        VertCount = 0
+        BoneArray = #()
+        FinalWeight = #()
+
+        for v in vert_list do (
+            for CurBone = 1 to (skinOps.GetVertexWeightCount skin_mod v) do (
+                CurID = (skinOps.GetVertexWeightBoneID skin_mod v CurBone)
+                if WeightArray[CurID] == undefined do WeightArray[CurID] = 0
+
+                CurWeight = (skinOps.GetVertexWeight skin_mod v CurBone)
+                WeightArray[CurID] += CurWeight
+                VertCount += CurWeight
+            )
+
+            for i = 1 to WeightArray.count where WeightArray[i] != undefined and WeightArray[i] > 0 do (
+                NewVal = (WeightArray[i] / VertCount)
+                if NewVal > 0.01 do (append BoneArray i; append FinalWeight NewVal)
+            )
+        )
+        return #(BoneArray, FinalWeight)
+    ),
+
+    fn load_skin obj file_path loadBindPose:false keepSkin: = (
+        if keepSkin != true then keepSkin = false
+
+        select obj
+        Data = #()
+        missingBones = #()
+
+        MyFile = openFile file_path mode:"rt"
+        if MyFile == undefined do return ()
+
+        while (not eof MyFile) do
+            append Data (execute (readLine MyFile));
+        Close MyFile
+
+        if (Data.count-1)!=obj.verts.count or obj.verts.count==0 then
+            print "Bad number of verts";
+        else
+        (
+            for m=obj.modifiers.count to 1 by -1 where classof obj.modifiers[m] == Skin do deleteModifier obj m
+
+            setCommandPanelTaskMode #modify
+            NewSkin = Skin()
+            addmodifier obj NewSkin before:(if keepSkin then 1 else 0)
+
+            if keepSkin do
+                NewSkin.name = "Skin_" + getfilenamefile file_path;
+
+            modPanel.setCurrentObject NewSkin
+            Data[1] = execute Data[1]
+            Hierarchy = #()
+
+            for i=1 to Data[1].count do
+            (
+                MyBone = for obj in objects where obj.name == Data[1][i] collect obj
+
+                if MyBone.count == 0 do
+                (
+                    print ("Missing bone: " + Data[1][i])
+                    tmp = dummy name:Data[1][i]
+                    append MyBone tmp
+                    append missingBones tmp
+                )
+
+                if MyBone.count>1 and Hierarchy.count!=0 do
+                (
+                    print ("Multiple bones are named: " + MyBone[1].name + " (" + Mybone.count as string + ")")
+                    GoodBone = undefined
+                    for o in MyBone where (finditem Hierarchy o) != 0 do GoodBone = o
+                    if GoodBone != undefined do MyBone = #(GoodBone)
+                )
+
+                if MyBone.count > 1 do
+                (
+                    fn ObjFilter PickBone = (findItem (getCurrentSelection()) PickBone) != 0
+
+                    unhide MyBone
+                    unfreeze MyBone
+                    select MyBone
+
+                    PickBone = pickobject filter:ObjFilter message:("Multiple bones found, pick a " + MyBone[1].name)
+                    if PickBone != undefined do MyBone[1] = PickBone
+                    select obj
+                )
+
+                MyBone = MyBone[1]
+                if (finditem Hierarchy MyBone) == 0 do
+                (
+                    append Hierarchy MyBone
+                    for obj in Hierarchy do
+                    (
+                        for CurChild in obj.children do appendifunique Hierarchy CurChild
+                        if obj.parent != undefined do appendifunique Hierarchy obj.parent
+                    )
+                )
+
+                setCommandPanelTaskMode #modify
+                skinOps.addbone NewSkin MyBone 1
+
+                if loadBindPose then
+                (-- load bind pose
+                    MyFileBP = substring FileName 1 (FileName.count - 4) + "bp"; BindPoses = #()
+                    if doesFileExist MyFileBP do
+                    (
+                        MyFile = openFile MyFileBP
+                        while (not eof MyFile) do
+                            append BindPoses (execute (readLine MyFile));
+                        Close MyFile
+                    )
+
+                    if BindPoses[i] != undefined do skinUtils.SetBoneBindTM $ MyBone BindPoses[i]
+                )
+            )
+
+            for i = 1 to obj.verts.count do
+            (
+                BoneID = #(); BoneWeight = #(); GoodBones = #{};
+                AllBoneWeight = for b = 1 to Data[1].count collect 0
+
+                for b=1 to Data[i+1][1].count do
+                (
+                    AllBoneWeight[Data[i+1][1][b]] += Data[i+1][2][b]
+                    GoodBones[Data[i+1][1][b]] = true
+                )
+                for b in GoodBones do
+                (
+                    append BoneID b
+                    append BoneWeight AllBoneWeight[b]
+                )
+                if BoneID.count != 0 do skinOps.SetVertexWeights NewSkin i BoneID[1] 1 -- Max 2014 sp5 hack
+                skinOps.ReplaceVertexWeights NewSkin i BoneID BoneWeight
+            )
+            return missingBones
+        )
+    ),
+
+    fn save_skin obj skin_mod file_path = (
+        select obj
+        max modify mode
+        modPanel.setCurrentObject obj.modifiers[#Skin]
+
+        if (classof obj.modifiers[#Skin] == Skin) and (skinOps.GetNumberBones obj.modifiers[#Skin]) > 0 then (
+            local bone_list = "#("
+            for i=1 to (skinOps.GetNumberBones skin_mod) do append bone_list ("\\\"" + (skinOps.GetBoneName skin_mod i 1) + "\\\", ")
+
+            bone_list = substring bone_list 1 (bone_list.count-1); bone_list[bone_list.count] = ")"
+            local skin_data = #(bone_list)
+            skin_data.count = skinOps.GetNumberVertices skin_mod + 1
+
+            for v=1 to skinOps.GetNumberVertices skin_mod do
+            (
+                local bone_array = #()
+                local weight_array = #()
+                for b = 1 to (skinOps.GetVertexWeightCount skin_mod v) do
+                (
+                    append bone_array (skinOps.GetVertexWeightBoneID skin_mod v b)
+                    append weight_array (skinOps.GetVertexWeight skin_mod v b)
+                )
+                skin_data[v+1] = #(bone_array, weight_array)
+            )
+
+            file_path = CreateFile file_path
+            print skin_data to:file_path
+            Close file_path
+
+            return file_path
+        )
     )
 )
 
@@ -4067,14 +4291,14 @@ struct _Hip (
     ),
 
     fn gen_helpers = (
-        spineDummy = helper.create_point (name.combine baseName "Dum" "" "HipSpine" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        spineDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inRealName:"HipSpine" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
         
-        lHipDummy = helper.create_point (name.combine baseName "Dum" "L" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        lHipTargetDummy = helper.create_point (name.combine baseName "Dum" "L" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        lHipExp = ExposeTm name:(name.combine baseName "Exp" "L" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
-        rHipDummy = helper.create_point (name.combine baseName "Dum" "R" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        rHipTargetDummy = helper.create_point (name.combine baseName "Dum" "R" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        rHipExp = ExposeTm name:(name.combine baseName "Exp" "R" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
+        lHipDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_leftStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        lHipTargetDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_leftStr()) inRealName:"HipTgt" inIndex:"0" inFilChar:filteringChar) boxToggle:off crossToggle:on axisToggle:off
+        lHipExp = ExposeTm name:(name.combine inBase:baseName inType:(name.get_exposeTMStr()) inSide:(name.get_leftStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
+        rHipDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_rightStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        rHipTargetDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_rightStr()) inRealName:"HipTgt" inIndex:"0" inFilChar:filteringChar) boxToggle:off crossToggle:on axisToggle:off
+        rHipExp = ExposeTm name:(name.combine inBase:baseName inType:(name.get_exposeTMStr()) inSide:(name.get_rightStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
 
         helperArray = #()
         append helperArray spineDummy
@@ -4130,14 +4354,14 @@ struct _Hip (
 
         boneArray = #()
 
-        local lHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "L" "Hip" "" filteringChar) size:boneSize
+        local lHipBone = bone.create_simple_bone (boneSize * 2) (name.combine inBase:baseName inSide:(name.get_leftStr()) inRealName:"Hip" inFilChar:filteringChar) size:boneSize
         lHipBone[1].transform = lThigh.transform
         anim.rotate_local lHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
         lHipBone[1].parent = lHipDummy
         append boneArray lHipBone[1]
         append boneArray lHipBone[2]
         
-        local rHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "R" "Hip" "" filteringChar) size:boneSize
+        local rHipBone = bone.create_simple_bone (boneSize * 2) (name.combine inBase:baseName inSide:(name.get_rightStr()) inRealName:"Hip" inFilChar:filteringChar) size:boneSize
         rHipBone[1].transform = rThigh.transform
         anim.rotate_local rHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
         rHipBone[1].parent = rHipDummy
@@ -5567,7 +5791,7 @@ struct _Joystick (
 )
 
 struct _JoystickGenerator (
-    name, anim, const,
+    str, name, anim, const,
 
     joyName = "",
     controlBoxColor = color 0 198 255,
@@ -5603,7 +5827,7 @@ struct _JoystickGenerator (
         cursor.position = [-(maxX + minX)/2, 0, -(maxY + minY)/2]
         
         if noCaption == false then (
-            local displayCaptionText = (name.get_side joyName) + (name.get_filteringChar joyName) + (name.get_realName joyName)
+            local displayCaptionText = (name.get_side joyName) + (str.get_filteringChar joyName) + (name.get_realName joyName)
             caption = Text text:displayCaptionText size:((sizeX/2+sizeY/2)/4)  kerning:0 leading:0 transform:(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,sizeY/2])
             caption.wirecolor = captionColor
             caption.name = name.replace_type joyName "Ctr"
@@ -5870,6 +6094,13 @@ struct _Poly (
     )
 )
 
+struct _MorphChannel
+(
+    index = 0,
+    name = "",
+    hasData = false
+)
+
 struct _Morph (
     channelMaxViewNum = 100,
 
@@ -5877,43 +6108,21 @@ struct _Morph (
         local returnVal = 0
         if inObj.modifiers.count > 0 then (
             for i = 1 to inObj.modifiers.count do (
-                if classOf inObj.modifiers[i] == Morpher then returnVal = i
+                if classOf inObj.modifiers[i] == Morpher then (
+                    returnVal = i
+                )
             )
         )
 
-        return returnVal
+        returnVal
     ),
 
     fn get_modifier inObj = (
         local returnVal = undefined
         local modIndex = get_modifier_index inObj
-        if modIndex > 0 then (
-            --max modify mode
-            --select inObj
-            --modPanel.setCurrentObject inObj.modifiers[modIndex]
-            returnVal = inObj.modifiers[modIndex]
-        )
+        if modIndex > 0 then returnVal = inObj.modifiers[modIndex]
 
-        return returnval
-    ),
-
-    fn add_target inObj inTarget inIndex = (
-        local returnVal = false
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            returnVal = WM3_MC_BuildFromNode morphMod inIndex inTarget
-        )
-        return returnVal
-    ),
-
-    fn add_targets inObj inTargetArray = (
-        local returnVal = false
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            for i = 1 to inTargetArray.count do (
-                add_target inObj inTargetArray[i] i
-            )
-        )
+        returnval
     ),
 
     fn get_channel_num inObj = (
@@ -5934,98 +6143,359 @@ struct _Morph (
             )
         )
 
-        return returnVal
+        returnVal
     ),
 
-    fn get_all_channel_name inObj = (
+    fn get_all_channel_info inObj = (
         local returnVal = #()
         local morphMod = get_modifier inObj
         if morphMod != undefined then (
             local channelNum = get_channel_num inObj
-            for i = 1 to channelNum do (
-                append returnVal (WM3_MC_GetName morphMod i)
+            if channelNum > 0 then (
+                for i = 1 to channelNum do (
+                    local tempChannel = _MorphChannel()
+                    tempChannel.index = i
+                    tempChannel.hasData = WM3_MC_HasData morphMod i
+                    tempChannel.name = WM3_MC_GetName morphMod i
+                    append returnVal tempChannel
+                )
             )
         )
-        return returnVal
+
+        returnVal
+    ),
+
+    fn add_target inObj inTarget inIndex = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            WM3_MC_BuildFromNode morphMod inIndex inTarget
+            returnVal = WM3_MC_HasData morphMod inIndex
+        )
+        returnVal
+    ),
+
+    fn add_targets inObj inTargetArray = (
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            for i = 1 to inTargetArray.count do (
+                WM3_MC_BuildFromNode morphMod i inTargetArray[i]
+            )
+        )
+    ),
+
+    fn get_all_channel_name inObj = (
+        local returnVal = #()
+        local channelArray = get_all_channel_info inObj
+        if channelArray.count > 0 then returnval = for item in channelArray collect item.name
+
+        returnVal
     ),
 
     fn get_channel_name inObj inIndex = (
         local returnVal = ""
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            returnVal = WM3_MC_GetName morphMod inIndex
-        )
-        return returnVal
+        local channelArray = get_all_channel_info inObj
+        try (if channelArray.count > 0 then returnVal = channelArray[inIndex].name)
+        catch returnVal = ""
+        returnVal
     ),
 
     fn get_channel_index inObj inName = (
         local returnVal = 0
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local allNameArray = get_all_channel_name inObj
-            returnVal = findItem allNameArray inName
+        local channelArray = get_all_channel_info inObj
+        if channelArray.count > 0 then (
+            for item in channelArray do if item.name == inName then (returnval = item.index; exit)
         )
-        return returnVal
+        returnVal
     ),
 
     fn get_channel_value_by_name inObj inName = (
-        local returnVal = 0
+        local returnVal = 0.0
+        local channelIndex = get_channel_index inObj inName
         local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inName
-            if channelIndex > 0 then (
-                returnVal = WM3_MC_GetValue morphMod channelIndex
-            )
+        if channelIndex > 0 then (
+            try (returnVal = WM3_MC_GetValue morphMod channelIndex)
+            catch returnVal = 0.0
         )
-        return returnVal
+        returnVal
     ),
 
     fn get_channel_value_by_index inObj inIndex = (
         local returnVal = 0
         local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            returnVal = WM3_MC_GetValue morphMod channelIndex
+            try (returnVal = WM3_MC_GetValue morphMod inIndex)
+            catch returnVal = 0
         )
-        return returnVal
+        returnVal
     ),
 
-    fn set_cahnnel_value_by_name inObj inName inVal = (
+    fn set_channel_value_by_name inObj inName inVal = (
         local returnVal = false
         local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inName
-            if channelIndex > 0 then (
+        local channelIndex = get_channel_index inObj inName
+        if channelIndex > 0 then (
+            try (
                 WM3_MC_SetValue morphMod channelIndex inVal
                 returnVal = true
             )
+            catch returnVal = false
+        )
+        returnVal
+    ),
+
+    fn set_channel_value_by_index inObj inIndex inVal = (
+        local returnVal = false
+        local morphMod = get_modifier inObj
+        if morphMod != undefined then (
+            try (
+                WM3_MC_SetValue morphMod inIndex inVal
+                returnVal = true
+            )
+            catch returnval = false
         )
 
-        return returnVal
+        returnVal
     ),
 
     fn set_channel_name_by_name inObj inTargetName inNewName = (
         local returnVal = false
-        local morphMod = get_modifier inObj
-        if morphMod != undefined then (
-            local channelIndex = get_channel_index inObj inTargetName
-            if channelIndex > 0 then (
-                WM3_MC_SetName morphMod channelIndex inNewName
-                returnVal = true
-            )
+        local channelIndex = get_channel_index inObj inTargetName
+        if channelIndex > 0 then (
+            WM3_MC_SetName morphMod channelIndex inNewName
+            returnVal = true
         )
-        return returnVal
+        returnVal
     ),
 
     fn set_channel_name_by_index inObj inIndex inName = (
         local returnVal = false
         local morphMod = get_modifier inObj
         if morphMod != undefined then (
-            if (WM3_MC_HasData morphMod inIndex) then (
+            try (
                 WM3_MC_SetName morphMod inIndex inName
                 returnVal = true
             )
+            catch returnVal = false
+        )
+        returnVal
+    ),
+
+    fn reset_all_channel_value inObj = (
+        local returnVal = false
+        local totalChannelNum = get_channel_num inObj
+        if totalChannelNum > 0 then (
+            for i = 1 to totalChannelNum do (
+                set_channel_value_by_index inObj i 0.0
+            )
+        )
+    ),
+
+    fn extract_morph_channel_geometry obj _feedback_:false = (
+        morph_mod = get_modifier obj
+
+        if IsValidMorpherMod morph_mod then (
+            channels = for i=1 to (WM3_NumberOfChannels morph_mod) where WM3_MC_HasData morph_mod i collect i
+            for i in channels do (
+                chan_name = WM3_MC_GetName morph_mod i
+                WM3_MC_SetValue morph_mod i 100.0
+
+                obj_snapShot =  snapShot obj
+                obj_snapShot.name = chan_name
+
+                WM3_MC_SetValue morph_mod i 0.0
+
+                if _feedback_ do format " - FUNCTION - [ extract_morph_channel_geometry ] - Extracted ---- % ---- successfuly!!\n" obj_snapShot.name
+            )
+        )
+        else(if _feedback_ do format " - FUNCTION - [ extract_morph_channel_geometry ] - No valid morpher found on ---- % ---- " obj.name)
+    )
+)
+
+
+struct _XMLNode (
+    tag,
+    parent,
+    dotnetNode,
+
+    fn init inDnNode = (
+        dotnetNode = inDnNode
+        tag = inDnNode.LocalName
+        parent = inDnNode.ParentNode
+    ),
+
+    fn get_tag = (
+        return dotnetNode.Name
+    ),
+
+    fn set_tag inNewTag = (
+        try (dotnetNode.Name = inNewTag)
+        catch(false)
+    ),
+
+    fn get_text = (
+        return dotnetNode.InnerText
+    ),
+
+    fn set_text inText = (
+        dotnetNode.InnerText = inText
+    ),
+
+    fn add_attribute inAtt inVal = (
+        dotnetNode.SetAttribute inAtt inVal
+    ),
+
+    fn get_attribute inAtt = (
+        dotnetNode.GetAttribute inAtt
+    ),
+
+    fn set_attribute inAtt inNewVal = (
+        dotnetNode.SetAttribute inAtt inNewVal
+    ),
+
+    fn remove_attribute inAtt = (
+        dotnetNode.RemoveAttribute inAtt
+    ),
+
+    fn get_all_attribute = (
+        local returnVal = #()
+        local atts = dotnetNode.Attributes
+        for i = 0 to (atts.Count - 1) do (
+            local temp = #()
+            local item = (atts.ItemOf i)
+            append temp item.Name
+            append temp item.Value
+            append returnVal temp
         )
         return returnVal
+    ),
+
+    fn has_attribute inAtt = (
+        dotnetNode.HasAttribute inAtt
+    ),
+
+    fn append_child_node inNewNode = (
+        if classof inNewNode == _XMLNode then (
+            dotnetNode.AppendChild inNewNode.dotnetNode
+            return true
+        )
+        else return false
+    ),
+
+    fn get_child inIndex = (
+        local dNode = dotnetNode.ChildNodes.ItemOf inIndex
+        if dNode.Name != "#text" then (
+            local newNode = _XMLNode()
+            newNode.init dNode
+            return newNode
+        )
+        else return undefined
+    ),
+
+    fn get_children = (
+        local returnNodes = #()
+        for i = 0 to (dotnetNode.ChildNodes.Count - 1) do (
+            local dNode = dotnetNode.ChildNodes.ItemOf i
+            local newNode = _XMLNode()
+            newNode.init dNode
+            append returnNodes newNode
+        )
+        return returnNodes
+    ),
+
+    fn remove_child inChildNode = (
+        if classof inChildNode == _XMLNode then (
+            dotnetNode.RemoveChild inChildNode.dotnetNode
+            return true
+        )
+        else return false
+    )
+)
+struct _XMLDoc (
+    file = undefined,
+    rootNode = undefined,
+    --dom = dotNetObject "System.Xml.XmlDocument",
+    dom = undefined,
+    loaded = false,
+
+    fn load_file inFullFileName = (
+        file = inFullFileName
+        dom = undefined
+        dom = dotNetObject "System.Xml.XmlDocument"
+        doc = dom.Load file
+        loaded = true
+
+        return true
+    ),
+
+    fn save_file fileName:"" = (
+        if loaded then (
+            local saveFileFullName = ""
+            if fileName == "" then saveFileFullName = file
+            else saveFileFullName = fileName
+            dom.Save saveFileFullName
+            dom = undefined
+            return true
+        )
+        else return false
+    ),
+
+    fn get_root_node = (
+        rootNode = _XMLNode()
+        rootNode.init dom.DocumentElement
+        return rootNode
+    ),
+
+    fn create_node inTag = (
+        local dNode = dom.CreateElement inTag
+        local newNode = _XMLNode()
+        newNode.init dNode
+        return newNode
+    ),
+
+    fn append_node inNewNode = (
+        if classof inNewNode == _XMLNode then (
+            dom.AppendChild inNewNode.dotnetNode
+            return true
+        )
+        else return false
+    ),
+
+    fn save_pretty fileName:"" = (
+        if loaded then (
+            local saveFileFullName = ""
+            if fileName == "" then saveFileFullName = file
+            else saveFileFullName = fileName
+
+            local writer = dotNetClass "System.Xml.XmlTextWriter"
+            local wSettings = dotNetObject "System.Xml.XmlWriterSettings"
+            wSettings.indent = true
+
+            local w = writer.create saveFileFullName wSettings
+            dom.writeContentTo w
+            w.close()
+            dom = undefined
+            return true
+        )
+        else return false
+    ),
+
+    fn create_root_node = (
+        local rNode = create_node "RootNode"
+        append_node rNode
+        rNode = get_root_node()
+        return rNode
+    ),
+
+    fn create_file inFullFileName = (
+        local returnNode = undefined
+        file = inFullFileName
+        loaded = true
+        dom = undefined
+        dom = dotNetObject "System.Xml.XmlDocument"
+
+        returnNode = create_root_node()
+        return returnNode
     )
 )
 
@@ -6131,18 +6601,27 @@ struct _JalLib (
     poly = _Poly(),
     mor = _Morph(),
 
+    xml = _XMLDoc(),
+
     tools = _Tools(),
 
     on create do (
+        name.str = str
         helper.name = name
 
+        const.str = str
         const.name = name
         const.helper = helper
 
+        bone.str = str
         bone.name = name
         bone.anim = anim
         bone.helper = helper
         bone.const = const
+
+        bip.name = name
+        bip.anim = anim
+        bip.bone = bone
 
         mirror.name = name
         mirror.bone = bone
@@ -6176,6 +6655,7 @@ struct _JalLib (
         twistBone.const = const
         twistBone.bip = bip
 
+        joystick.str = str
         joystick.name = name
         joystick.anim = anim
         joystick.const = const

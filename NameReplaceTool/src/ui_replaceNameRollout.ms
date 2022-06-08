@@ -8,23 +8,27 @@ rollout replaceNameRollout "Replace Name" (
         button clearFindBtn "Clear" align:#right offset:[0, 15]
     )
 
-    editText strTxt1 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt1 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb1 "Remove" offset:[0, 20] align:#right
-    editText strTxt2 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt2 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb2 "Remove" offset:[0, 20] align:#right
-    editText strTxt3 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt3 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb3 "Remove" offset:[0, 20] align:#right
-    editText strTxt4 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt4 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb4 "Remove" offset:[0, 20] align:#right
-    editText strTxt5 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt5 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb5 "Remove" offset:[0, 20] align:#right
-    editText strTxt6 " " text:"" labelOnTop:true align:#left across:2
+    editText strTxt6 " " text:"" labelOnTop:true align:#left across:2 width:200
     checkbox removeCkb6 "Remove" offset:[0, 20] align:#right
+    editText strTxt7 " " text:"" labelOnTop:true align:#left across:2 width:200
+    checkbox removeCkb7 "Remove" offset:[0, 20] align:#right
+    editText strTxt8 " " text:"" labelOnTop:true align:#left across:2 width:200
+    checkbox removeCkb8 "Remove" offset:[0, 20] align:#right
 
     listbox resultLst "Result:" readOnly:true height:10
 
-    local editTextCtrArray = #(strTxt1, strTxt2, strTxt3, strTxt4, strTxt5, strTxt6)
-    local checkboxCtrArray = #(removeCkb1, removeCkb2, removeCkb3, removeCkb4, removeCkb5, removeCkb6)
+    local editTextCtrArray = #(strTxt1, strTxt2, strTxt3, strTxt4, strTxt5, strTxt6, strTxt7, strTxt8)
+    local checkboxCtrArray = #(removeCkb1, removeCkb2, removeCkb3, removeCkb4, removeCkb5, removeCkb6, removeCkb7, removeCkb8)
     local prevEditTextCtrArray = #()
     local resultNameArray = #()
 
@@ -73,9 +77,9 @@ rollout replaceNameRollout "Replace Name" (
             )
         )
         if inNameArray.count > editTextCtrArray.count then (
-            for i = 1 to 5 do append returnVal inNameArray[i]
-            local overflowinNameArray = for i = 6 to inNameArray.count collect inNameArray[i]
-            local lastCtrlText = jal.str.combine overflowNameArray filChar:filteringChar
+            for i = 1 to (editTextCtrArray.count-1) do append returnVal inNameArray[i]
+            local overflowinNameArray = for i = editTextCtrArray.count to inNameArray.count collect inNameArray[i]
+            local lastCtrlText = jal.str.combine overflowinNameArray filChar:filteringChar
             append returnVal lastCtrlText
         )
         return returnVal
@@ -189,6 +193,22 @@ rollout replaceNameRollout "Replace Name" (
         gen_new_name()
         update_result_ui()
     )
+    on strTxt7 entered inTxt do (
+        gen_new_name()
+        update_result_ui()
+    )
+    on removeCkb7 changed arg do (
+        gen_new_name()
+        update_result_ui()
+    )
+    on strTxt8 entered inTxt do (
+        gen_new_name()
+        update_result_ui()
+    )
+    on removeCkb8 changed arg do (
+        gen_new_name()
+        update_result_ui()
+    )
 
     on filteringCharRdo changed state do (
         case state of (
@@ -225,7 +245,8 @@ rollout replaceNameRollout "Replace Name" (
                 renameObjArray[i].name = resultNameArray[i]
             )
             update_ui()
-            __nameRepNameListRollout.update_UI()
+            jal.tools.nameReplaceTool.nameListRollout.update_UI()
         )
+        try(destroydialog jal.tools.nameReplaceTool) catch()
     )
 )

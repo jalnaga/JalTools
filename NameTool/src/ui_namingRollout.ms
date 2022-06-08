@@ -1,16 +1,18 @@
 rollout namingRollout "Naming Tool" (
     group "Name" (
-        editText basePrefixTxt "Pre:" labelOnTop:true across:3 width:40 align:#left
-        editText baseNameTxt "Base Name:" text:"Bip001" labelOnTop:true width:142 offset:[-32,0]
-        editText baseSufixTxt "Su:" labelOnTop:true width:40 align:#right
-        editText typePrefixTxt "Pre:" labelOnTop:true across:3 width:40 align:#left
-        editText typeTxt "Type:" text:"" labelOnTop:true width:142 offset:[-32,0]
-        editText typeSufixTxt "Su:" labelOnTop:true width:40 align:#right
-        editText namePrefixTxt "Pre:" labelOnTop:true across:3 width:40 align:#left
-        editText nameTxt "Name:" text:"" labelOnTop:true width:142 offset:[-32,0]
-        editText nameSufixTxt "Su:" labelOnTop:true width:40 align:#right
-        radiobuttons sideRdo "L/R:" align:#left labels:#("(None)", "L", "R") offsets:#([30, -16], [30, -16], [30, -16]) across:2
-        radiobuttons frontBackRdo "F/B:" align:#left labels:#("(None)", "F", "B") offsets:#([30, -16], [30, -16], [30, -16])
+        editText basePrefixTxt "Pre:" labelOnTop:true across:3 width:60 align:#left
+        editText baseNameTxt "Base Name:" text:"Bip001" labelOnTop:true width:170 offset:[-32,0]
+        editText baseSufixTxt "Su:" labelOnTop:true width:60 align:#right
+        dropdownList baseNameDrp "" items:#("") width:170 align:#center
+        editText typePrefixTxt "Pre:" labelOnTop:true across:3 width:60 align:#left
+        editText typeTxt "Type:" text:"" labelOnTop:true width:170 offset:[-32,0]
+        editText typeSufixTxt "Su:" labelOnTop:true width:60 align:#right
+        dropdownList typeDrp "" items:#("") width:170 align:#center
+        editText namePrefixTxt "Pre:" labelOnTop:true across:3 width:60 align:#left
+        editText nameTxt "Name:" text:"" labelOnTop:true width:170 offset:[-32,0]
+        editText nameSufixTxt "Su:" labelOnTop:true width:60 align:#right
+        radiobuttons sideRdo "L/R:" align:#left labels:#("(None)", "Left", "Right") offsets:#([30, -16], [30, -16], [30, -16]) across:2
+        radiobuttons frontBackRdo "F/B:" align:#left labels:#("(None)", "Front", "Back") offsets:#([30, -16], [30, -16], [30, -16])
         radiobuttons filteringCharRdo "Filtering:" align:#left labels:#("None", "(Blank)", "_") columns:3
     )
 
@@ -21,11 +23,8 @@ rollout namingRollout "Naming Tool" (
     )
 
     editText resultTxt "Result:" readOnly:true text:"Bip001 Temp 0" labelOnTop:true offset:[0, 10]
-    button renameBtn "Rename!" height:30 offset:[0, 5] across:3 align:#left
-    button nubBtn "Nub!" height:30 offset:[20, 5]
-    button settingBtn "Set" align:#right offset:[0,5] height:30
-
-    include "ui_nameToolSettingRollout.ms"
+    button renameBtn "Rename!" width:100 height:40 offset:[0, 5] across:2 align:#left
+    button nubBtn "Nub!" height:40 align:#right offset:[0, 5]
 
     local sortedRenameObjsArray = #()
     local sideCharArray = #("", jal.name.get_leftStr(), jal.name.get_rightStr())
@@ -39,7 +38,15 @@ rollout namingRollout "Naming Tool" (
             index = formattedPrint startCountSpn.value format:formatStr
         )
         else index = nubStr
-        resultTxt.text = jal.name.combine inBase:(basePrefixTxt.text + baseNameTxt.text + baseSufixTxt.text) inType:(typePrefixTxt.text + typeTxt.text + typeSufixTxt.text) inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:(namePrefixTxt.text + nameTxt.text + nameSufixTxt.text) inIndex:index inFilChar:filCharArray[filteringCharRdo.state]
+
+        local tempBaseName = ""
+        local tempType = ""
+        if baseNameTxt.text != "" then tempBaseName = baseNameTxt.text
+        if baseNameTxt.text == "" and baseNameDrp.selection > 1 then tempBaseName = baseNameDrp.items[baseNameDrp.selection]
+        if typeTxt.text != "" then tempType = typeTxt.text
+        if typeTxt.text == "" and typeDrp.selection > 1 then tempType = typeDrp.items[typeDrp.selection]
+
+        resultTxt.text = jal.name.combine inBase:(basePrefixTxt.text + tempBaseName + baseSufixTxt.text) inType:(typePrefixTxt.text + tempType + typeSufixTxt.text) inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:(namePrefixTxt.text + nameTxt.text + nameSufixTxt.text) inIndex:index inFilChar:filCharArray[filteringCharRdo.state]
     )
 
     fn update_UI = (
@@ -49,9 +56,13 @@ rollout namingRollout "Naming Tool" (
             else sortedRenameObjsArray = jal.sel.sort_objects renameObjArray
 
             baseNameTxt.text = jal.name.get_base sortedRenameObjsArray[1].name
+            local baseNameFoundIndex = findItem baseNameDrp.items baseNameTxt.text
+            if baseNameFoundIndex != 0 then baseNameDrp.selection = baseNameFoundIndex else baseNameDrp.selection = 1
             typeTxt.text = jal.name.get_type sortedRenameObjsArray[1].name
+            local typeFoundIndex = findItem typeDrp.items baseNameTxt.text
+            if typeFoundIndex != 0 then typeDrp.selection = typeFoundIndex else typeDrp.selection = 1
             nameTxt.text = jal.name.get_realName sortedRenameObjsArray[1].name
-            local filCharInRenameObjArray = jal.name.get_filteringChar sortedRenameObjsArray[1].name
+            local filCharInRenameObjArray = jal.str.get_filteringChar sortedRenameObjsArray[1].name
             local sideCharInRenameObjArray = jal.name.get_side sortedRenameObjsArray[1].name
             local fbCharInRenameObjArray = jal.name.get_frontBack sortedRenameObjsArray[1].name
 
@@ -87,10 +98,22 @@ rollout namingRollout "Naming Tool" (
             frontBackRdo.state = 1
             filteringCharRdo.state = 2
             startCountSpn.value = 0
-            paddingNumSpn.value = numPaddingNum
+            paddingNumSpn.value = jal.name.get_paddingNum()
             resultTxt.text = ""
             countingBySelOrderCkb.checked = false
+            baseNameDrp.selection = 1
+            typeDrp.selection = 1
         )
+        basePrefixTxt.text = ""
+        baseSufixTxt.text = ""
+        typePrefixTxt.text = ""
+        typeSufixTxt.text = ""
+        namePrefixTxt.text = ""
+        nameSufixTxt.text = ""
+    )
+
+    on namingRollout open do (
+        paddingNumSpn.value = jal.name.get_paddingNum()
     )
 
     on basePrefixTxt changed inTxt do (
@@ -102,6 +125,10 @@ rollout namingRollout "Naming Tool" (
     on baseSufixTxt changed inTxt do (
         resultTxt.text = gen_result_name()
     )
+    on baseNameDrp selected inSel do (
+        baseNameTxt.text = ""
+        resultTxt.text = gen_result_name()
+    )
 
     on typePrefixTxt changed inTxt do (
         resultTxt.text = gen_result_name()
@@ -110,6 +137,10 @@ rollout namingRollout "Naming Tool" (
         resultTxt.text = gen_result_name()
     )
     on typeSufixTxt changed inTxt do (
+        resultTxt.text = gen_result_name()
+    )
+    on typeDrp selected inSel do (
+        typeTxt.text = ""
         resultTxt.text = gen_result_name()
     )
 
@@ -148,8 +179,15 @@ rollout namingRollout "Naming Tool" (
 
         if sortedRenameObjsArray.count > 0 then (
             for i = 1 to sortedRenameObjsArray.count do (
-                local baseStr = basePrefixTxt.text + baseNameTxt.text + baseSufixTxt.text
-                local typeStr = typePrefixTxt.text + typeTxt.text + typeSufixTxt.text
+                local tempBaseName = ""
+                local tempType = ""
+                if baseNameTxt.text != "" then tempBaseName = baseNameTxt.text
+                if baseNameTxt.text == "" and baseNameDrp.selection > 1 then tempBaseName = baseNameDrp.items[baseNameDrp.selection]
+                if typeTxt.text != "" then tempType = typeTxt.text
+                if typeTxt.text == "" and typeDrp.selection > 1 then tempType = typeDrp.items[typeDrp.selection]
+
+                local baseStr = basePrefixTxt.text + tempBaseName + baseSufixTxt.text
+                local typeStr = typePrefixTxt.text + tempType + typeSufixTxt.text
                 local realStr = namePrefixTxt.text + nameTxt.text + nameSufixTxt.text
                 local indexStr = ""
                 indexStr = jal.name.convert_digit_into_padding_string (startCountSpn.value + i - 1) inPaddingNum:paddingNumSpn.value
@@ -160,7 +198,7 @@ rollout namingRollout "Naming Tool" (
                 sortedRenameObjsArray[i].name = jal.name.combine inBase:baseStr inType:typeStr inSide:sideCharArray[sideRdo.state] inFrontBack:frontBackCharArray[frontBackRdo.state] inRealName:realStr inIndex:indexStr inFilChar:filCharArray[filteringCharRdo.state]
             )
 
-            __nameListRollout.update_UI()
+            jal.tools.namingTool.nameListRollout.update_UI()
             update_UI()
         )
     )
@@ -173,12 +211,8 @@ rollout namingRollout "Naming Tool" (
             for i = 1 to sortedRenameObjsArray.count do (
                 if (jal.name.is_nub sortedRenameObjsArray[i].name) or (jal.bone.is_end_bone sortedRenameObjsArray[i]) then sortedRenameObjsArray[i].name = jal.name.set_index_as_nub sortedRenameObjsArray[i].name
             )
-            __nameListRollout.update_UI()
+            jal.tools.namingTool.nameListRollout.update_UI()
             update_UI()
         )
-    )
-
-    on settingBtn pressed do (
-        createDialog nameToolSettingRollout width:480 modal:true style:#(#style_toolwindow)
     )
 )

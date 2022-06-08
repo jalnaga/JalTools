@@ -1,15 +1,11 @@
 try(destroydialog jal.tools.namingTool) catch()
-rollout mainRollout "Naming Tool" width:300 height:690 (
-    SubRollout mainSub "" align:#center height:675
+rollout mainRollout "Naming Tool" width:380 height:770 (
+    SubRollout mainSub "" align:#center height:755
 
-    local minWidth = 300
-    local minHeight = 690
+    local minWidth = 380
+    local minHeight = 770
     local subRollWidthOffset = 25
     local subRollHeightOffset = 15
-
-    global __nameListRollout
-    global __namingRollout
-    global __batchNamingRollout
 
     local iniFile = ""
     local nubStr = ""
@@ -23,28 +19,16 @@ rollout mainRollout "Naming Tool" width:300 height:690 (
 
     on mainRollout open do
     (
-        iniFile = jal.name.get_iniFile()
-        nubStr = getINISetting iniFile "DefaultSetting" "NubStr"
-        namePartsOrder = filterString (getINISetting iniFile "DefaultSetting" "NamePartsOrder") " "
-        numPaddingNum = (getINISetting iniFile "DefaultSetting" "PaddingNum") as integer
-        local iniSideStrArray = filterString (getINISetting iniFile "DefaultSetting" "SideStrArray") " "
-        local iniFrontBackStrArray = filterString (getINISetting iniFile "DefaultSetting" "FrontBackStrArray") " "
-        jal.name.set_name_parts_order namePartsOrder
-        jal.name.set_nubStr nubStr
-        jal.name.set_leftStr iniSideStrArray[1]
-        jal.name.set_rightStr iniSideStrArray[2]
-        jal.name.set_frontStr iniFrontBackStrArray[1]
-        jal.name.set_backStr iniFrontBackStrArray[2]
-
-        __nameListRollout = nameListRollout
-        __namingRollout = namingRollout
-        __batchNamingRollout = batchNamingRollout
+        jal.name.load_setting_from_ini()
 
         AddSubRollout mainSub nameListRollout
         AddSubRollout mainSub namingRollout
         AddSubRollout mainSub batchNamingRollout
 
-        __nameListRollout.update_UI()
+        namingRollout.baseNameDrp.items = #("") + jal.name.__baseStrArray
+        namingRollout.typeDrp.items = #("") + jal.name.__typeStrArray
+        nameListRollout.update_UI()
+        namingRollout.paddingNumSpn.value = (jal.name.get_paddingNum())
     )
 
     on mainRollout resized newSize do

@@ -4,14 +4,17 @@ macroscript jal_create_parentHelper category:"jalTools" tooltip:"create Parent H
 
 macroscript jal_create_helper category:"jalTools" tooltip:"create Helper" autoUndoEnabled:true (
     rollout helperTypeRollout "Set Helper Type" (
-        radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
+        dropdownList helperTypeDrp items:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
         button okBtn "OK"
 
+        on helperTypeRollout open do (
+            helperTypeDrp.items = jal.name.__typeStrArray
+        )
+
         on okBtn pressed do (
-            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
             local genHelpers = jal.helper.create_helper()
             for item in genHelpers do (
-                item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
+                item.name = jal.name.replace_type item.name helperTypeDrp.items[helperTypeDrp.selection]
             )
             DestroyDialog helperTypeRollout
         )
@@ -70,14 +73,17 @@ macroscript jal_create_expHelper category:"jalTools" tooltip:"create Exp Helper"
 
 macroscript jal_create_two_helper category:"jalTools" tooltip:"create Two Helper" autoUndoEnabled:true (
     rollout helperTypeRollout "Set Helper Type" (
-        radioButtons helperTypeRdo labels:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P") columns:2
+        dropdownList helperTypeDrp items:#("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
         button okBtn "OK"
 
+        on helperTypeRollout open do (
+            helperTypeDrp.items = jal.name.__typeStrArray
+        )
+
         on okBtn pressed do (
-            local typeStrArray = #("Dum", "Root", "Pos", "Rot", "Tg", "IK", "P")
             local genHelpers = jal.helper.create_helper makeTwo:true
             for item in genHelpers do (
-                item.name = jal.name.replace_type item.name typeStrArray[helperTypeRdo.state]
+                item.name = jal.name.replace_type item.name helperTypeDrp.items[helperTypeDrp.selection]
             )
             DestroyDialog helperTypeRollout
         )

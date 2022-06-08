@@ -1,4 +1,6 @@
 struct _Bip (
+    anim, name, bone,
+
     rootName = "",
 
     com,
@@ -441,5 +443,71 @@ struct _Bip (
 
     fn turn_off_figureMode inBip = (
         inBip.controller.figureMode = false
+    ),
+
+    fn link_base_skeleton = (
+        setWaitCursor()
+        local skinBoneBaseName = "b"
+
+        local bip_skel = get_bips()
+        local base_skel = #()
+        for i = 1 to bip_skel.count do (
+            local baseSkeletonName = name.replace_base bip_skel[i].name skinBoneBaseName
+            baseSkeletonName = name.replace_filteringChar baseSkeletonName "_"
+            local baseSkel = getNodeByName baseSkeletonName
+            if (isValidObj baseSkel) then (
+                base_skel[i] = baseSkel
+            )
+        )
+
+        anim.save_xform bip_skel
+        anim.set_xform bip_skel
+
+        anim.save_xform base_skel
+        anim.set_xform base_skel
+
+        for i = 1 to base_skel.count do (
+            if base_skel[i] != undefined then (
+                base_skel[i].scale.controller = (scaleXYZ())
+                base_skel[i].controller = (link_constraint())
+
+                anim.set_xform #(base_skel[i]) space:#world
+                base_skel[i].transform.controller.AddTarget (bip_skel[i]) 0
+            )
+        )
+        for i = 1 to base_skel.count do if base_skel[i] != undefined then base_skel[i].boneEnable = true
+        setArrowCursor()
+    ),
+
+    fn unlink_base_skeleton = (
+        setWaitCursor()
+        local skinBoneBaseName = "b"
+
+        local bip_skel = get_bips()
+        local base_skel = #()
+        for i = 1 to bip_skel.count do (
+            local baseSkeletonName = name.replace_base bip_skel[i].name skinBoneBaseName
+            baseSkeletonName = name.replace_filteringChar baseSkeletonName "_"
+            local baseSkel = getNodeByName baseSkeletonName
+            if (isValidObj baseSkel) then (
+                base_skel[i] = baseSkel
+            )
+        )
+
+        anim.save_xform bip_skel
+        anim.set_xform bip_skel
+
+        anim.save_xform base_skel
+        anim.set_xform base_skel
+
+        for i = 1 to base_skel.count do
+        (
+            if base_skel[i] != undefined then (
+                base_skel[i].controller = (prs())
+                anim.set_xform #(base_skel[i]) space:#world
+            )
+        )
+        for i = 1 to base_skel.count do if base_skel[i] != undefined then base_skel[i].boneEnable = true
+        setArrowCursor()
     )
 )

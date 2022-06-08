@@ -20,7 +20,7 @@ struct _Joystick (
 )
 
 struct _JoystickGenerator (
-    name, anim, const,
+    str, name, anim, const,
 
     joyName = "",
     controlBoxColor = color 0 198 255,
@@ -56,7 +56,7 @@ struct _JoystickGenerator (
         cursor.position = [-(maxX + minX)/2, 0, -(maxY + minY)/2]
         
         if noCaption == false then (
-            local displayCaptionText = (name.get_side joyName) + (name.get_filteringChar joyName) + (name.get_realName joyName)
+            local displayCaptionText = (name.get_side joyName) + (str.get_filteringChar joyName) + (name.get_realName joyName)
             caption = Text text:displayCaptionText size:((sizeX/2+sizeY/2)/4)  kerning:0 leading:0 transform:(matrix3 [1,0,0] [0,0,1] [0,-1,0] [0,0,sizeY/2])
             caption.wirecolor = captionColor
             caption.name = name.replace_type joyName "Ctr"

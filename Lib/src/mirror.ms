@@ -26,7 +26,7 @@ struct _Mirror (
         local pivotTm = (matrix3 1)
         local mirrorAxisIndex = axis
         local flipAxisIndex = flip
-        local copyObjName = name.gen_mirroring_name inObj.name
+        local copyObjName = name.gen_mirroring_name inObj.name axis:axis
 
         if pivotObj != undefined then pivotTm = pivotObj.transform
         if negative == true then flipAxisIndex = 4
@@ -156,7 +156,7 @@ struct _Mirror (
             reflection.frontfinsize       = original.frontfinsize
             reflection.frontfinstarttaper = original.frontfinstarttaper
             reflection.height             = original.height
-            if (name.has_side original.name) then reflection.name = name.gen_mirroring_name original.name
+            if ((name.has_side original.name) or (name.has_front_back original.name)) then reflection.name = (name.gen_mirroring_name original.name axis:mAxis)
             else reflection.name = name.add_sufix_to_realName original.name "Mirrored"
             reflection.sidefins           = original.sidefins 
             reflection.sidefinsendtaper   = original.sidefinsendtaper

@@ -105,5 +105,29 @@ struct _Layer (
         )
 
         returnVal
+    ),
+
+    fn rename_layer_from_index layer_index search_for replace_with = (
+        cur_layer = LayerManager.getLayer layer_index
+        layer_name =  cur_layer.name
+        find_at = findString layer_name search_for
+
+        if find_at != undefined then
+        (
+            found_string = substring layer_name find_at search_for.count
+            new_name = (substituteString layer_name found_string replace_with)
+            cur_layer.setName new_name
+        )
+    ),
+
+    fn is_valid_layer layer_name: layer_index: = (
+        local layer =
+        (
+            if layer_name!=unsupplied then ( LayerManager.getLayerFromName layer_name )
+            else if layer_index!=unsupplied then ( LayerManager.getLayer layer_index )
+            else(undefined)
+        )
+        if layer != undefined then ( return true )
+        else ( return false )
     )
 )

@@ -1,3 +1,10 @@
+macroscript jal_collapse_const category:"jalTools" tooltip:"Collapes Constraints" autoUndoEnabled:true (
+    if selection.count > 0 then (
+        local selArray = getCurrentSelection() as Array
+        for selObj in selArray do jal.const.collapse selObj
+    )
+)
+
 macroscript jal_pos_const category:"jalTools" tooltip:"Constraints Position" autoUndoEnabled:true (
     if selection.count >1 then (
         local selArray = getCurrentSelection()

@@ -5,21 +5,26 @@ struct _Name (
     /*    ex) Bip001 Dummy L SpineA 001
     /*************************************************/
     str,
-    __namePartsOrder = #(#npBase, #npType, #npSide, #npFrontBack, #npRealName, #npIndex),
     __nameParts = #("Base", "Type", "Side", "FrontBack", "RealName", "Index"),
+    __paddingNum = 3,
     __nubStr = "Nub",
     __sideStrArray = #("L", "R"),
     __frontBackStrArray = #("F", "B"),
+    __parentStr = "P",
+    __dummyStr = "Dum",
+    __exposeTMStr  = "Exp",
+    __targetStr ="T",
+    __iKStr ="IK",
     __typeStrArray = #("P", "Dum", "Exp", "IK", "T"),
     __baseStrArray = #("b", "Bip001"),
     __iniFile = "",
 
-    fn set_nubStr inStr = (
-        __nubStr = inStr
+    fn set_paddingNum inNum = (
+        __paddingNum = inNum
     ),
 
-    fn get_nubStr = (
-        return __nubStr
+    fn set_nubStr inStr = (
+        __nubStr = inStr
     ),
 
     fn set_leftStr inStr = (
@@ -42,8 +47,48 @@ struct _Name (
         __typeStrArray = for item in inStrArray collect item
     ),
 
+    fn set_parentStr inStr = (
+        __parentStr = inStr
+    ),
+    fn set_dummyStr inStr = (
+        __dummyStr = inStr
+    ),
+    fn set_exposeTMStr inStr = (
+        __exposeTMStr  = inStr
+    ),
+    fn set_targetStr inStr = (
+        __targetStr = inStr
+    ),
+    fn set_IKStr inStr = (
+        __iKStr = inStr
+    ),
+
     fn set_baseStr inStrArray = (
         __baseStrArray = for item in inStrArray collect item
+    ),
+
+    fn get_paddingNum = (
+        __paddingNum
+    ),
+
+    fn get_nubStr = (
+        __nubStr
+    ),
+
+    fn get_parentStr = (
+        __parentStr
+    ),
+    fn get_dummyStr = (
+        __dummyStr
+    ),
+    fn get_exposeTMStr = (
+        __exposeTMStr
+    ),
+    fn get_targetStr = (
+        __targetStr
+    ),
+    fn get_IKStr = (
+        __iKStr
     ),
 
     fn get_leftStr = (
@@ -337,7 +382,7 @@ struct _Name (
     ),
 
     fn convert_name_to_nameArray inStr = (
-        local returnArray = for item in __namePartsOrder collect ""
+        local returnArray = for item in __nameParts collect ""
         local filChar = str.get_filteringChar inStr
 
         local baseIndex = get_base_part_index()
@@ -468,7 +513,7 @@ struct _Name (
 
         local partsIndexArray = #(baseIndex, typeIndex, sideIndex, frontBackIndex, realNameIndex, indexIndex)
         local partsArray = #(base, type, side, frontBack, realName, index)
-        local combinedNameArray = for item in __namePartsOrder collect ""
+        local combinedNameArray = for item in __nameParts collect ""
         for i = 1 to partsIndexArray.count do (
             if partsIndexArray[i] != 0 then combinedNameArray[partsIndexArray[i]] = partsArray[i]
         )
@@ -512,7 +557,7 @@ struct _Name (
         returnVal
     ),
 
-    fn convert_digit_into_padding_string inDigit inPaddingNum:3 = (
+    fn convert_digit_into_padding_string inDigit inPaddingNum:__paddingNum = (
         local formatStr = "0" + (inPaddingNum as String) + "d"
         local digitNum = 0
         local returnVal = ""
@@ -525,7 +570,7 @@ struct _Name (
         returnVal
     ),
 
-    fn set_index_padding_num inStr inPaddingNum:3 = (
+    fn set_index_padding_num inStr inPaddingNum:__paddingNum = (
         local filChar = str.get_filteringChar inStr
         local nameArray = convert_name_to_nameArray inStr
         local indexIndex = get_index_part_index()
@@ -557,7 +602,7 @@ struct _Name (
 
         if indexIndex != 0 then (
             local indexStr = ""
-            local indexPaddingNum = 3
+            local indexPaddingNum = __paddingNum
             local indexNum = -9999
 
             case nameArray[indexIndex] of (
@@ -687,14 +732,26 @@ struct _Name (
         returnName
     ),
 
-    fn gen_mirroring_name inStr = (
-        local returnName = inStr
-        if (is_left inStr) then returnName = replace_side inStr (get_rightStr())
-        if (is_right inStr) then returnName = replace_side inStr (get_leftStr())
-        if (is_front inStr) then returnName = replace_side inStr (get_backStr())
-        if (is_back inStr) then returnName = replace_side inStr (get_frontStr())
+    fn gen_uniqueName inStr = (
+        local patternStr = replace_index inStr "*"
+        local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
+        local returnVal = replace_index inStr ((returnArray.count+1) as String)
 
-        if returnName == inStr then returnName = increase_index inStr 1
+        returnVal
+    ),
+
+    fn gen_mirroring_name inStr axis:1 = (
+        local returnName = inStr
+        if (has_side inStr) and (axis == 1) then (
+            if (is_left inStr) then returnName = replace_side inStr (get_rightStr())
+            if (is_right inStr) then returnName = replace_side inStr (get_leftStr())
+        )
+        if (has_front_back inStr) and (axis == 2) then (
+            if (is_front inStr) then returnName = replace_frontBack inStr (get_backStr())
+            if (is_back inStr) then returnName = replace_frontBack inStr (get_frontStr())
+        )
+
+        if returnName == inStr then returnName = gen_uniqueName inStr
 
         return returnName
     ),
@@ -734,14 +791,6 @@ struct _Name (
         return returnArray
     ),
 
-    fn gen_uniqueName inStr = (
-        local patternStr = replace_index inStr "*"
-        local returnArray = for item in objects where (matchPattern item.name pattern:patternStr) collect item
-        local returnVal = replace_index inStr ((returnArray.count+1) as String)
-
-        returnVal
-    ),
-
     fn find_and_replace inStr inTargetStr inNewStr = (
         local returnVal = inStr
         if (matchPattern inStr pattern:("*" + inTargetStr + "*")) then (
@@ -762,16 +811,32 @@ struct _Name (
         local nubStr = getINISetting __iniFile "DefaultSetting" "NubStr"
         local namePartsOrder = filterString (getINISetting __iniFile "DefaultSetting" "NamePartsOrder") " "
         local numPaddingNum = (getINISetting __iniFile "DefaultSetting" "PaddingNum") as integer
-        local iniSideStrArray = filterString (getINISetting __iniFile "DefaultSetting" "SideStrArray") " "
-        local iniFrontBackStrArray = filterString (getINISetting __iniFile "DefaultSetting" "FrontBackStrArray") " "
-        local typeStrArray = filterString (getINISetting __iniFile "DefaultSetting" "Type") " "
-        local baseStrArray = filterString (getINISetting __iniFile "DefaultSetting" "Base") " "
+        local iniSideStrArray = filterString (getINISetting __iniFile "Side" "SideStrArray") " "
+        local iniFrontBackStrArray = filterString (getINISetting __iniFile "Side" "FrontBackStrArray") " "
+
+        local typeSections = getINISetting __iniFile "Type"
+        local typeStrArray = for item in typeSections collect (getINISetting __iniFile "Type" item)
+        local iniParentStr = getINISetting __iniFile "Type" "Parent"
+        local iniDummyStr = getINISetting __iniFile "Type" "Dummy"
+        local iniExposeTMStr = getINISetting __iniFile "Type" "ExposeTM"
+        local iniTargetStr = getINISetting __iniFile "Type" "Target"
+        local iniIKStr = getINISetting __iniFile "Type" "IK"
+
+        local baseSections = getINISetting __iniFile "Base"
+        local baseStrArray = for item in baseSections collect (getINISetting __iniFile "Base" item)
+
         set_name_parts_order namePartsOrder
+        set_paddingNum numPaddingNum
         set_nubStr nubStr
         set_leftStr iniSideStrArray[1]
         set_rightStr iniSideStrArray[2]
         set_frontStr iniFrontBackStrArray[1]
         set_backStr iniFrontBackStrArray[2]
+        set_parentStr iniParentStr
+        set_dummyStr iniDummyStr
+        set_exposeTMStr iniExposeTMStr
+        set_targetStr iniTargetStr
+        set_IKStr iniIKStr
         set_typeStr typeStrArray
         set_baseStr baseStrArray
     )

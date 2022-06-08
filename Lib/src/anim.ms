@@ -18,9 +18,11 @@ struct _Anim (
 
     fn reset_transform_controller inObj = (
         if classof inObj != Biped_Object then (
+            local tempTransform = inObj.transform
             inObj.position.controller = Position_XYZ()
             inObj.rotation.controller = Euler_XYZ()
             inObj.scale.controller = Bezier_Scale()
+            inObj.transform = tempTransform
         )
     ),
 
@@ -191,5 +193,41 @@ struct _Anim (
         delete rotConstDum
     
         returnTransform
+    ),
+
+    fn get_all_keys obj: = with undo off (
+      if obj==unsupplied then obj = objects
+      mapkeys obj (fn CollectKeys t k = (append k t; t)) (keys=#()) #allkeys
+      return keys
+    ),
+
+    fn get_start_end_keys obj: = with undo off (
+      keys = get_all_keys obj:obj
+      return #(amin keys, amax keys)
+    ),
+
+    fn delete_all_keys obj: = (
+      if obj==unsupplied then obj = objects
+      deleteKeys obj #allKeys
+    ),
+
+    mapped fn save_xform inObjs = (
+       try (
+           setUserProp inObjs #WorldSpaceMatrix (inObjs.transform as string)
+           if inObjs.parent != undefined then (
+               setUserProp inObjs #ParentSpaceMatrix ((inObjs.transform * inverse inObjs.parent.transform) as string)
+           )
+       )
+       catch ()
+    ),
+
+    mapped fn set_xform inObjs space:#World = (
+       try (
+           case space of (
+               #World: inObjs.transform = execute(getUserProp inObjs #WorldSpaceMatrix)
+               #Parent: inObjs.transform = (execute(getUserProp inObjs #ParentSpaceMatrix)) * inObjs.parent.transform
+           )
+       )
+       catch ()
     )
 )

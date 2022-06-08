@@ -81,14 +81,14 @@ struct _Hip (
     ),
 
     fn gen_helpers = (
-        spineDummy = helper.create_point (name.combine baseName "Dum" "" "HipSpine" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        spineDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inRealName:"HipSpine" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
         
-        lHipDummy = helper.create_point (name.combine baseName "Dum" "L" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        lHipTargetDummy = helper.create_point (name.combine baseName "Dum" "L" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        lHipExp = ExposeTm name:(name.combine baseName "Exp" "L" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
-        rHipDummy = helper.create_point (name.combine baseName "Dum" "R" "Hip" "0" filteringChar) boxToggle:on crossToggle:off axisToggle:off
-        rHipTargetDummy = helper.create_point (name.combine baseName "Dum" "R" "HipTgt" "0" filteringChar) boxToggle:off crossToggle:on axisToggle:off
-        rHipExp = ExposeTm name:(name.combine baseName "Exp" "R" "Hip" "0" filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
+        lHipDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_leftStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        lHipTargetDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_leftStr()) inRealName:"HipTgt" inIndex:"0" inFilChar:filteringChar) boxToggle:off crossToggle:on axisToggle:off
+        lHipExp = ExposeTm name:(name.combine inBase:baseName inType:(name.get_exposeTMStr()) inSide:(name.get_leftStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
+        rHipDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_rightStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) boxToggle:on crossToggle:off axisToggle:off
+        rHipTargetDummy = helper.create_point (name.combine inBase:baseName inType:(name.get_dummyStr()) inSide:(name.get_rightStr()) inRealName:"HipTgt" inIndex:"0" inFilChar:filteringChar) boxToggle:off crossToggle:on axisToggle:off
+        rHipExp = ExposeTm name:(name.combine inBase:baseName inType:(name.get_exposeTMStr()) inSide:(name.get_rightStr()) inRealName:"Hip" inIndex:"0" inFilChar:filteringChar) size:1 boxToggle:on crossToggle:off wirecolor:(color 14 255 2)
 
         helperArray = #()
         append helperArray spineDummy
@@ -144,14 +144,14 @@ struct _Hip (
 
         boneArray = #()
 
-        local lHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "L" "Hip" "" filteringChar) size:boneSize
+        local lHipBone = bone.create_simple_bone (boneSize * 2) (name.combine inBase:baseName inSide:(name.get_leftStr()) inRealName:"Hip" inFilChar:filteringChar) size:boneSize
         lHipBone[1].transform = lThigh.transform
         anim.rotate_local lHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
         lHipBone[1].parent = lHipDummy
         append boneArray lHipBone[1]
         append boneArray lHipBone[2]
         
-        local rHipBone = bone.create_simple_bone (boneSize * 2) (name.combine baseName "" "R" "Hip" "" filteringChar) size:boneSize
+        local rHipBone = bone.create_simple_bone (boneSize * 2) (name.combine inBase:baseName inSide:(name.get_rightStr()) inRealName:"Hip" inFilChar:filteringChar) size:boneSize
         rHipBone[1].transform = rThigh.transform
         anim.rotate_local rHipBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
         rHipBone[1].parent = rHipDummy

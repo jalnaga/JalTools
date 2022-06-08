@@ -10,6 +10,7 @@ rollout mainRollout "Handy Tools" width:280 height:820 (
     include "ui_helperToolsRollout.ms"
     include "ui_nameSelToolsRollout.ms"
     include "ui_boneCreateRollout.ms"
+    include "ui_skinBoneRollout.ms"
     include "ui_constraintsRollout.ms"
     include "ui_muscleBoneRollout.ms"
 
@@ -18,6 +19,7 @@ rollout mainRollout "Handy Tools" width:280 height:820 (
         AddSubRollout mainSub nameSelToolsRollout
         AddSubRollout mainSub helperToolsRollout
         AddSubRollout mainSub boneCreateRollout
+        AddSubRollout mainSub skinBoneRollout
         AddSubRollout mainSub constraintsRollout
         AddSubRollout mainSub muscleBoneRollout
 
@@ -43,6 +45,7 @@ rollout mainRollout "Handy Tools" width:280 height:820 (
         jal.roll.update_subroll_when_resized mainSub nameSelToolsRollout
         jal.roll.update_subroll_when_resized mainSub helperToolsRollout
         jal.roll.update_subroll_when_resized mainSub boneCreateRollout
+        jal.roll.update_subroll_when_resized mainSub skinBoneRollout
         jal.roll.update_subroll_when_resized mainSub constraintsRollout
         jal.roll.update_subroll_when_resized mainSub muscleBoneRollout
     )

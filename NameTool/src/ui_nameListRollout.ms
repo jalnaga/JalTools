@@ -4,6 +4,7 @@ rollout nameListRollout "Name List" (
     fn update_UI = (
         local selArray = getCurrentSelection() as array
         if selArray.count > 0 then (
+            selArray = jal.name.sort_by_name selArray
             local selNameArray = #()
             for item in selArray do (
                 if (jal.name.get_index item.name) == "" then appendIfUnique selNameArray ((jal.name.get_string item.name) + "*")
@@ -15,18 +16,18 @@ rollout nameListRollout "Name List" (
                 renameObjArray = #()
                 local selName = nameListLst.items[1]
                 renameObjArray = for item in selArray where (matchPattern item.name pattern:selName) collect item
-                __namingRollout.update_UI()
+                jal.tools.namingTool.namingRollout.update_UI()
             )
         )
         else (
             nameListLst.items = #()
             renameObjArray = #()
-            __namingRollout.update_UI()
+            jal.tools.namingTool.namingRollout.update_UI()
         )
     )
 
     on nameListRollout open do (
-        callbacks.addScript #selectionSetChanged "__nameListRollout.update_UI()" id:#jalnameListRolloutUIUpdate
+        callbacks.addScript #selectionSetChanged "jal.tools.namingTool.nameListRollout.update_UI()" id:#jalnameListRolloutUIUpdate
     )
 
     on nameListRollout close do (
@@ -42,6 +43,6 @@ rollout nameListRollout "Name List" (
             local tempObjCollection = for item in selArray where (matchPattern item.name pattern:selName) collect item
             join renameObjArray tempObjCollection
         )
-        __namingRollout.update_UI()
+        jal.tools.namingTool.namingRollout.update_UI()
     )
 )

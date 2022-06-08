@@ -28,6 +28,8 @@ include "rollout.ms"
 include "poly.ms"
 include "morph.ms"
 
+include "xml.ms"
+
 include "tools.ms"
 
 struct _JalLib (
@@ -63,19 +65,27 @@ struct _JalLib (
     poly = _Poly(),
     mor = _Morph(),
 
+    xml = _XMLDoc(),
+
     tools = _Tools(),
 
     on create do (
         name.str = str
         helper.name = name
 
+        const.str = str
         const.name = name
         const.helper = helper
 
+        bone.str = str
         bone.name = name
         bone.anim = anim
         bone.helper = helper
         bone.const = const
+
+        bip.name = name
+        bip.anim = anim
+        bip.bone = bone
 
         mirror.name = name
         mirror.bone = bone
@@ -109,6 +119,7 @@ struct _JalLib (
         twistBone.const = const
         twistBone.bip = bip
 
+        joystick.str = str
         joystick.name = name
         joystick.anim = anim
         joystick.const = const

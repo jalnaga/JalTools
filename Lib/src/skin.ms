@@ -21,6 +21,12 @@ struct _Skin (
     allBonesArray = #(),
     skinWeightsArray = #(),
 
+    fn has_skin obj:selection[1] = ( if (for m in obj.modifiers where classOf m == Skin collect m).count != 0 then True else false ),
+
+    fn is_valide_bone n = ( superClassOf n == GeometryClass or classOf n == BoneGeometry or superClassOf n == helper),
+
+    fn get_skin_mod obj:selection[1] = (for mod in obj.modifiers where (classOf mod == Skin) collect mod),
+
     fn find_skin inputObj = (
         local returnVal = 0
         if inputObj.modifiers.count == 0 then return returnVal
@@ -90,6 +96,17 @@ struct _Skin (
         returnVal
     ),
 
+    fn get_bones_from_skin objs skinModIndex = (
+        infList = #()
+        -- filter
+        fn is_bone n = (superClassOf n == GeometryClass or classOf n == BoneGeometry or superClassOf n == helper)
+
+        for obj in objs where isValidNode obj do (
+            for n in (refs.dependsOn obj.modifiers[skinModIndex]) where isValidNode n and is_bone n do appendIfUnique infList n
+        )
+        return infList
+    ),
+
     fn get_bone_index inputObj targetBone = (
         local returnVal = 0
         if allBonesArray.count > 0 then (
@@ -144,36 +161,6 @@ struct _Skin (
         returnVal.weightArray = deepCopy weightArray
 
         returnVal
-    ),
-
-    fn get_skin_weights inputObj = (
-        if (get_all_bones inputObj) then (
-            skinWeightsArray = #()
-
-            --prog.start_progress "Get Skin vertex weight"
-            local numVerts = skinOps.GetNumberVertices skinMod
-            for v = 1 to numVerts do (
-                local boneArray = #()
-                local boneIDArray = #()
-                local boneNameArray = #()
-                local weightArray = #()
-                local boneNum = skinOps.getVertexWeightCount skinMod v
-
-                for i = 1 to boneNum do (
-                    local boneID = skinOps.getVertexWeightBoneID skinMod v i
-                    local boneName = skinOps.GetBoneName skinMod boneID 0
-                    local boneSysID = findItem allBoneNamesArray boneName
-                    local boneWeight = skinOps.getVertexWeight skinMod v i
-                    append boneArray allBonesArray[boneSysID]
-                    append boneIDArray boneID
-                    append boneNameArray boneName
-                    append weightArray boneWeight
-                )
-                append skinWeightsArray (_SkinVert index:v boneArray:boneArray boneIDArray:boneIDArray boneNameArray:boneNameArray weightArray:weightArray)
-                --prog.update_progress v numVerts
-            )
-            --prog.end_progress()
-        )
     ),
 
     fn get_skin_weights inputObj = (
@@ -340,14 +327,10 @@ struct _Skin (
         for i = 1 to targetObj.modifiers.count do (
             if (classof targetObj.modifiers[i]) == Skin then targetSkinMod = targetObj.modifiers[i]
         )
-        --prog.start_progress "Paste Skin..."
         local targetObjNumVert = skinOps.GetNumberVertices targetSkinMod
         for v = 1 to targetObjNumVert do (
             skinOps.ReplaceVertexWeights targetSkinMod v skinWeightsArray[v].boneIDArray skinWeightsArray[v].weightArray
-
-            --prog.update_progress v targetObjNumVert
         )
-        --prog.end_progress()
     ),
 
     fn select_bone inObj inBoneObj = (
@@ -360,5 +343,249 @@ struct _Skin (
         )
 
         returnVal
+    ),
+
+    fn optimize_skin SkinMod boneLimit:8 skinTolerance:0.01 = (
+        local ListOfBones = #()
+
+        --Skin Modifier Setup
+        SkinMod.enableDQ = false
+        SkinMod.bone_Limit = boneLimit
+        SkinMod.clearZeroLimit = skinTolerance
+        skinOps.RemoveZeroWeights SkinMod
+        SkinMod.clearZeroLimit = 0
+
+        if skinOps.getNumberBones SkinMod > 1 do
+        (
+            ListOfBones = #{1..skinOps.GetNumberBones SkinMod}
+            for v = 1 to skinOps.GetNumberVertices SkinMod do
+            (
+                for b = 1 to (skinOps.GetVertexWeightCount SkinMod v) do
+                (
+                    ListOfBones[skinOps.GetVertexWeightBoneID SkinMod v b] = false
+                )
+            )
+
+            ListOfBones = ListOfBones as array
+            for i = 1 to ListOfBones.count do
+            (
+                skinOps.SelectBone SkinMod ListOfBones[ListOfBones.count-i+1] -- Max 2014 sp5 hack
+                skinOps.removebone SkinMod ListOfBones[ListOfBones.count-i+1]
+            )
+            if skinOps.getNumberBones SkinMod > 1 do skinOps.SelectBone SkinMod 1
+            Format "Obj:% Removed:% Left:%\n" $.name ListOfBones.count (skinOps.GetNumberBones SkinMod)
+        )
+    ),
+
+    fn optimize_skin_process objs:(selection as array) optimAllSkinMod:False bLimit:8 sTolerance:0.01 = (
+        max modify mode
+        if objs.count != 0 then
+        (
+            for obj in objs where (has_skin obj:obj) == True do
+            (
+                local modID = for m=1 to obj.modifiers.count where classOf obj.modifiers[m] == Skin collect m
+
+                if optimAllSkinMod == False then modID = #(modID[1])
+                for each in modID do
+                (
+                    modPanel.setCurrentObject obj.modifiers[each]
+                    optimize_skin obj.modifiers[each] boneLimit:bLimit skinTolerance:sTolerance
+                )
+            )
+            select objs
+        )
+    ),
+
+    fn sel_vert_from_bones skin_mod threshold:0.01 = (
+        local FinalVerts2Sel = #()
+        if skin_mod != undefined then (
+            leBone = skinops.getSelectedBone skin_mod
+            svc = skinOps.GetNumberVertices skin_mod
+
+            for o = 1 to svc do (
+                local lv
+                lv = skinOps.GetVertexWeightCount skin_mod o
+                for k = 1 to lv where (skinOps.GetVertexWeightBoneID skin_mod o k) == leBone do (
+                    if skinOps.GetVertexWeight skin_mod o k >= threshold then (
+                        appendIfUnique FinalVerts2Sel o
+                    )
+                )
+            )
+            skinOps.SelectVertices skin_mod FinalVerts2Sel
+        )
+
+        FinalVerts2Sel
+    ),
+
+    fn make_rigid_skin skin_mod vert_list = (
+        WeightArray = #()
+        VertCount = 0
+        BoneArray = #()
+        FinalWeight = #()
+
+        for v in vert_list do (
+            for CurBone = 1 to (skinOps.GetVertexWeightCount skin_mod v) do (
+                CurID = (skinOps.GetVertexWeightBoneID skin_mod v CurBone)
+                if WeightArray[CurID] == undefined do WeightArray[CurID] = 0
+
+                CurWeight = (skinOps.GetVertexWeight skin_mod v CurBone)
+                WeightArray[CurID] += CurWeight
+                VertCount += CurWeight
+            )
+
+            for i = 1 to WeightArray.count where WeightArray[i] != undefined and WeightArray[i] > 0 do (
+                NewVal = (WeightArray[i] / VertCount)
+                if NewVal > 0.01 do (append BoneArray i; append FinalWeight NewVal)
+            )
+        )
+        return #(BoneArray, FinalWeight)
+    ),
+
+    fn load_skin obj file_path loadBindPose:false keepSkin: = (
+        if keepSkin != true then keepSkin = false
+
+        select obj
+        Data = #()
+        missingBones = #()
+
+        MyFile = openFile file_path mode:"rt"
+        if MyFile == undefined do return ()
+
+        while (not eof MyFile) do
+            append Data (execute (readLine MyFile));
+        Close MyFile
+
+        if (Data.count-1)!=obj.verts.count or obj.verts.count==0 then
+            print "Bad number of verts";
+        else
+        (
+            for m=obj.modifiers.count to 1 by -1 where classof obj.modifiers[m] == Skin do deleteModifier obj m
+
+            setCommandPanelTaskMode #modify
+            NewSkin = Skin()
+            addmodifier obj NewSkin before:(if keepSkin then 1 else 0)
+
+            if keepSkin do
+                NewSkin.name = "Skin_" + getfilenamefile file_path;
+
+            modPanel.setCurrentObject NewSkin
+            Data[1] = execute Data[1]
+            Hierarchy = #()
+
+            for i=1 to Data[1].count do
+            (
+                MyBone = for obj in objects where obj.name == Data[1][i] collect obj
+
+                if MyBone.count == 0 do
+                (
+                    print ("Missing bone: " + Data[1][i])
+                    tmp = dummy name:Data[1][i]
+                    append MyBone tmp
+                    append missingBones tmp
+                )
+
+                if MyBone.count>1 and Hierarchy.count!=0 do
+                (
+                    print ("Multiple bones are named: " + MyBone[1].name + " (" + Mybone.count as string + ")")
+                    GoodBone = undefined
+                    for o in MyBone where (finditem Hierarchy o) != 0 do GoodBone = o
+                    if GoodBone != undefined do MyBone = #(GoodBone)
+                )
+
+                if MyBone.count > 1 do
+                (
+                    fn ObjFilter PickBone = (findItem (getCurrentSelection()) PickBone) != 0
+
+                    unhide MyBone
+                    unfreeze MyBone
+                    select MyBone
+
+                    PickBone = pickobject filter:ObjFilter message:("Multiple bones found, pick a " + MyBone[1].name)
+                    if PickBone != undefined do MyBone[1] = PickBone
+                    select obj
+                )
+
+                MyBone = MyBone[1]
+                if (finditem Hierarchy MyBone) == 0 do
+                (
+                    append Hierarchy MyBone
+                    for obj in Hierarchy do
+                    (
+                        for CurChild in obj.children do appendifunique Hierarchy CurChild
+                        if obj.parent != undefined do appendifunique Hierarchy obj.parent
+                    )
+                )
+
+                setCommandPanelTaskMode #modify
+                skinOps.addbone NewSkin MyBone 1
+
+                if loadBindPose then
+                (-- load bind pose
+                    MyFileBP = substring FileName 1 (FileName.count - 4) + "bp"; BindPoses = #()
+                    if doesFileExist MyFileBP do
+                    (
+                        MyFile = openFile MyFileBP
+                        while (not eof MyFile) do
+                            append BindPoses (execute (readLine MyFile));
+                        Close MyFile
+                    )
+
+                    if BindPoses[i] != undefined do skinUtils.SetBoneBindTM $ MyBone BindPoses[i]
+                )
+            )
+
+            for i = 1 to obj.verts.count do
+            (
+                BoneID = #(); BoneWeight = #(); GoodBones = #{};
+                AllBoneWeight = for b = 1 to Data[1].count collect 0
+
+                for b=1 to Data[i+1][1].count do
+                (
+                    AllBoneWeight[Data[i+1][1][b]] += Data[i+1][2][b]
+                    GoodBones[Data[i+1][1][b]] = true
+                )
+                for b in GoodBones do
+                (
+                    append BoneID b
+                    append BoneWeight AllBoneWeight[b]
+                )
+                if BoneID.count != 0 do skinOps.SetVertexWeights NewSkin i BoneID[1] 1 -- Max 2014 sp5 hack
+                skinOps.ReplaceVertexWeights NewSkin i BoneID BoneWeight
+            )
+            return missingBones
+        )
+    ),
+
+    fn save_skin obj skin_mod file_path = (
+        select obj
+        max modify mode
+        modPanel.setCurrentObject obj.modifiers[#Skin]
+
+        if (classof obj.modifiers[#Skin] == Skin) and (skinOps.GetNumberBones obj.modifiers[#Skin]) > 0 then (
+            local bone_list = "#("
+            for i=1 to (skinOps.GetNumberBones skin_mod) do append bone_list ("\\\"" + (skinOps.GetBoneName skin_mod i 1) + "\\\", ")
+
+            bone_list = substring bone_list 1 (bone_list.count-1); bone_list[bone_list.count] = ")"
+            local skin_data = #(bone_list)
+            skin_data.count = skinOps.GetNumberVertices skin_mod + 1
+
+            for v=1 to skinOps.GetNumberVertices skin_mod do
+            (
+                local bone_array = #()
+                local weight_array = #()
+                for b = 1 to (skinOps.GetVertexWeightCount skin_mod v) do
+                (
+                    append bone_array (skinOps.GetVertexWeightBoneID skin_mod v b)
+                    append weight_array (skinOps.GetVertexWeight skin_mod v b)
+                )
+                skin_data[v+1] = #(bone_array, weight_array)
+            )
+
+            file_path = CreateFile file_path
+            print skin_data to:file_path
+            Close file_path
+
+            return file_path
+        )
     )
 )

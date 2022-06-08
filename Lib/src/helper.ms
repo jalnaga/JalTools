@@ -30,10 +30,10 @@ struct _Helper (
     fn gen_helper_name_from_obj inObj makeTwo:false isExp:false = (
         local pointName = ""
         local targetName = ""
-        local typeName = "Dum"
+        local typeName = name.get_dummyStr()
         local tempName = ""
 
-        if isExp then typeName = "Exp"
+        if isExp then typeName = name.get_exposeTMStr()
 
         tempName = name.replace_type inObj.name typeName
         if (name.get_type inObj.name) == typeName then (
@@ -140,7 +140,7 @@ struct _Helper (
                 genPoint.transform = item.transform
                 genPoint.parent = item.parent
                 item.parent = genPoint
-                genPoint.name = name.replace_type genPoint.name "P"
+                genPoint.name = name.replace_type genPoint.name (name.get_parentStr())
             )
         )
     ),
