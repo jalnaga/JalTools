@@ -23,163 +23,169 @@ class Anim:
         """초기화 함수"""
         pass
     
-    def rotate_local(self, in_obj, rx, ry, rz):
+    def rotate_local(self, inObj, rx, ry, rz):
         """
         객체를 로컬 좌표계에서 회전
         
         Args:
-            in_obj: 회전할 객체
+            inObj: 회전할 객체
             rx: X축 회전 각도
             ry: Y축 회전 각도
             rz: Z축 회전 각도
         """
-        current_matrix = rt.getProperty(in_obj, "transform")
+        currentMatrix = rt.getProperty(inObj, "transform")
         # MAXScript의 eulertoquat과 eulerAngles를 pymxs로 변환
-        euler_angles = rt.eulerAngles(rx, ry, rz)
-        quat_rotation = rt.eulertoquat(euler_angles)
-        rt.preRotate(current_matrix, quat_rotation)
-        rt.setProperty(in_obj, "transform", current_matrix)
+        eulerAngles = rt.eulerAngles(rx, ry, rz)
+        quatRotation = rt.eulertoquat(eulerAngles)
+        rt.preRotate(currentMatrix, quatRotation)
+        rt.setProperty(inObj, "transform", currentMatrix)
     
-    def move_local(self, in_obj, mx, my, mz):
+    def move_local(self, inObj, mx, my, mz):
         """
         객체를 로컬 좌표계에서 이동
         
         Args:
-            in_obj: 이동할 객체
+            inObj: 이동할 객체
             mx: X축 이동 거리
             my: Y축 이동 거리
             mz: Z축 이동 거리
         """
-        current_matrix = rt.getProperty(in_obj, "transform")
+        currentMatrix = rt.getProperty(inObj, "transform")
         # MAXScript의 배열 [mx, my, mz]를 rt.Point3로 변환
         translation = rt.Point3(mx, my, mz)
-        rt.preTranslate(current_matrix, translation)
-        rt.setProperty(in_obj, "transform", current_matrix)
+        rt.preTranslate(currentMatrix, translation)
+        rt.setProperty(inObj, "transform", currentMatrix)
     
-    def reset_transform_controller(self, in_obj):
+    def reset_transform_controller(self, inObj):
         """
         객체의 트랜스폼 컨트롤러 초기화
         
         Args:
-            in_obj: 초기화할 객체
+            inObj: 초기화할 객체
         """
         # Biped_Object가 아닌 경우에만 실행
-        if rt.classOf(in_obj) != rt.Biped_Object:
-            temp_transform = rt.getProperty(in_obj, "transform")
-            rt.setPropertyController(in_obj.controller, "Position", rt.Position_XYZ())
-            rt.setPropertyController(in_obj.controller, "Rotation", rt.Euler_XYZ())
-            rt.setPropertyController(in_obj.controller, "Scale", rt.Bezier_Scale())
-            in_obj.transform = temp_transform
+        if rt.classOf(inObj) != rt.Biped_Object:
+            tempTransform = rt.getProperty(inObj, "transform")
+            rt.setPropertyController(inObj.controller, "Position", rt.Position_XYZ())
+            rt.setPropertyController(inObj.controller, "Rotation", rt.Euler_XYZ())
+            rt.setPropertyController(inObj.controller, "Scale", rt.Bezier_Scale())
+            inObj.transform = tempTransform
     
-    def freeze_transform(self, in_obj):
+    def freeze_transform(self, inObj):
         """
         객체의 변환을 고정
         
         Args:
-            in_obj: 변환을 고정할 객체
+            inObj: 변환을 고정할 객체
         """
-        cur_obj = in_obj
+        curObj = inObj
         
         # 로테이션 컨트롤러 고정
-        if rt.classOf(rt.getPropertyController(cur_obj.controller, "Rotation")) != rt.Rotation_list():
+        if rt.classOf(rt.getPropertyController(curObj.controller, "Rotation")) != rt.Rotation_list():
             # 로테이션 고정
-            rt.setPropertyController(cur_obj.controller, "Rotation", rt.Euler_Xyz())
-            rt.setPropertyController(cur_obj.controller, "Rotation", rt.Rotation_list())
+            rt.setPropertyController(curObj.controller, "Rotation", rt.Rotation_list())
             
             # available 컨트롤러 설정
-            rot_controller = rt.getPropertyController(cur_obj.controller, "Rotation")
-            rt.setPropertyController(rot_controller, "available", rt.Euler_xyz())
+            rotList = rt.getPropertyController(curObj.controller, "Rotation")
+            frozenRotListSlot = rt.getSubAnim(rotList, 1)
+            zeroEulerSlot = rt.getSubAnim(rotList, 2)
+            
+            rt.setPropertyController(frozenRotListSlot, "controller", rt.Euler_xyz())
+            rt.setPropertyController(zeroEulerSlot, "controller", rt.Euler_xyz())
             
             # 컨트롤러 이름 설정
-            rt.execute('$.rotation.controller.setname 1 "Frozen Rotation"')
-            rt.execute('$.rotation.controller.setname 2 "Zero Euler XYZ"')
+            rotList.setname(1, "Frozen Rotation")
+            rotList.setname(2, "Zero Euler XYZ")
             
             # 액티브 컨트롤러 설정
-            rt.execute('$.rotation.controller.SetActive 2')
+            rotList.setActive(2)
         
         # 포지션 컨트롤러 고정
-        if rt.classOf(rt.getPropertyController(cur_obj.controller, "position")) != rt.Position_list():
+        if rt.classOf(rt.getPropertyController(curObj.controller, "position")) != rt.Position_list():
             # 포지션 고정
-            rt.setPropertyController(cur_obj.controller, "position", rt.Bezier_Position())
-            rt.setPropertyController(cur_obj.controller, "position", rt.Position_list())
+            rt.setPropertyController(curObj.controller, "position", rt.Position_list())
             
             # available 컨트롤러 설정
-            pos_controller = rt.getPropertyController(cur_obj.controller, "position")
-            rt.setPropertyController(pos_controller, "available", rt.Position_XYZ())
+            posList = rt.getPropertyController(curObj.controller, "position")
+            frozenPosListSlot = rt.getSubAnim(posList, 1)
+            zeroPosSlot = rt.getSubAnim(posList, 2)
+            
+            rt.setpropertyController(frozenPosListSlot, "controller", rt.Position_XYZ())
+            rt.setpropertyController(zeroPosSlot, "controller", rt.Position_XYZ())
             
             # 컨트롤러 이름 설정
-            rt.execute('$.position.controller.setname 1 "Frozen Position"')
-            rt.execute('$.position.controller.setname 2 "Zero Pos XYZ"')
+            posList.setname(1, "Frozen Position")
+            posList.setname(2, "Zero Position XYZ")
             
             # 액티브 컨트롤러 설정
-            rt.execute('$.position.controller.SetActive 2')
+            posList.setActive(2)
             
             # 포지션을 0으로 설정
-            pos_controller2 = rt.execute("$.position.controller[2]")
-            rt.setProperty(pos_controller2, "x_Position", 0)
-            rt.setProperty(pos_controller2, "y_Position", 0)
-            rt.setProperty(pos_controller2, "z_Position", 0)
+            zeroPosController = rt.getPropertyController(posList.controller, "Zero Position XYZ")
+            rt.setProperty(zeroPosController, "x_Position", 0)
+            rt.setProperty(zeroPosController, "y_Position", 0)
+            rt.setProperty(zeroPosController, "z_Position", 0)
     
-    def collape_anim_transform(self, in_obj, start_frame=None, end_frame=None):
+    def collape_anim_transform(self, inObj, startFrame=None, endFrame=None):
         """
         애니메이션 변환 병합
         
         Args:
-            in_obj: 변환을 병합할 객체
-            start_frame: 시작 프레임 (기본값: 애니메이션 범위 시작)
-            end_frame: 끝 프레임 (기본값: 애니메이션 범위 끝)
+            inObj: 변환을 병합할 객체
+            startFrame: 시작 프레임 (기본값: 애니메이션 범위 시작)
+            endFrame: 끝 프레임 (기본값: 애니메이션 범위 끝)
         """
         # 기본값 설정
-        if start_frame is None:
-            start_frame = rt.animationRange.start
-        if end_frame is None:
-            end_frame = rt.animationRange.end
+        if startFrame is None:
+            startFrame = rt.animationRange.start
+        if endFrame is None:
+            endFrame = rt.animationRange.end
             
         # 씬 리드로우 비활성화
         rt.disableSceneRedraw()
         
         # 진행 상태 표시 시작
-        progress_message = f"Collapse transform {in_obj.name}..."
-        rt.progressStart(progress_message)
+        progressMessage = f"Collapse transform {inObj.name}..."
+        rt.progressStart(progressMessage)
         
         # 포인트 객체 생성
         p = rt.Point()
         
         # 각 프레임에서 변환 정보 저장
-        for k in range(start_frame, end_frame + 1):
+        for k in range(startFrame, endFrame + 1):
             # 현재 시간을 k로 설정
-            def save_transform_func():
-                def animate_action():
-                    rt.setProperty(p, "transform", rt.getProperty(in_obj, "transform"))
-                rt.with_animate(on=True, code_to_run=animate_action)
+            def saveTransformFunc():
+                def animateAction():
+                    rt.setProperty(p, "transform", rt.getProperty(inObj, "transform"))
+                rt.with_animate(on=True, code_to_run=animateAction)
             
-            rt.at(rt.time(k), code_to_run=save_transform_func)
+            rt.at(rt.time(k), code_to_run=saveTransformFunc)
         
         # 트랜스폼 컨트롤러 설정
-        rt.setProperty(in_obj, "transform.controller", rt.transform_script())
-        rt.setProperty(in_obj, "transform.controller", rt.prs())
+        rt.setProperty(inObj, "transform.controller", rt.transformScript())
+        rt.setProperty(inObj, "transform.controller", rt.prs())
         
         # 각 프레임에서 변환 적용
-        for k in range(start_frame, end_frame + 1):
+        for k in range(startFrame, endFrame + 1):
             # 현재 시간을 k로 설정하고 애니메이션 적용
-            def apply_transform_func():
-                def animate_action():
+            def applyTransformFunc():
+                def animateAction():
                     # 로테이션 적용
                     rt.execute('in coordsys (transmatrix $.transform.pos) $.rotation = inverse p.transform.rotation')
                     # 포지션 적용
                     rt.execute('in coordsys world $.position = p.transform.position')
                     # 스케일 적용
-                    rt.setProperty(in_obj, "scale", rt.getProperty(p, "scale"))
+                    rt.setProperty(inObj, "scale", rt.getProperty(p, "scale"))
                 
-                rt.with_animate(on=True, code_to_run=animate_action)
+                rt.with_animate(on=True, code_to_run=animateAction)
             
-            rt.at(rt.time(k), code_to_run=apply_transform_func)
+            rt.at(rt.time(k), code_to_run=applyTransformFunc)
             
             # 진행 상태 업데이트
-            rt.progressUpdate(100 * k / end_frame)
+            rt.progressUpdate(100 * k / endFrame)
         
         # 시작 프레임이 애니메이션 범위 시작과 다르면 불필요한 키 삭제
-        if start_frame != rt.animationRange.start:
+        if startFrame != rt.animationRange.start:
             rt.execute('deselectKeys $.transform.controller')
             rt.execute(f'selectKeys $.transform.controller {rt.animationRange.start}')
             rt.execute('deleteKeys $.transform.controller #selection')
@@ -192,43 +198,43 @@ class Anim:
         rt.progressEnd()
         rt.enableSceneRedraw()
     
-    def match_anim_transform(self, in_obj, in_target, start_frame=None, end_frame=None):
+    def match_anim_transform(self, inObj, inTarget, startFrame=None, endFrame=None):
         """
         한 객체의 애니메이션 변환을 다른 객체로 일치시킴
         
         Args:
-            in_obj: 변환할 객체
-            in_target: 대상 객체
-            start_frame: 시작 프레임 (기본값: 애니메이션 범위 시작)
-            end_frame: 끝 프레임 (기본값: 애니메이션 범위 끝)
+            inObj: 변환할 객체
+            inTarget: 대상 객체
+            startFrame: 시작 프레임 (기본값: 애니메이션 범위 시작)
+            endFrame: 끝 프레임 (기본값: 애니메이션 범위 끝)
         """
         # 기본값 설정
-        if start_frame is None:
-            start_frame = rt.animationRange.start
-        if end_frame is None:
-            end_frame = rt.animationRange.end
+        if startFrame is None:
+            startFrame = rt.animationRange.start
+        if endFrame is None:
+            endFrame = rt.animationRange.end
             
         # 유효한 노드인지 확인
-        if rt.isValidNode(in_obj) and rt.isValidNode(in_target):
+        if rt.isValidNode(inObj) and rt.isValidNode(inTarget):
             # 씬 리드로우 비활성화
             rt.disableSceneRedraw()
             
             # 진행 상태 표시 시작
-            progress_message = f"Match transform {in_obj.name} to {in_target.name}"
-            rt.progressStart(progress_message)
+            progressMessage = f"Match transform {inObj.name} to {inTarget.name}"
+            rt.progressStart(progressMessage)
             
             # 포인트 객체 생성
             p = rt.Point()
             
             # 각 프레임에서 타겟 변환 저장 및 기존 키 삭제
-            for k in range(start_frame, end_frame + 1):
+            for k in range(startFrame, endFrame + 1):
                 # 현재 시간을 k로 설정하여 타겟 트랜스폼 저장
-                def save_target_transform():
-                    def animate_action():
-                        rt.setProperty(p, "transform", rt.getProperty(in_target, "transform"))
-                    rt.with_animate(on=True, code_to_run=animate_action)
+                def saveTargetTransform():
+                    def animateAction():
+                        rt.setProperty(p, "transform", rt.getProperty(inTarget, "transform"))
+                    rt.with_animate(on=True, code_to_run=animateAction)
                 
-                rt.at(rt.time(k), code_to_run=save_target_transform)
+                rt.at(rt.time(k), code_to_run=saveTargetTransform)
                 
                 # 해당 프레임의 기존 키 삭제
                 rt.execute('deselectKeys $.transform.controller')
@@ -239,7 +245,7 @@ class Anim:
             rt.progressUpdate(20)
             
             # 시작 프레임 이전의 불필요한 키 삭제
-            if start_frame != rt.animationRange.start:
+            if startFrame != rt.animationRange.start:
                 rt.execute('deselectKeys p.transform.controller')
                 rt.execute(f'selectKeys p.transform.controller {rt.animationRange.start}')
                 rt.execute('deleteKeys p.transform.controller #selection')
@@ -248,42 +254,42 @@ class Anim:
             rt.progressUpdate(25)
             
             # 키프레임 배열 가져오기
-            pos_key_array = rt.getProperty(in_target, "pos.controller.keys")
-            rot_key_array = rt.getProperty(in_target, "rotation.controller.keys")
-            scale_key_array = rt.getProperty(in_target, "scale.controller.keys")
+            posKeyArray = rt.getProperty(inTarget, "pos.controller.keys")
+            rotKeyArray = rt.getProperty(inTarget, "rotation.controller.keys")
+            scaleKeyArray = rt.getProperty(inTarget, "scale.controller.keys")
             
             # 시작과 끝 프레임에 키프레임 설정
-            def apply_transform_at_time(time_val):
-                def set_transform():
-                    def animate_action():
-                        rt.setProperty(in_obj, "transform", rt.getProperty(p, "transform"))
-                    rt.with_animate(on=True, code_to_run=animate_action)
-                rt.at(rt.time(time_val), code_to_run=set_transform)
+            def applyTransformAtTime(timeVal):
+                def setTransform():
+                    def animateAction():
+                        rt.setProperty(inObj, "transform", rt.getProperty(p, "transform"))
+                    rt.with_animate(on=True, code_to_run=animateAction)
+                rt.at(rt.time(timeVal), code_to_run=setTransform)
             
-            apply_transform_at_time(start_frame)
-            apply_transform_at_time(end_frame)
+            applyTransformAtTime(startFrame)
+            applyTransformAtTime(endFrame)
             
             # 포지션 키프레임 적용
-            for key in pos_key_array:
-                key_time = rt.getProperty(key, "time")
-                if key_time >= start_frame and key_time <= end_frame:
-                    apply_transform_at_time(key_time)
+            for key in posKeyArray:
+                keyTime = rt.getProperty(key, "time")
+                if keyTime >= startFrame and keyTime <= endFrame:
+                    applyTransformAtTime(keyTime)
             
             rt.progressUpdate(40)
             
             # 로테이션 키프레임 적용
-            for key in rot_key_array:
-                key_time = rt.getProperty(key, "time")
-                if key_time >= start_frame and key_time <= end_frame:
-                    apply_transform_at_time(key_time)
+            for key in rotKeyArray:
+                keyTime = rt.getProperty(key, "time")
+                if keyTime >= startFrame and keyTime <= endFrame:
+                    applyTransformAtTime(keyTime)
             
             rt.progressUpdate(60)
             
             # 스케일 키프레임 적용
-            for key in scale_key_array:
-                key_time = rt.getProperty(key, "time")
-                if key_time >= start_frame and key_time <= end_frame:
-                    apply_transform_at_time(key_time)
+            for key in scaleKeyArray:
+                keyTime = rt.getProperty(key, "time")
+                if keyTime >= startFrame and keyTime <= endFrame:
+                    applyTransformAtTime(keyTime)
             
             rt.progressUpdate(80)
             
@@ -295,73 +301,73 @@ class Anim:
             rt.progressEnd()
             rt.enableSceneRedraw()
     
-    def create_average_pos_transform(self, in_target_array):
+    def create_average_pos_transform(self, inTargetArray):
         """
         여러 객체의 평균 위치 변환 생성
         
         Args:
-            in_target_array: 대상 객체 배열
+            inTargetArray: 대상 객체 배열
             
         Returns:
             평균 위치 변환
         """
         # 포인트 객체 생성
-        pos_const_dum = rt.Point()
+        posConstDum = rt.Point()
         
         # 포지션 제약 컨트롤러 생성
-        target_pos_constraint = rt.Position_Constraint()
+        targetPosConstraint = rt.Position_Constraint()
         
         # 타겟 가중치 계산
-        target_weight = 100.0 / (len(in_target_array) + 1)
+        targetWeight = 100.0 / (len(inTargetArray) + 1)
         
         # 포지션 컨트롤러 설정
-        rt.setProperty(pos_const_dum, "position.controller", target_pos_constraint)
+        rt.setPropertyController(posConstDum.controller, "Position", targetPosConstraint)
         
         # 각 타겟 추가
-        for item in in_target_array:
-            target_pos_constraint.appendTarget(item, target_weight)
+        for item in inTargetArray:
+            targetPosConstraint.appendTarget(item, targetWeight)
         
         # 변환 정보 복사
-        return_transform = rt.copy(rt.getProperty(pos_const_dum, "transform"))
+        returnTransform = rt.copy(rt.getProperty(posConstDum, "transform"))
         
         # 포인트 객체 삭제
-        rt.delete(pos_const_dum)
+        rt.delete(posConstDum)
         
-        return return_transform
+        return returnTransform
     
-    def create_average_rot_transform(self, in_target_array):
+    def create_average_rot_transform(self, inTargetArray):
         """
         여러 객체의 평균 회전 변환 생성
         
         Args:
-            in_target_array: 대상 객체 배열
+            inTargetArray: 대상 객체 배열
             
         Returns:
             평균 회전 변환
         """
         # 포인트 객체 생성
-        rot_const_dum = rt.Point()
+        rotConstDum = rt.Point()
         
         # 방향 제약 컨트롤러 생성
-        target_ori_constraint = rt.Orientation_Constraint()
+        targetOriConstraint = rt.Orientation_Constraint()
         
         # 타겟 가중치 계산
-        target_weight = 100.0 / (len(in_target_array) + 1)
+        targetWeight = 100.0 / (len(inTargetArray) + 1)
         
         # 로테이션 컨트롤러 설정
-        rt.setProperty(rot_const_dum, "rotation.controller", target_ori_constraint)
+        rt.setPropertyController(rotConstDum.controller, "Rotation", targetOriConstraint)
         
         # 각 타겟 추가
-        for item in in_target_array:
-            target_ori_constraint.appendTarget(item, target_weight)
+        for item in inTargetArray:
+            targetOriConstraint.appendTarget(item, targetWeight)
         
         # 변환 정보 복사
-        return_transform = rt.copy(rt.getProperty(rot_const_dum, "transform"))
+        returnTransform = rt.copy(rt.getProperty(rotConstDum, "transform"))
         
         # 포인트 객체 삭제
-        rt.delete(rot_const_dum)
+        rt.delete(rotConstDum)
         
-        return return_transform
+        return returnTransform
     
     def get_all_keys(self, obj=None):
         """
@@ -537,52 +543,52 @@ class Anim:
         
         return result
     
-    def save_xform(self, in_objs):
+    def save_xform(self, inObjs):
         """
         객체의 변환 저장
         
         Args:
-            in_objs: 변환을 저장할 객체
+            inObjs: 변환을 저장할 객체
         """
         try:
             # 월드 스페이스 매트릭스 저장
-            transform_string = str(rt.getProperty(in_objs, "transform"))
-            rt.setUserProp(in_objs, rt.Name("WorldSpaceMatrix"), transform_string)
+            transformString = str(rt.getProperty(inObjs, "transform"))
+            rt.setUserProp(inObjs, rt.Name("WorldSpaceMatrix"), transformString)
             
             # 부모가 있는 경우 부모 스페이스 매트릭스 저장
-            parent = rt.getProperty(in_objs, "parent")
+            parent = rt.getProperty(inObjs, "parent")
             if parent is not None:
-                parent_transform = rt.getProperty(parent, "transform")
-                inverse_parent = rt.inverse(parent_transform)
-                obj_transform = rt.getProperty(in_objs, "transform")
-                parent_space_matrix = obj_transform * inverse_parent
-                rt.setUserProp(in_objs, rt.Name("ParentSpaceMatrix"), str(parent_space_matrix))
+                parentTransform = rt.getProperty(parent, "transform")
+                inverseParent = rt.inverse(parentTransform)
+                objTransform = rt.getProperty(inObjs, "transform")
+                parentSpaceMatrix = objTransform * inverseParent
+                rt.setUserProp(inObjs, rt.Name("ParentSpaceMatrix"), str(parentSpaceMatrix))
         except:
             # 오류 발생 시 무시
             pass
     
-    def set_xform(self, in_objs, space="#World"):
+    def set_xform(self, inObjs, space="#World"):
         """
         객체의 변환 설정
         
         Args:
-            in_objs: 변환을 설정할 객체
+            inObjs: 변환을 설정할 객체
             space: 공간 (기본값: "#World")
         """
         try:
             if space == "#World":
                 # 월드 스페이스 매트릭스 적용
-                matrix_string = rt.getUserProp(in_objs, rt.Name("WorldSpaceMatrix"))
-                transform_matrix = rt.execute(f"execute({matrix_string})")
-                rt.setProperty(in_objs, "transform", transform_matrix)
+                matrixString = rt.getUserProp(inObjs, rt.Name("WorldSpaceMatrix"))
+                transformMatrix = rt.execute(f"execute({matrixString})")
+                rt.setProperty(inObjs, "transform", transformMatrix)
             elif space == "#Parent":
                 # 부모 스페이스 매트릭스 적용
-                matrix_string = rt.getUserProp(in_objs, rt.Name("ParentSpaceMatrix"))
-                parent_space_matrix = rt.execute(f"execute({matrix_string})")
+                matrixString = rt.getUserProp(inObjs, rt.Name("ParentSpaceMatrix"))
+                parentSpaceMatrix = rt.execute(f"execute({matrixString})")
                 if parent is not None:
-                    parent_transform = rt.getProperty(parent, "transform")
-                    transform_matrix = parent_space_matrix * parent_transform
-                    rt.setProperty(in_objs, "transform", transform_matrix)
+                    parentTransform = rt.getProperty(parent, "transform")
+                    transformMatrix = parentSpaceMatrix * parentTransform
+                    rt.setProperty(inObjs, "transform", transformMatrix)
         except:
             # 오류 발생 시 무시
             pass
