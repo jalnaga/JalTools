@@ -66,19 +66,10 @@ class Anim:
         # Biped_Object가 아닌 경우에만 실행
         if rt.classOf(in_obj) != rt.Biped_Object:
             temp_transform = rt.getProperty(in_obj, "transform")
-            
-            # 컨트롤러 초기화
-            position_controller = rt.getProperty(in_obj, "position.controller")
-            rt.setProperty(in_obj, "position.controller", rt.Position_XYZ())
-            
-            rotation_controller = rt.getProperty(in_obj, "rotation.controller")
-            rt.setProperty(in_obj, "rotation.controller", rt.Euler_XYZ())
-            
-            scale_controller = rt.getProperty(in_obj, "scale.controller")
-            rt.setProperty(in_obj, "scale.controller", rt.Bezier_Scale())
-            
-            # 원래 transform 복원
-            rt.setProperty(in_obj, "transform", temp_transform)
+            rt.setPropertyController(in_obj.controller, "Position", rt.Position_XYZ())
+            rt.setPropertyController(in_obj.controller, "Rotation", rt.Euler_XYZ())
+            rt.setPropertyController(in_obj.controller, "Scale", rt.Bezier_Scale())
+            in_obj.transform = temp_transform
     
     def freeze_transform(self, in_obj):
         """
@@ -90,14 +81,14 @@ class Anim:
         cur_obj = in_obj
         
         # 로테이션 컨트롤러 고정
-        if rt.classOf(rt.getProperty(cur_obj, "rotation.controller")) != rt.Rotation_Layer:
+        if rt.classOf(rt.getPropertyController(cur_obj.controller, "Rotation")) != rt.Rotation_list():
             # 로테이션 고정
-            rt.setProperty(cur_obj, "rotation.controller", rt.Euler_Xyz())
-            rt.setProperty(cur_obj, "rotation.controller", rt.Rotation_list())
+            rt.setPropertyController(cur_obj.controller, "Rotation", rt.Euler_Xyz())
+            rt.setPropertyController(cur_obj.controller, "Rotation", rt.Rotation_list())
             
             # available 컨트롤러 설정
-            rot_controller = rt.getProperty(cur_obj, "rotation.controller")
-            rt.setProperty(rot_controller, "available.controller", rt.Euler_xyz())
+            rot_controller = rt.getPropertyController(cur_obj.controller, "Rotation")
+            rt.setPropertyController(rot_controller, "available", rt.Euler_xyz())
             
             # 컨트롤러 이름 설정
             rt.execute('$.rotation.controller.setname 1 "Frozen Rotation"')
@@ -107,14 +98,14 @@ class Anim:
             rt.execute('$.rotation.controller.SetActive 2')
         
         # 포지션 컨트롤러 고정
-        if rt.classOf(rt.getProperty(cur_obj, "position.controller")) != rt.Position_Layer:
+        if rt.classOf(rt.getPropertyController(cur_obj.controller, "position")) != rt.Position_list():
             # 포지션 고정
-            rt.setProperty(cur_obj, "position.controller", rt.Bezier_Position())
-            rt.setProperty(cur_obj, "position.controller", rt.Position_list())
+            rt.setPropertyController(cur_obj.controller, "position", rt.Bezier_Position())
+            rt.setPropertyController(cur_obj.controller, "position", rt.Position_list())
             
             # available 컨트롤러 설정
-            pos_controller = rt.getProperty(cur_obj, "position.controller")
-            rt.setProperty(pos_controller, "available.controller", rt.Position_XYZ())
+            pos_controller = rt.getPropertyController(cur_obj.controller, "position")
+            rt.setPropertyController(pos_controller, "available", rt.Position_XYZ())
             
             # 컨트롤러 이름 설정
             rt.execute('$.position.controller.setname 1 "Frozen Position"')
@@ -124,9 +115,10 @@ class Anim:
             rt.execute('$.position.controller.SetActive 2')
             
             # 포지션을 0으로 설정
-            rt.setProperty(cur_obj, "Position.controller[2].x_Position", 0)
-            rt.setProperty(cur_obj, "Position.controller[2].y_Position", 0)
-            rt.setProperty(cur_obj, "Position.controller[2].z_Position", 0)
+            pos_controller2 = rt.execute("$.position.controller[2]")
+            rt.setProperty(pos_controller2, "x_Position", 0)
+            rt.setProperty(pos_controller2, "y_Position", 0)
+            rt.setProperty(pos_controller2, "z_Position", 0)
     
     def collape_anim_transform(self, in_obj, start_frame=None, end_frame=None):
         """
@@ -587,7 +579,6 @@ class Anim:
                 # 부모 스페이스 매트릭스 적용
                 matrix_string = rt.getUserProp(in_objs, rt.Name("ParentSpaceMatrix"))
                 parent_space_matrix = rt.execute(f"execute({matrix_string})")
-                parent = rt.getProperty(in_objs, "parent")
                 if parent is not None:
                     parent_transform = rt.getProperty(parent, "transform")
                     transform_matrix = parent_space_matrix * parent_transform
