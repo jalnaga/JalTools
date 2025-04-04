@@ -412,40 +412,58 @@ struct _Bone (
         else (inBone.transform).translation
     ),
 
-    fn create_skin_bone inBoneArray skipNub:true skinBoneBaseName:"b" = (
+    fn link_skin_bone inSkinBone inOriBone = (
+        anim.save_xform inSkinBone
+        anim.set_xform inSkinBone
+
+        anim.save_xform inOriBone
+        anim.set_xform inOriBone
+
+        inSkinBone.scale.controller = (scaleXYZ())
+        inSkinBone.controller = (link_constraint())
+
+        anim.set_xform #(inSkinBone) space:#world
+        inSkinBone.transform.controller.AddTarget (inOriBone) 0
+    ),
+
+    fn link_skin_bones inSkinBoneArray inOriBoneArray = (
+        if inSkinBoneArray.count != inOriBoneArray.count then return false
+
+        for i = 1 to inSkinBoneArray.count do (
+            link_skin_bone inSkinBoneArray[i] inOriBoneArray[i]
+        )
+
+        return true
+    ),
+
+    fn create_skin_bone inBoneArray skipNub:true mesh:true link:true skinBoneBaseName:"b" = (
         local bones = #()
+        local oriBoneNames = for item in inBoneArray collect item.name
         local skinBoneFilteringChar = "_"
         local skinBonePushAmount = -0.02
         local returnBones = #()
 
         for i = 1 to inBoneArray.count do (
-            local snapShotObj = snapshot inBoneArray[i]
-            addModifier snapShotObj (Push())
-            snapShotObj.modifiers[#Push].Push_Value = skinBonePushAmount
-            collapseStack snapShotObj
+            --local skinBone = BoneSys.createBone inBoneArray[i].transform.translation (inBoneArray[i].transform.translation+6) inBoneArray[i].dir
+            local skinBoneName = name.replace_base inBoneArray[i].name skinBoneBaseName
+            skinBoneName = name.replace_filteringChar skinBoneName skinBoneFilteringChar
 
-            local skinBone = BoneSys.createBone inBoneArray[i].transform.translation (inBoneArray[i].transform.translation+6) inBoneArray[i].dir
+            local skinBone = (create_nub_bone "b_TempSkin" 2)
+            skinBone.name = skinBoneName
+            skinBone.wireColor = color 255 88 199
             skinBone.transform = inBoneArray[i].transform
 
-            skinBone.width = 2
-            skinBone.height = 2
-            skinBone.taper = 90
-            skinBone.length = 2
-            skinBone.frontfin = off
-            skinBone.backfin = off
-            skinBone.sidefins = off
-            skinBone.wireColor = color 255 88 199
+            if mesh == true then (
+                local snapShotObj = snapshot inBoneArray[i]
+                addModifier snapShotObj (Push())
+                snapShotObj.modifiers[#Push].Push_Value = skinBonePushAmount
+                collapseStack snapShotObj
 
-            skinBone.name = name.replace_base inBoneArray[i].name skinBoneBaseName
-            skinBone.name = name.replace_filteringChar skinBone.name skinBoneFilteringChar
-
-            addModifier skinBone (Edit_Poly())
-            max modify mode
-            modPanel.setCurrentObject skinBone.modifiers[#Edit_Poly]
-            skinBone.modifiers[#Edit_Poly].Attach snapShotObj editPolyNode:skinBone
-
-            const.assign_pos_const skinBone inBoneArray[i]
-            const.assign_rot_const skinBone inBoneArray[i]
+                addModifier skinBone (Edit_Poly())
+                max modify mode
+                modPanel.setCurrentObject skinBone.modifiers[#Edit_Poly]
+                skinBone.modifiers[#Edit_Poly].Attach snapShotObj editPolyNode:skinBone
+            )
 
             skinBone.boneEnable = true
             skinBone.renderable = false
@@ -462,6 +480,9 @@ struct _Bone (
                 bones[i].parent = getNodeByName skinBoneParentObjName
             )
             else bones[i].parent = undefined
+        )
+        if link == true then (
+            link_skin_bones bones inBoneArray
         )
 
         if skipNub then (
@@ -477,70 +498,25 @@ struct _Bone (
         return returnBones
     ),
 
-    fn create_skin_bone_from_bip inBoneArray skipNub:true skinBoneBaseName:"b" = (
-        local bones = #()
-        local skinBoneFilteringChar = "_"
-        local returnBones = #()
+    fn create_skin_bone_from_bip inBoneArray skipNub:true mesh:false link:true skinBoneBaseName:"b" = (
+        local targetBones = for item in inBoneArray where ((classOf item) == Biped_Object) and (not(matchPattern item.name pattern:"*Twist*")) and (item != item.controller.rootNode) collect item
+        local returnSkinBones = create_skin_bone targetBones skipNub:skipNub mesh:mesh link:link skinBoneBaseName:skinBoneBaseName
 
-        for i = 1 to inBoneArray.count do (
-            local boneLength = 2.0
-            local childrenBones = for item in inBoneArray[i].children where ((classOf item) == Biped_Object) and (not(matchPattern item.name pattern:"*Twist*")) collect item
-            if childrenBones.count == 1 then boneLength = distance inBoneArray[i] childrenBones[1]
-            if childrenBones.count > 1 then (
-                local childNamePattern = ""
-                if (matchPattern inBoneArray[i].name pattern:"*Spine*") then childNamePattern = "*Neck"
-                if (matchPattern inBoneArray[i].name pattern:"*Pelvis") then childNamePattern = "*Spine"
-                if (matchPattern inBoneArray[i].name pattern:"*Head") then childNamePattern = "*HeadNub"
-                for distTargetBone in inBoneArray do (
-                    if (matchPattern distTargetBone.name pattern:childNamePattern) then boneLength = distance inBoneArray[i] distTargetBone
-                )
-            )
-            local skinBone = BoneSys.createBone inBoneArray[i].transform.translation (inBoneArray[i].transform.translation+6) inBoneArray[i].dir
-            skinBone.transform = inBoneArray[i].transform
+        returnSkinBones
+    ),
 
-            skinBone.width = 1
-            skinBone.height = 1
-            skinBone.taper = 90
-            skinBone.length = boneLength
-            skinBone.frontfin = off
-            skinBone.backfin = off
-            skinBone.sidefins = off
-            skinBone.wireColor = color 255 88 199
-
-            skinBone.name = name.replace_base inBoneArray[i].name skinBoneBaseName
-            skinBone.name = name.replace_filteringChar skinBone.name skinBoneFilteringChar
-
-            --const.assign_pos_const skinBone inBoneArray[i]
-            --const.assign_rot_const skinBone inBoneArray[i]
-
-            skinBone.boneEnable = true
-            skinBone.renderable = false
-            skinBone.boneScaleType=#none
-
-            append bones skinBone
+    fn create_skin_bone_from_bip_for_unreal inBoneArray skipNub:true mesh:false link:true skinBoneBaseName:"b" = (
+        local genBones = create_skin_bone_from_bip inBoneArray skipNub:skipNub mesh:mesh link:link skinBoneBaseName:skinBoneBaseName
+        if genBones.count == 0 then return false
+        
+        for item in genBones do (
+            if matchPattern item.name pattern:"*Pelvis*" then anim.rotate_local item 180 0 0
+            if matchPattern item.name pattern:"*Spine*" then anim.rotate_local item 180 0 0
+            if matchPattern item.name pattern:"*Neck*" then anim.rotate_local item 180 0 0
+            if matchPattern item.name pattern:"*Head*" then anim.rotate_local item 180 0 0
         )
 
-        for i = 1 to inBoneArray.count do (
-            local oriParentObj = inBoneArray[i].parent
-            if oriParentObj != undefined then (
-                local skinBoneParentObjName = name.replace_base oriParentObj.name skinBoneBaseName
-                skinBoneParentObjName = name.replace_filteringChar skinBoneParentObjName skinBoneFilteringChar
-                bones[i].parent = getNodeByName skinBoneParentObjName
-            )
-            else bones[i].parent = undefined
-        )
-
-        if skipNub then (
-            for item in bones do (
-                if not (matchPattern item.name pattern:"*Nub") then append returnBones item
-                else delete item
-            )
-        )
-        else returnBones = deepCopy bones
-
-        bones = #()
-
-        return returnBones
+        return genBones
     ),
 
     fn set_bone_on inBone = (
@@ -587,6 +563,3 @@ struct _Bone (
         for item in selArray do set_freeze_length_off item
     )
 )
-
-
-

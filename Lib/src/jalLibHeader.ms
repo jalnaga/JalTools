@@ -19,7 +19,15 @@ include "skin.ms"
 include "hip.ms"
 include "jointMidBone.ms"
 include "muscleBone.ms"
+include "figureBone.ms"
+include "autoClavicleBone.ms"
+include "shoulderBone.ms"
+include "breastBone.ms"
+include "chestBone.ms"
+include "sartoriusBone.ms"
+include "kneeBone.ms"
 include "twistBone.ms"
+
 include "joystick.ms"
 
 include "progress.ms"
@@ -55,6 +63,14 @@ struct _JalLib (
     jointMid = _JointMidBone(),
     muscleBone = _MuscleBone(),
 
+    figureBone = _FigureBone(),
+
+    autoClavicleBone = _AutoClavicleBone(),
+    shoulderBone = _ShoulderBone(),
+    chestBone = _ChestBone(),
+    breastBone = _BreastBone(),
+    sartoriusBone = _SartoriusBone(),
+    kneeBone = _KneeBone(),
     twistBone = _TwistBone(),
 
     joystick = _JoystickGenerator(),
@@ -111,6 +127,49 @@ struct _JalLib (
         muscleBone.helper = helper
         muscleBone.bone = bone
         muscleBone.const = const
+
+        figureBone.name = name
+        figureBone.anim = anim
+        figureBone.bone = bone
+        figureBone.helper = helper
+
+        autoClavicleBone.name = name
+        autoClavicleBone.anim = anim
+        autoClavicleBone.helper = helper
+        autoClavicleBone.bone = bone
+        autoClavicleBone.const = const
+        autoClavicleBone.bip = bip
+
+        shoulderBone.name = name
+        shoulderBone.anim = anim
+        shoulderBone.helper = helper
+        shoulderBone.bone = bone
+        shoulderBone.const = const
+
+        chestBone.name = name
+        chestBone.anim = anim
+        chestBone.helper = helper
+        chestBone.bone = bone
+        chestBone.const = const
+
+        breastBone.name = name
+        breastBone.anim = anim
+        breastBone.helper = helper
+        breastBone.bone = bone
+        breastBone.const = const
+
+        sartoriusBone.name = name
+        sartoriusBone.anim = anim
+        sartoriusBone.helper = helper
+        sartoriusBone.bone = bone
+        sartoriusBone.const = const
+
+        kneeBone.name = name
+        kneeBone.anim = anim
+        kneeBone.helper = helper
+        kneeBone.bone = bone
+        kneeBone.const = const
+        kneeBone.bip = bip
 
         twistBone.name = name
         twistBone.anim = anim

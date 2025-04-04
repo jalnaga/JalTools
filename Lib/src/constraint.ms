@@ -221,6 +221,8 @@ struct _Constraint (
             )
         )
         targetRotConstraint.relative = keepInit
+
+        targetRotConstraint
     ),
 
     fn assign_lookat_multi inObj inTargetArray keepInit:false = (
@@ -283,6 +285,8 @@ struct _Constraint (
 
         targetRotConstraint.AddNode "rot" rotExpPoint
         targetRotConstraint.SetExpression rotScript
+
+        targetRotConstraint
     ),
 
     fn assign_scripted_lookat inOri inTarget = (

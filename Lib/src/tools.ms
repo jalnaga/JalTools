@@ -58,9 +58,15 @@ struct _Tools (
 
         z=3
         while z !=undefined do (
-            x = rootscene.Anim_Layer_Control_Manager
-            z = custattributes.getdef x 1
-            custAttributes.delete x z
+            try (
+                x = rootscene.Anim_Layer_Control_Manager
+                z = custattributes.getdef x 1
+                custAttributes.delete x z
+            )
+            catch (
+                format "rootScene doesn't have Anim layer control manager.\n"
+                exit
+            )
         )
     )
 )

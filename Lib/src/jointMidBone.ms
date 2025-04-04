@@ -60,19 +60,11 @@ struct _JointMidBone (
         underDummy.parent = underObj
         
         pickMiddleBone[1].transform = underObj.transform
-        anim.rotate_local pickMiddleBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * 90)
-        
-        pickMiddleBone[1].rotation.controller = Orientation_Constraint ()
-        pickMiddleBone[1].rotation.controller.appendTarget upperDummy upperWeight
-        pickMiddleBone[1].rotation.controller.appendTarget underDummy underWeight
-        pickMiddleBone[1].rotation.controller.relative = on
-
-        pickMiddleBone[1].position.controller = Position_Constraint ()
-        pickMiddleBone[1].position.controller.appendTarget upperDummy upperWeight
-        pickMiddleBone[1].position.controller.appendTarget underDummy underWeight
-        pickMiddleBone[1].position.controller.relative = on
-
+        anim.rotate_local pickMiddleBone[1] (rotDir.x * 0) (rotDir.y * 0) (rotDir.z * -90)
         pickMiddleBone[1].parent = underObj.parent
+
+        const.assign_rot_const_multi pickMiddleBone[1] #(upperDummy, underDummy) keepInit:true
+        const.assign_pos_const_multi pickMiddleBone[1] #(upperDummy, underDummy) keepInit:true
         
         boneArray = #()
 

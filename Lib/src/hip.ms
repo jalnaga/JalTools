@@ -41,10 +41,10 @@ struct _Hip (
         pelvisWeight = inPelvisWeight
         thighWeight = inThighWeight
 
-        pelvis = inBip.pelvis
-        spine = inBip.spine
-        lThigh = inBip.lThigh
-        rThigh = inBip.rThigh
+        pelvis = biped.getNode inBip #pelvis
+        spine = biped.getNode inBip #spine link:1
+        lThigh = biped.getNode inBip #lleg link:1
+        rThigh = biped.getNode inBip #rleg link:1
         lThighTwist = inLThighTwist
         rThighTwist = inRThighTwist
 

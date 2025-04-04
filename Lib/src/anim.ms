@@ -211,6 +211,35 @@ struct _Anim (
       deleteKeys obj #allKeys
     ),
 
+    fn is_node_animated node = (
+       local animated = off
+       local object = node
+       if iskindof node SubAnim do
+       (
+          animated = (node.keys != undefined) and (node.keys.count > 0)
+          object = node.object
+       )
+       if iskindof object maxwrapper do for ca in object.custattributes while not animated do animated = is_node_animated ca
+       for k=1 to node.numsubs while not animated do animated = is_node_animated node[k]
+       
+       animated
+    ),
+
+    fn find_animated_nodes nodes: = (
+       if nodes == unsupplied do nodes = objects as array
+       for node in nodes where (is_Node_Animated node) collect node
+    ),
+
+    fn find_animated_material_nodes nodes: = (
+       if nodes == unsupplied do nodes = objects as array
+       for node in nodes where node.mat != undefined and (is_Node_Animated node.mat) collect node
+    ),
+
+    fn find_animated_transform_nodes nodes: = (
+       if nodes == unsupplied do nodes = objects as array
+       for node in nodes where (is_Node_Animated node.controller) collect node
+    ),
+
     mapped fn save_xform inObjs = (
        try (
            setUserProp inObjs #WorldSpaceMatrix (inObjs.transform as string)
