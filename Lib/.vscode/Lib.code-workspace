@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "C:/Program Files/Autodesk/3ds Max 2024/Python/python.exe",
+		"python.analysis.extraPaths": [
+			"${workspaceFolder}"
+		],
+		"python.linting.enabled": true,
+		"python.linting.pylintEnabled": true,
+		"python.formatting.provider": "autopep8",
+		"[python]": {
+			"editor.formatOnSave": true,
+			"editor.defaultFormatter": "ms-python.python"
+		},
+		"editor.rulers": [
+			100
+		],
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/*.pyc": true
+		}	
+	}
+}
