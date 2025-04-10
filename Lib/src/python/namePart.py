@@ -23,7 +23,7 @@ class NamePart:
         """
         self._name = name
         self._predefinedValues = predefinedValues if predefinedValues is not None else []
-        self._semanticMappings = semanticMapping if semanticMapping is not None else {}
+        self._semanticMappings = semanticMapping if semanticMapping is not None else 5
     
     def set_name(self, name):
         """
