@@ -22,7 +22,7 @@ class NamingConfig:
         """클래스 초기화 및 기본 설정값 정의"""
         # 기본 설정값 정의 (프로퍼티는 카멜 케이스 사용)
         self.configData = {
-            "nameParts": ["Base", "Type", "Side", "FrontBack", "RealName", "Index"],
+            "nameParts": ["Base", "Type", "Side", "FrontBack", "RealName", "Index", "Nub"],
             "paddingNum": 2,
             "typeStrArray": ["P", "Dum", "Exp", "IK", "T"],
             "baseStrArray": ["b", "Bip001"],
@@ -33,11 +33,16 @@ class NamingConfig:
             "dummyStr": "Dum",
             "exposeTmStr": "Exp",
             "targetStr": "T",
-            "ikStr": "IK"
+            "ikStr": "IK",
+            # 의미론적 매핑 및 가중치 정보 추가
+            "baseSemantics": {"b": 10, "Bip001": 5},
+            "typeSemantics": {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2},
+            "sideSemantics": {"L": "left", "R": "right", "L": 10, "R": 5},
+            "frontBackSemantics": {"F": "front", "B": "back", "F": 10, "B": 5}
         }
         
         # 필수 namePart 정의 (삭제 불가능)
-        self.requiredParts = ["Base", "Type", "Side", "FrontBack", "RealName", "Index"]
+        self.requiredParts = ["Base", "Type", "Side", "FrontBack", "RealName", "Index", "Nub"]
         
         # 설정 파일 경로 및 기본 파일명
         self.configFilePath = ""
@@ -135,6 +140,11 @@ class NamingConfig:
         dictKey = f"{partName.lower()}StrArray"
         if dictKey not in self.configData:
             self.configData[dictKey] = []
+            
+        # 의미론적 매핑 또는 가중치도 추가 (빈 딕셔너리로 초기화)
+        semanticsKey = f"{partName.lower()}Semantics"
+        if semanticsKey not in self.configData:
+            self.configData[semanticsKey] = {}
         
         return True
     
@@ -165,6 +175,11 @@ class NamingConfig:
         dictKey = f"{partName.lower()}StrArray"
         if dictKey in self.configData:
             del self.configData[dictKey]
+            
+        # 의미론적 매핑 또는 가중치도 제거
+        semanticsKey = f"{partName.lower()}Semantics"
+        if semanticsKey in self.configData:
+            del self.configData[semanticsKey]
         
         return True
     
@@ -244,6 +259,33 @@ class NamingConfig:
             return "nubStr"  # 특수 케이스: 단일 문자열
         else:
             return f"{partName.lower()}StrArray"
+    
+    def _get_part_semantics_key(self, partName: str) -> Union[str, None]:
+        """
+        부분 이름에 해당하는 의미론적 매핑 키 반환하는 내부 헬퍼 메서드
+        
+        Args:
+            partName: 부분 이름 ("Base", "Type", "Side" 등)
+            
+        Returns:
+            의미론적 매핑 키 문자열, 존재하지 않으면 None
+        """
+        if partName == "RealName":
+            print("오류: RealName 부분은 의미론적 매핑이 없습니다.")
+            return None
+        
+        if partName == "Base":
+            return "baseSemantics"
+        elif partName == "Type":
+            return "typeSemantics"
+        elif partName == "Side":
+            return "sideSemantics"
+        elif partName == "FrontBack":
+            return "frontBackSemantics"
+        elif partName == "Nub":
+            return "nubSemantics"
+        else:
+            return f"{partName.lower()}Semantics"
     
     def add_part_dictionary(self, partName: str, value: Union[str, List[str]]) -> bool:
         """
@@ -407,6 +449,52 @@ class NamingConfig:
         
         return self.configData.get(dictKey, None)
     
+    def set_semantic_mapping(self, partName: str, valueToMappingDict: Dict[str, Union[str, int, float]]) -> bool:
+        """
+        특정 부분의 값에 대한 의미론적 매핑 설정
+        
+        Args:
+            partName: 부분 이름 ("Side", "FrontBack" 등)
+            valueToMappingDict: 값-매핑 쌍의 딕셔너리 (예: {"L": "left", "R": "right"})
+            
+        Returns:
+            설정 성공 여부 (True/False)
+        """
+        # 해당 부분이 존재하는지 확인
+        if partName not in self.configData["nameParts"]:
+            print(f"오류: '{partName}' namePart가 존재하지 않습니다.")
+            return False
+            
+        # 매핑 키 생성
+        mappingKey = self._get_part_semantics_key(partName)
+        if mappingKey is None:
+            return False
+            
+        # 이미 매핑이 있으면 병합
+        if mappingKey in self.configData:
+            self.configData[mappingKey].update(valueToMappingDict)
+        else:
+            # 새 매핑 설정
+            self.configData[mappingKey] = valueToMappingDict.copy()
+            
+        return True
+    
+    def get_semantic_mapping(self, partName: str) -> Dict[str, Union[str, int, float]]:
+        """
+        특정 부분의 의미론적 매핑 가져오기
+        
+        Args:
+            partName: 부분 이름 ("Side", "FrontBack" 등)
+            
+        Returns:
+            의미론적 매핑 딕셔너리
+        """
+        semanticsKey = self._get_part_semantics_key(partName)
+        if semanticsKey is None:
+            return {}
+            
+        return self.configData.get(semanticsKey, {})
+    
     def apply_config_to_naming(self, namingInstance) -> bool:
         """
         설정을 Naming 인스턴스에 적용
@@ -418,6 +506,14 @@ class NamingConfig:
             적용 성공 여부 (True/False)
         """
         try:
+            # 필요한 모듈 임포트
+            try:
+                from .namePart import NamePart
+            except ImportError:
+                # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
+                import namePart
+                from namePart import NamePart
+            
             # 설정 적용을 위해 새로운 NamePart 객체 배열 생성
             if "nameParts" in self.configData:
                 nameParts = []
@@ -426,62 +522,63 @@ class NamingConfig:
                 if "paddingNum" in self.configData:
                     namingInstance._paddingNum = self.configData["paddingNum"]
                 
-                # nubStr 설정
-                if "nubStr" in self.configData:
-                    namingInstance._nubStr = self.configData["nubStr"]
-                
                 # 사전 정의 값들 준비
                 baseStrArray = self.configData.get("baseStrArray", ["b", "Bip001"])
-                
-                # typeStrArray 설정
-                if "typeStrArray" in self.configData:
-                    typeStrArray = self.configData["typeStrArray"]
-                else:
-                    # typeStrArray가 없지만 개별 설정이 있는 경우
-                    typeStrArray = []
-                    
-                    if "parentStr" in self.configData:
-                        typeStrArray.append(self.configData["parentStr"])
-                    else:
-                        typeStrArray.append("")
-                        
-                    if "dummyStr" in self.configData:
-                        typeStrArray.append(self.configData["dummyStr"])
-                    if "exposeTmStr" in self.configData:
-                        typeStrArray.append(self.configData["exposeTmStr"])
-                    if "ikStr" in self.configData:
-                        typeStrArray.append(self.configData["ikStr"])
-                    if "targetStr" in self.configData:
-                        typeStrArray.append(self.configData["targetStr"])
-                
+                typeStrArray = self.configData.get("typeStrArray", ["P", "Dum", "Exp", "IK", "T"])
                 sideStrArray = self.configData.get("sideStrArray", ["L", "R"])
                 frontBackStrArray = self.configData.get("frontBackStrArray", ["F", "B"])
                 
+                # 의미론적 매핑 또는 가중치 준비
+                baseSemantics = self.configData.get("baseSemantics", {})
+                typeSemantics = self.configData.get("typeSemantics", {})
+                sideSemantics = self.configData.get("sideSemantics", {})
+                frontBackSemantics = self.configData.get("frontBackSemantics", {})
+                
+                # 기본 의미론적 매핑 설정 (없는 경우)
+                if not sideSemantics and len(sideStrArray) >= 2:
+                    sideSemantics = {
+                        sideStrArray[0]: "left",
+                        sideStrArray[1]: "right",
+                        sideStrArray[0]: 10,
+                        sideStrArray[1]: 5
+                    }
+                    
+                if not frontBackSemantics and len(frontBackStrArray) >= 2:
+                    frontBackSemantics = {
+                        frontBackStrArray[0]: "front",
+                        frontBackStrArray[1]: "back",
+                        frontBackStrArray[0]: 10,
+                        frontBackStrArray[1]: 5
+                    }
+                    
                 # 각 NamePart 객체 생성 및 설정
                 for name in self.configData["nameParts"]:
                     if name == "Base":
-                        nameParts.append(namePart.NamePart(name, baseStrArray))
+                        nameParts.append(NamePart(name, baseStrArray, baseSemantics))
                     elif name == "Type":
-                        nameParts.append(namePart.NamePart(name, typeStrArray))
+                        nameParts.append(NamePart(name, typeStrArray, typeSemantics))
                     elif name == "Side":
-                        nameParts.append(namePart.NamePart(name, sideStrArray))
+                        nameParts.append(NamePart(name, sideStrArray, sideSemantics))
                     elif name == "FrontBack":
-                        nameParts.append(namePart.NamePart(name, frontBackStrArray))
+                        nameParts.append(NamePart(name, frontBackStrArray, frontBackSemantics))
                     elif name == "RealName":
-                        nameParts.append(namePart.NamePart(name))
+                        nameParts.append(NamePart(name))
                     elif name == "Index":
-                        nameParts.append(namePart.NamePart(name))
+                        nameParts.append(NamePart(name))
                     elif name == "Nub":
                         # Nub는 nubStr 값을 사용
                         nubStr = self.configData.get("nubStr", "Nub")
-                        nameParts.append(namePart.NamePart(name, [nubStr]))
+                        nubSemantics = self.configData.get("nubSemantics", {nubStr: 10})
+                        nameParts.append(NamePart(name, [nubStr], nubSemantics))
                     else:
                         # 기타 사용자 정의 부분
                         dictKey = f"{name.lower()}StrArray"
-                        if dictKey in self.configData:
-                            nameParts.append(namePart.NamePart(name, self.configData[dictKey]))
-                        else:
-                            nameParts.append(namePart.NamePart(name))
+                        semanticsKey = f"{name.lower()}Semantics"
+                        
+                        values = self.configData.get(dictKey, [])
+                        semantics = self.configData.get(semanticsKey, {})
+                        
+                        nameParts.append(NamePart(name, values, semantics))
                 
                 # 모든 NamePart 객체 설정 완료 후 namingInstance._nameParts에 할당
                 namingInstance._nameParts = nameParts
@@ -549,11 +646,12 @@ def main():
     config.set_part_dictionary("Side", ["L", "R"])
     config.set_part_dictionary("FrontBack", ["F", "B"])
     config.set_specific_string("nubStr", "Nub")
-    config.set_specific_string("parentStr", "P")
-    config.set_specific_string("dummyStr", "Dum")
-    config.set_specific_string("exposeTmStr", "Exp")
-    config.set_specific_string("targetStr", "T")
-    config.set_specific_string("ikStr", "IK")
+    
+    # 의미론적 매핑 설정
+    config.set_semantic_mapping("Side", {"L": "left", "R": "right", "L": 10, "R": 5})
+    config.set_semantic_mapping("FrontBack", {"F": "front", "B": "back", "F": 10, "B": 5})
+    config.set_semantic_mapping("Base", {"b": 10, "Bip001": 5})
+    config.set_semantic_mapping("Type", {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
     
     # JSON 파일 저장
     success = config.save_config()

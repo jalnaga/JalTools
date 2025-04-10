@@ -43,13 +43,23 @@ class Naming:
         
         # 기본 namePart 초기화 (각 부분에 사전 정의 값 직접 설정)
         self._nameParts = []
-        base_part = NamePart("Base", ["b", "Bip001"])
-        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"])
-        side_part = NamePart("Side", ["L", "R"])
-        front_back_part = NamePart("FrontBack", ["F", "B"])
+        
+        # Base 부분 - "b"는 기본값으로 더 높은 가중치 부여
+        base_part = NamePart("Base", ["b", "Bip001"], {"b": 10, "Bip001": 5})
+        
+        # Type 부분 - 각 유형에 가중치 부여
+        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
+                          {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
+        
+        # Side 부분 - 의미론적 매핑 및 가중치
+        side_part = NamePart("Side", ["L", "R"], {"L": "left", "R": "right", "L": 10, "R": 5})
+        
+        # FrontBack 부분 - 의미론적 매핑 및 가중치
+        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": "front", "B": "back", "F": 10, "B": 5})
+        
         real_name_part = NamePart("RealName")
         index_part = NamePart("Index")
-        nub_part = NamePart("Nub", ["Nub"])
+        nub_part = NamePart("Nub", ["Nub"], {"Nub": 10})
         
         # 기본 순서대로 설정
         self._nameParts = [base_part, type_part, side_part, front_back_part, real_name_part, index_part, nub_part]
@@ -274,9 +284,9 @@ class Naming:
         """
         return inStr.replace(inTargetStr, inNewStr)
 
-    # ---- Name 관련 메소드들 ----
+    # ---- Name 관련 메서드들 ----
     
-    # 사전 정의 값 편집 메소드 제거 (namingConfig를 통해서만 변경 가능)
+    # 사전 정의 값 편집 메서드 제거 (namingConfig를 통해서만 변경 가능)
 
     def get_padding_num(self):
         """
@@ -310,9 +320,7 @@ class Naming:
         """
         for part in self._nameParts:
             if part.get_name() == "Side":
-                values = part.get_predefined_values()
-                if values and len(values) > 0:
-                    return values[0]
+                return part.get_value_by_semantic("left")
         return ""
 
     def get_right_str(self):
@@ -324,9 +332,7 @@ class Naming:
         """
         for part in self._nameParts:
             if part.get_name() == "Side":
-                values = part.get_predefined_values()
-                if values and len(values) > 1:
-                    return values[1]
+                return part.get_value_by_semantic("right")
         return ""
 
     def get_front_str(self):
@@ -338,9 +344,7 @@ class Naming:
         """
         for part in self._nameParts:
             if part.get_name() == "FrontBack":
-                values = part.get_predefined_values()
-                if values and len(values) > 0:
-                    return values[0]
+                return part.get_value_by_semantic("front")
         return ""
 
     def get_back_str(self):
@@ -352,9 +356,7 @@ class Naming:
         """
         for part in self._nameParts:
             if part.get_name() == "FrontBack":
-                values = part.get_predefined_values()
-                if values and len(values) > 1:
-                    return values[1]
+                return part.get_value_by_semantic("back")
         return ""
 
     def get_base_part_index(self):
@@ -1676,27 +1678,42 @@ class Naming:
             typeStrArray = []
             baseStrArray = []
             
+            # 의미론적 매핑 또는 가중치 정보 추출
+            sideSemantics = {}
+            frontBackSemantics = {}
+            typeSemantics = {}
+            baseSemantics = {}
+            
             for part in self._nameParts:
                 name = part.get_name()
                 namePartsArray.append(name)
                 
                 if name == "Side":
                     sideStrArray = part.get_predefined_values()
+                    sideSemantics = part.get_semantic_mapping()
                 elif name == "FrontBack":
                     frontBackStrArray = part.get_predefined_values()
+                    frontBackSemantics = part.get_semantic_mapping()
                 elif name == "Type":
                     typeStrArray = part.get_predefined_values()
+                    typeSemantics = part.get_semantic_mapping()
                 elif name == "Base":
                     baseStrArray = part.get_predefined_values()
+                    baseSemantics = part.get_semantic_mapping()
             
             # 현재 설정 반영
             config.configData["nameParts"] = namePartsArray
             config.configData["paddingNum"] = self._paddingNum
-            config.configData["nubStr"] = self._nubStr
             config.configData["sideStrArray"] = sideStrArray
             config.configData["frontBackStrArray"] = frontBackStrArray
             config.configData["typeStrArray"] = typeStrArray
             config.configData["baseStrArray"] = baseStrArray
+            
+            # 의미론적 매핑 또는 가중치 정보 저장
+            config.configData["sideSemantics"] = sideSemantics
+            config.configData["frontBackSemantics"] = frontBackSemantics
+            config.configData["typeSemantics"] = typeSemantics
+            config.configData["baseSemantics"] = baseSemantics
             
             # 각 유형 문자열 설정
             if len(typeStrArray) > 0:
@@ -1761,27 +1778,42 @@ class Naming:
         typeStrArray = []
         baseStrArray = []
         
+        # 의미론적 매핑 또는 가중치 정보 추출
+        sideSemantics = {}
+        frontBackSemantics = {}
+        typeSemantics = {}
+        baseSemantics = {}
+        
         for part in self._nameParts:
             name = part.get_name()
             namePartsArray.append(name)
             
             if name == "Side":
                 sideStrArray = part.get_predefined_values()
+                sideSemantics = part.get_semantic_mapping()
             elif name == "FrontBack":
                 frontBackStrArray = part.get_predefined_values()
+                frontBackSemantics = part.get_semantic_mapping()
             elif name == "Type":
                 typeStrArray = part.get_predefined_values()
+                typeSemantics = part.get_semantic_mapping()
             elif name == "Base":
                 baseStrArray = part.get_predefined_values()
+                baseSemantics = part.get_semantic_mapping()
         
         # 현재 설정 반영
         config.configData["nameParts"] = namePartsArray
         config.configData["paddingNum"] = self._paddingNum
-        config.configData["nubStr"] = self._nubStr
         config.configData["sideStrArray"] = sideStrArray
         config.configData["frontBackStrArray"] = frontBackStrArray
         config.configData["typeStrArray"] = typeStrArray
         config.configData["baseStrArray"] = baseStrArray
+        
+        # 의미론적 매핑 또는 가중치 정보 저장
+        config.configData["sideSemantics"] = sideSemantics
+        config.configData["frontBackSemantics"] = frontBackSemantics
+        config.configData["typeSemantics"] = typeSemantics
+        config.configData["baseSemantics"] = baseSemantics
         
         # 각 유형 문자열 설정
         if len(typeStrArray) > 0:
@@ -1810,3 +1842,35 @@ class Naming:
             config.configData["targetStr"] = ""
         
         return config
+        
+    # 새로 추가된 유틸리티 메서드들
+        
+    def get_primary_value(self, partName):
+        """
+        특정 부분의 가장 중요한 값(가중치가 가장 높은 값)을 가져옵니다.
+        
+        Args:
+            partName: 부분 이름 ("Base", "Type", "Side" 등)
+            
+        Returns:
+            가장 중요한 값, 없으면 빈 문자열
+        """
+        for part in self._nameParts:
+            if part.get_name() == partName:
+                return part.get_value_by_weight(0)
+        return ""
+        
+    def get_sorted_values(self, partName):
+        """
+        특정 부분의 값을 가중치 순으로 정렬하여 가져옵니다.
+        
+        Args:
+            partName: 부분 이름 ("Base", "Type", "Side" 등)
+            
+        Returns:
+            가중치 순으로 정렬된 값 목록
+        """
+        for part in self._nameParts:
+            if part.get_name() == partName:
+                return part.get_sorted_values_by_weight()
+        return []
