@@ -8,31 +8,48 @@
 
 import re
 import os
+import json
 from pymxs import runtime as rt
+
+# 추가: namingConfig 모듈 임포트
+try:
+    from . import namingConfig
+except ImportError:
+    # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
+    import namingConfig
 
 
 class Naming:
     """
     3ds Max 노드 이름을 관리하기 위한 클래스.
     MAXScript의 _Name 구조체와 _String 구조체를 통합하여 Python으로 재구현.
+    namingConfig.py와 연동하여 JSON 설정 파일을 통한 설정 관리 지원.
     """
     
-    def __init__(self):
-        """클래스 초기화 및 기본 설정값 정의"""
+    def __init__(self, configPath=None):
+        """
+        클래스 초기화 및 기본 설정값 정의
+        
+        Args:
+            configPath: 설정 파일 경로 (기본값: None)
+                        설정 파일이 제공되면 해당 파일에서 설정을 로드함
+        """
         # 이름 구조 관련 설정값
         self._nameParts = ["Base", "Type", "Side", "FrontBack", "RealName", "Index"]
-        self._paddingNum = 3
+        self._paddingNum = 2
         self._nubStr = "Nub"
         self._sideStrArray = ["L", "R"]
         self._frontBackStrArray = ["F", "B"]
-        self._parentStr = "P"
-        self._dummyStr = "Dum"
-        self._exposeTmStr = "Exp"
-        self._targetStr = "T"
-        self._ikStr = "IK"
         self._typeStrArray = ["P", "Dum", "Exp", "IK", "T"]
         self._baseStrArray = ["b", "Bip001"]
-        self._iniFile = ""
+        self._configPath = configPath
+        
+        # 설정 파일이 제공된 경우 로드
+        if configPath:
+            self.load_from_config_file(configPath)
+        else:
+            # 기본 JSON 설정 파일 로드 시도
+            self.load_default_config()
 
     # ---- String 관련 메소드들 (내부 사용 헬퍼 메소드) ----
     
@@ -319,7 +336,10 @@ class Naming:
         Args:
             inStr: 부모 문자열
         """
-        self._parentStr = inStr
+        if len(self._typeStrArray) > 0:
+            self._typeStrArray[0] = inStr
+        else:
+            self._typeStrArray = [inStr] + self._typeStrArray
 
     def set_dummy_str(self, inStr):
         """
@@ -328,7 +348,12 @@ class Naming:
         Args:
             inStr: 더미 문자열
         """
-        self._dummyStr = inStr
+        if len(self._typeStrArray) > 1:
+            self._typeStrArray[1] = inStr
+        elif len(self._typeStrArray) == 1:
+            self._typeStrArray.append(inStr)
+        else:
+            self._typeStrArray = ["P", inStr]
 
     def set_expose_tm_str(self, inStr):
         """
@@ -337,16 +362,13 @@ class Naming:
         Args:
             inStr: 변환 노출 문자열
         """
-        self._exposeTmStr = inStr
-
-    def set_target_str(self, inStr):
-        """
-        타겟 문자열 설정
-        
-        Args:
-            inStr: 타겟 문자열
-        """
-        self._targetStr = inStr
+        if len(self._typeStrArray) > 2:
+            self._typeStrArray[2] = inStr
+        else:
+            # 배열 확장 및 값 설정
+            while len(self._typeStrArray) < 2:
+                self._typeStrArray.append("")
+            self._typeStrArray.append(inStr)
 
     def set_ik_str(self, inStr):
         """
@@ -355,7 +377,28 @@ class Naming:
         Args:
             inStr: IK 문자열
         """
-        self._ikStr = inStr
+        if len(self._typeStrArray) > 3:
+            self._typeStrArray[3] = inStr
+        else:
+            # 배열 확장 및 값 설정
+            while len(self._typeStrArray) < 3:
+                self._typeStrArray.append("")
+            self._typeStrArray.append(inStr)
+
+    def set_target_str(self, inStr):
+        """
+        타겟 문자열 설정
+        
+        Args:
+            inStr: 타겟 문자열
+        """
+        if len(self._typeStrArray) > 4:
+            self._typeStrArray[4] = inStr
+        else:
+            # 배열 확장 및 값 설정
+            while len(self._typeStrArray) < 4:
+                self._typeStrArray.append("")
+            self._typeStrArray.append(inStr)
 
     def set_base_str(self, inStrArray):
         """
@@ -391,7 +434,9 @@ class Naming:
         Returns:
             부모 문자열
         """
-        return self._parentStr
+        if len(self._typeStrArray) > 0:
+            return self._typeStrArray[0]
+        return ""
 
     def get_dummy_str(self):
         """
@@ -400,7 +445,9 @@ class Naming:
         Returns:
             더미 문자열
         """
-        return self._dummyStr
+        if len(self._typeStrArray) > 1:
+            return self._typeStrArray[1]
+        return ""
 
     def get_expose_tm_str(self):
         """
@@ -409,16 +456,9 @@ class Naming:
         Returns:
             변환 노출 문자열
         """
-        return self._exposeTmStr
-
-    def get_target_str(self):
-        """
-        타겟 문자열 가져오기
-        
-        Returns:
-            타겟 문자열
-        """
-        return self._targetStr
+        if len(self._typeStrArray) > 2:
+            return self._typeStrArray[2]
+        return ""
 
     def get_ik_str(self):
         """
@@ -427,7 +467,20 @@ class Naming:
         Returns:
             IK 문자열
         """
-        return self._ikStr
+        if len(self._typeStrArray) > 3:
+            return self._typeStrArray[3]
+        return ""
+
+    def get_target_str(self):
+        """
+        타겟 문자열 가져오기
+        
+        Returns:
+            타겟 문자열
+        """
+        if len(self._typeStrArray) > 4:
+            return self._typeStrArray[4]
+        return ""
 
     def get_left_str(self):
         """
@@ -1598,109 +1651,172 @@ class Naming:
         # Python의 sorted 함수와 key를 사용하여 이름 기준 정렬
         return sorted(inArray, key=lambda obj: obj.name.lower())
 
-    def get_ini_file(self):
+    def load_default_config(self):
         """
-        INI 파일 경로 가져오기
+        기본 JSON 설정 파일 로드
+        기본 파일은 현재 스크립트 디렉토리의 namingConfig.json 파일입니다.
+        파일이 없는 경우 기본 설정값을 유지합니다.
+        """
+        try:
+            # 현재 스크립트 경로 기준으로 기본 설정 파일 경로 설정
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            default_config_path = os.path.join(script_dir, "namingConfig.json")
+            
+            # 설정 파일이 존재하는지 확인
+            if os.path.exists(default_config_path):
+                self.load_from_config_file(default_config_path)
+            else:
+                # 부모 디렉토리에서 설정 파일 확인 (기존 INI 파일이 저장되는 위치)
+                parent_config_path = os.path.join(os.path.dirname(script_dir), "namingConfig.json")
+                if os.path.exists(parent_config_path):
+                    self.load_from_config_file(parent_config_path)
+                else:
+                    print("기본 설정 파일을 찾을 수 없습니다. 기본 설정값을 사용합니다.")
+        except Exception as e:
+            print(f"기본 설정 파일 로드 중 오류 발생: {e}")
+            
+    def load_from_config_file(self, configPath):
+        """
+        JSON 설정 파일에서 설정 로드
+        
+        Args:
+            configPath: 설정 파일 경로
+            
+        Returns:
+            로드 성공 여부 (True/False)
+        """
+        try:
+            config = namingConfig.NamingConfig()
+            
+            if config.load_config(configPath):
+                config.apply_config_to_naming(self)
+                self._configPath = configPath
+                return True
+            else:
+                print(f"설정 파일 로드 실패: {configPath}")
+                return False
+                
+        except Exception as e:
+            print(f"설정 파일 로드 중 오류 발생: {e}")
+            return False
+    
+    def save_to_config_file(self, configPath=None):
+        """
+        현재 설정을 JSON 설정 파일로 저장
+        
+        Args:
+            configPath: 저장할 파일 경로 (기본값: None, 이전에 로드한 파일 경로 사용)
+            
+        Returns:
+            저장 성공 여부 (True/False)
+        """
+        # 저장 경로가 지정되지 않은 경우 이전 경로 사용
+        savePath = configPath or self._configPath
+        
+        if not savePath:
+            print("저장할 설정 파일 경로가 지정되지 않았습니다.")
+            return False
+        
+        try:
+            # 현재 설정으로 NamingConfig 객체 생성
+            config = namingConfig.NamingConfig()
+            
+            # 현재 설정 반영
+            config.configData["nameParts"] = self._nameParts.copy()
+            config.configData["paddingNum"] = self._paddingNum
+            config.configData["nubStr"] = self._nubStr
+            config.configData["sideStrArray"] = self._sideStrArray.copy()
+            config.configData["frontBackStrArray"] = self._frontBackStrArray.copy()
+            # 각 유형 문자열 설정
+            if len(self._typeStrArray) > 0:
+                config.configData["parentStr"] = self._typeStrArray[0]
+            else:
+                config.configData["parentStr"] = ""
+                
+            if len(self._typeStrArray) > 1:
+                config.configData["dummyStr"] = self._typeStrArray[1]
+            else:
+                config.configData["dummyStr"] = ""
+                
+            if len(self._typeStrArray) > 2:
+                config.configData["exposeTmStr"] = self._typeStrArray[2]
+            else:
+                config.configData["exposeTmStr"] = ""
+                
+            if len(self._typeStrArray) > 3:
+                config.configData["ikStr"] = self._typeStrArray[3]
+            else:
+                config.configData["ikStr"] = ""
+                
+            if len(self._typeStrArray) > 4:
+                config.configData["targetStr"] = self._typeStrArray[4]
+            else:
+                config.configData["targetStr"] = ""
+            config.configData["typeStrArray"] = self._typeStrArray.copy()
+            config.configData["baseStrArray"] = self._baseStrArray.copy()
+            
+            # 설정 저장
+            save_result = config.save_config(savePath)
+            
+            if save_result:
+                self._configPath = savePath
+                
+            return save_result
+            
+        except Exception as e:
+            print(f"설정 저장 중 오류 발생: {e}")
+            return False
+    
+    def get_config_path(self):
+        """
+        현재 설정 파일 경로 가져오기
         
         Returns:
-            INI 파일 경로
+            설정 파일 경로 (없으면 빈 문자열)
         """
-        return self._iniFile
-
-    def load_setting_from_ini(self):
+        return self._configPath or ""
+    
+    def create_config_object(self):
         """
-        INI 파일에서 설정 로드
-        """
-        # 현재 스크립트 경로 기준으로 INI 파일 경로 설정
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        self._iniFile = os.path.join(os.path.dirname(script_dir), "NameTool.ini")
+        현재 설정으로 NamingConfig 객체 생성
         
-        # INI 파일이 존재하는지 확인
-        if not os.path.exists(self._iniFile):
-            return
+        Returns:
+            NamingConfig 객체
+        """
+        config = namingConfig.NamingConfig()
+        
+        # 현재 설정 반영
+        config.configData["nameParts"] = self._nameParts.copy()
+        config.configData["paddingNum"] = self._paddingNum
+        config.configData["nubStr"] = self._nubStr
+        config.configData["sideStrArray"] = self._sideStrArray.copy()
+        config.configData["frontBackStrArray"] = self._frontBackStrArray.copy()
+        # 각 유형 문자열 설정
+        if len(self._typeStrArray) > 0:
+            config.configData["parentStr"] = self._typeStrArray[0]
+        else:
+            config.configData["parentStr"] = ""
             
-        # INI 파일에서 설정 읽기
-        try:
-            with open(self._iniFile, 'r') as ini_file:
-                lines = ini_file.readlines()
-                
-            # 기본 설정 섹션 찾기
-            section = ""
-            settings = {}
+        if len(self._typeStrArray) > 1:
+            config.configData["dummyStr"] = self._typeStrArray[1]
+        else:
+            config.configData["dummyStr"] = ""
             
-            for line in lines:
-                line = line.strip()
-                
-                if line.startswith('[') and line.endswith(']'):
-                    section = line[1:-1]
-                    if section not in settings:
-                        settings[section] = {}
-                elif '=' in line and section:
-                    key, value = line.split('=', 1)
-                    settings[section][key.strip()] = value.strip()
+        if len(self._typeStrArray) > 2:
+            config.configData["exposeTmStr"] = self._typeStrArray[2]
+        else:
+            config.configData["exposeTmStr"] = ""
             
-            # 설정 적용
-            if 'DefaultSetting' in settings:
-                if 'NubStr' in settings['DefaultSetting']:
-                    self.set_nub_str(settings['DefaultSetting']['NubStr'])
-                    
-                if 'NamePartsOrder' in settings['DefaultSetting']:
-                    name_parts_order = settings['DefaultSetting']['NamePartsOrder'].split()
-                    self.set_name_parts_order(name_parts_order)
-                    
-                if 'PaddingNum' in settings['DefaultSetting']:
-                    try:
-                        padding_num = int(settings['DefaultSetting']['PaddingNum'])
-                        self.set_padding_num(padding_num)
-                    except ValueError:
-                        pass
+        if len(self._typeStrArray) > 3:
+            config.configData["ikStr"] = self._typeStrArray[3]
+        else:
+            config.configData["ikStr"] = ""
             
-            # 측면 설정 적용
-            if 'Side' in settings:
-                if 'SideStrArray' in settings['Side']:
-                    side_str_array = settings['Side']['SideStrArray'].split()
-                    if len(side_str_array) >= 2:
-                        self.set_left_str(side_str_array[0])
-                        self.set_right_str(side_str_array[1])
-                        
-                if 'FrontBackStrArray' in settings['Side']:
-                    front_back_str_array = settings['Side']['FrontBackStrArray'].split()
-                    if len(front_back_str_array) >= 2:
-                        self.set_front_str(front_back_str_array[0])
-                        self.set_back_str(front_back_str_array[1])
-            
-            # 타입 설정 적용
-            if 'Type' in settings:
-                type_str_array = []
-                
-                if 'Parent' in settings['Type']:
-                    self.set_parent_str(settings['Type']['Parent'])
-                    type_str_array.append(settings['Type']['Parent'])
-                    
-                if 'Dummy' in settings['Type']:
-                    self.set_dummy_str(settings['Type']['Dummy'])
-                    type_str_array.append(settings['Type']['Dummy'])
-                    
-                if 'ExposeTM' in settings['Type']:
-                    self.set_expose_tm_str(settings['Type']['ExposeTM'])
-                    type_str_array.append(settings['Type']['ExposeTM'])
-                    
-                if 'Target' in settings['Type']:
-                    self.set_target_str(settings['Type']['Target'])
-                    type_str_array.append(settings['Type']['Target'])
-                    
-                if 'IK' in settings['Type']:
-                    self.set_ik_str(settings['Type']['IK'])
-                    type_str_array.append(settings['Type']['IK'])
-                    
-                if type_str_array:
-                    self.set_type_str(type_str_array)
-            
-            # 베이스 설정 적용
-            if 'Base' in settings:
-                base_str_array = list(settings['Base'].values())
-                if base_str_array:
-                    self.set_base_str(base_str_array)
-                    
-        except Exception as e:
-            print(f"INI 파일 로드 중 오류 발생: {e}")
+        if len(self._typeStrArray) > 4:
+            config.configData["targetStr"] = self._typeStrArray[4]
+        else:
+            config.configData["targetStr"] = ""
+        config.configData["typeStrArray"] = self._typeStrArray.copy()
+        config.configData["baseStrArray"] = self._baseStrArray.copy()
+        
+        return config
