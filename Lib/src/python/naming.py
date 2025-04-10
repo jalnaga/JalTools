@@ -11,12 +11,15 @@ import os
 import json
 from pymxs import runtime as rt
 
-# 추가: namingConfig 모듈 임포트
+# 모듈 임포트
 try:
     from . import namingConfig
+    from .namePart import NamePart
 except ImportError:
     # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
     import namingConfig
+    import namePart
+    from namePart import NamePart
 
 
 class Naming:
