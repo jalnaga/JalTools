@@ -37,15 +37,22 @@ class Naming:
             configPath: 설정 파일 경로 (기본값: None)
                         설정 파일이 제공되면 해당 파일에서 설정을 로드함
         """
-        # 이름 구조 관련 설정값
-        self._nameParts = ["Base", "Type", "Side", "FrontBack", "RealName", "Index"]
+        # 기본 설정값
         self._paddingNum = 2
         self._nubStr = "Nub"
-        self._sideStrArray = ["L", "R"]
-        self._frontBackStrArray = ["F", "B"]
-        self._typeStrArray = ["P", "Dum", "Exp", "IK", "T"]
-        self._baseStrArray = ["b", "Bip001"]
         self._configPath = configPath
+        
+        # 기본 namePart 초기화 (각 부분에 사전 정의 값 직접 설정)
+        self._nameParts = []
+        base_part = NamePart("Base", ["b", "Bip001"])
+        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"])
+        side_part = NamePart("Side", ["L", "R"])
+        front_back_part = NamePart("FrontBack", ["F", "B"])
+        real_name_part = NamePart("RealName")
+        index_part = NamePart("Index", [self._nubStr])
+        
+        # 기본 순서대로 설정
+        self._nameParts = [base_part, type_part, side_part, front_back_part, real_name_part, index_part]
         
         # 설정 파일이 제공된 경우 로드
         if configPath:
@@ -269,148 +276,7 @@ class Naming:
 
     # ---- Name 관련 메소드들 ----
     
-    def set_padding_num(self, inNum):
-        """
-        패딩 숫자 설정
-        
-        Args:
-            inNum: 패딩 숫자
-        """
-        self._paddingNum = inNum
-
-    def set_nub_str(self, inStr):
-        """
-        넙(Nub) 문자열 설정
-        
-        Args:
-            inStr: 넙 문자열
-        """
-        self._nubStr = inStr
-
-    def set_left_str(self, inStr):
-        """
-        왼쪽 구분자 설정
-        
-        Args:
-            inStr: 왼쪽 구분자
-        """
-        self._sideStrArray[0] = inStr
-
-    def set_right_str(self, inStr):
-        """
-        오른쪽 구분자 설정
-        
-        Args:
-            inStr: 오른쪽 구분자
-        """
-        self._sideStrArray[1] = inStr
-
-    def set_front_str(self, inStr):
-        """
-        앞 구분자 설정
-        
-        Args:
-            inStr: 앞 구분자
-        """
-        self._frontBackStrArray[0] = inStr
-
-    def set_back_str(self, inStr):
-        """
-        뒤 구분자 설정
-        
-        Args:
-            inStr: 뒤 구분자
-        """
-        self._frontBackStrArray[1] = inStr
-
-    def set_type_str(self, inStrArray):
-        """
-        타입 문자열 배열 설정
-        
-        Args:
-            inStrArray: 타입 문자열 배열
-        """
-        self._typeStrArray = inStrArray.copy()
-
-    def set_parent_str(self, inStr):
-        """
-        부모 문자열 설정
-        
-        Args:
-            inStr: 부모 문자열
-        """
-        if len(self._typeStrArray) > 0:
-            self._typeStrArray[0] = inStr
-        else:
-            self._typeStrArray = [inStr] + self._typeStrArray
-
-    def set_dummy_str(self, inStr):
-        """
-        더미 문자열 설정
-        
-        Args:
-            inStr: 더미 문자열
-        """
-        if len(self._typeStrArray) > 1:
-            self._typeStrArray[1] = inStr
-        elif len(self._typeStrArray) == 1:
-            self._typeStrArray.append(inStr)
-        else:
-            self._typeStrArray = ["P", inStr]
-
-    def set_expose_tm_str(self, inStr):
-        """
-        변환 노출 문자열 설정
-        
-        Args:
-            inStr: 변환 노출 문자열
-        """
-        if len(self._typeStrArray) > 2:
-            self._typeStrArray[2] = inStr
-        else:
-            # 배열 확장 및 값 설정
-            while len(self._typeStrArray) < 2:
-                self._typeStrArray.append("")
-            self._typeStrArray.append(inStr)
-
-    def set_ik_str(self, inStr):
-        """
-        IK 문자열 설정
-        
-        Args:
-            inStr: IK 문자열
-        """
-        if len(self._typeStrArray) > 3:
-            self._typeStrArray[3] = inStr
-        else:
-            # 배열 확장 및 값 설정
-            while len(self._typeStrArray) < 3:
-                self._typeStrArray.append("")
-            self._typeStrArray.append(inStr)
-
-    def set_target_str(self, inStr):
-        """
-        타겟 문자열 설정
-        
-        Args:
-            inStr: 타겟 문자열
-        """
-        if len(self._typeStrArray) > 4:
-            self._typeStrArray[4] = inStr
-        else:
-            # 배열 확장 및 값 설정
-            while len(self._typeStrArray) < 4:
-                self._typeStrArray.append("")
-            self._typeStrArray.append(inStr)
-
-    def set_base_str(self, inStrArray):
-        """
-        기본 문자열 배열 설정
-        
-        Args:
-            inStrArray: 기본 문자열 배열
-        """
-        self._baseStrArray = inStrArray.copy()
+    # 사전 정의 값 편집 메소드 제거 (namingConfig를 통해서만 변경 가능)
 
     def get_padding_num(self):
         """
@@ -437,8 +303,11 @@ class Naming:
         Returns:
             부모 문자열
         """
-        if len(self._typeStrArray) > 0:
-            return self._typeStrArray[0]
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                values = part.get_predefined_values()
+                if values and len(values) > 0:
+                    return values[0]
         return ""
 
     def get_dummy_str(self):
@@ -448,8 +317,11 @@ class Naming:
         Returns:
             더미 문자열
         """
-        if len(self._typeStrArray) > 1:
-            return self._typeStrArray[1]
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                values = part.get_predefined_values()
+                if values and len(values) > 1:
+                    return values[1]
         return ""
 
     def get_expose_tm_str(self):
@@ -459,8 +331,11 @@ class Naming:
         Returns:
             변환 노출 문자열
         """
-        if len(self._typeStrArray) > 2:
-            return self._typeStrArray[2]
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                values = part.get_predefined_values()
+                if values and len(values) > 2:
+                    return values[2]
         return ""
 
     def get_ik_str(self):
@@ -470,8 +345,11 @@ class Naming:
         Returns:
             IK 문자열
         """
-        if len(self._typeStrArray) > 3:
-            return self._typeStrArray[3]
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                values = part.get_predefined_values()
+                if values and len(values) > 3:
+                    return values[3]
         return ""
 
     def get_target_str(self):
@@ -481,8 +359,11 @@ class Naming:
         Returns:
             타겟 문자열
         """
-        if len(self._typeStrArray) > 4:
-            return self._typeStrArray[4]
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                values = part.get_predefined_values()
+                if values and len(values) > 4:
+                    return values[4]
         return ""
 
     def get_left_str(self):
@@ -492,7 +373,12 @@ class Naming:
         Returns:
             왼쪽 구분자
         """
-        return self._sideStrArray[0]
+        for part in self._nameParts:
+            if part.get_name() == "Side":
+                values = part.get_predefined_values()
+                if values and len(values) > 0:
+                    return values[0]
+        return ""
 
     def get_right_str(self):
         """
@@ -501,7 +387,12 @@ class Naming:
         Returns:
             오른쪽 구분자
         """
-        return self._sideStrArray[1]
+        for part in self._nameParts:
+            if part.get_name() == "Side":
+                values = part.get_predefined_values()
+                if values and len(values) > 1:
+                    return values[1]
+        return ""
 
     def get_front_str(self):
         """
@@ -510,7 +401,12 @@ class Naming:
         Returns:
             앞 구분자
         """
-        return self._frontBackStrArray[0]
+        for part in self._nameParts:
+            if part.get_name() == "FrontBack":
+                values = part.get_predefined_values()
+                if values and len(values) > 0:
+                    return values[0]
+        return ""
 
     def get_back_str(self):
         """
@@ -519,7 +415,12 @@ class Naming:
         Returns:
             뒤 구분자
         """
-        return self._frontBackStrArray[1]
+        for part in self._nameParts:
+            if part.get_name() == "FrontBack":
+                values = part.get_predefined_values()
+                if values and len(values) > 1:
+                    return values[1]
+        return ""
 
     def get_base_part_index(self):
         """
@@ -528,10 +429,10 @@ class Naming:
         Returns:
             기본 부분 인덱스
         """
-        try:
-            return self._nameParts.index("Base")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "Base":
+                return i
+        return -1
 
     def get_type_part_index(self):
         """
@@ -540,10 +441,10 @@ class Naming:
         Returns:
             유형 부분 인덱스
         """
-        try:
-            return self._nameParts.index("Type")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "Type":
+                return i
+        return -1
 
     def get_side_part_index(self):
         """
@@ -552,10 +453,10 @@ class Naming:
         Returns:
             측면 부분 인덱스
         """
-        try:
-            return self._nameParts.index("Side")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "Side":
+                return i
+        return -1
 
     def get_front_back_part_index(self):
         """
@@ -564,10 +465,10 @@ class Naming:
         Returns:
             앞/뒤 부분 인덱스
         """
-        try:
-            return self._nameParts.index("FrontBack")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "FrontBack":
+                return i
+        return -1
 
     def get_real_name_part_index(self):
         """
@@ -576,10 +477,10 @@ class Naming:
         Returns:
             실제 이름 부분 인덱스
         """
-        try:
-            return self._nameParts.index("RealName")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "RealName":
+                return i
+        return -1
 
     def get_index_part_index(self):
         """
@@ -588,19 +489,12 @@ class Naming:
         Returns:
             인덱스 부분 인덱스
         """
-        try:
-            return self._nameParts.index("Index")
-        except ValueError:
-            return -1
+        for i, part in enumerate(self._nameParts):
+            if part.get_name() == "Index":
+                return i
+        return -1
 
-    def set_name_parts_order(self, inStrArray):
-        """
-        이름 부분 순서 설정
-        
-        Args:
-            inStrArray: 이름 부분 순서 배열
-        """
-        self._nameParts = inStrArray.copy()
+    # 이름 부분 순서 설정 메소드 제거 (namingConfig를 통해서만 변경 가능)
 
     def is_side_char(self, inChar):
         """
@@ -612,7 +506,10 @@ class Naming:
         Returns:
             측면 문자이면 True, 아니면 False
         """
-        return inChar in self._sideStrArray
+        for part in self._nameParts:
+            if part.get_name() == "Side":
+                return inChar in part.get_predefined_values()
+        return False
 
     def is_front_back_char(self, inChar):
         """
@@ -624,7 +521,10 @@ class Naming:
         Returns:
             앞/뒤 문자이면 True, 아니면 False
         """
-        return inChar in self._frontBackStrArray
+        for part in self._nameParts:
+            if part.get_name() == "FrontBack":
+                return inChar in part.get_predefined_values()
+        return False
 
     def is_type_char(self, inChar):
         """
@@ -636,7 +536,10 @@ class Naming:
         Returns:
             유형 문자이면 True, 아니면 False
         """
-        return inChar in self._typeStrArray
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                return inChar in part.get_predefined_values()
+        return False
 
     def is_base_char(self, inChar):
         """
@@ -648,7 +551,10 @@ class Naming:
         Returns:
             기본 문자이면 True, 아니면 False
         """
-        return inChar in self._baseStrArray
+        for part in self._nameParts:
+            if part.get_name() == "Base":
+                return inChar in part.get_predefined_values()
+        return False
 
     def is_index_char(self, inChar):
         """
@@ -701,9 +607,16 @@ class Naming:
         side_index = self.get_side_part_index()
         real_name_index = self.get_real_name_part_index()
         
+        # 측면 문자열 목록 가져오기
+        side_values = []
+        for part in self._nameParts:
+            if part.get_name() == "Side":
+                side_values = part.get_predefined_values()
+                break
+                
         # 측면 문자열이 있는지 확인
         found = False
-        for item in self._sideStrArray:
+        for item in side_values:
             if item in name_array:
                 found = True
                 break
@@ -741,9 +654,16 @@ class Naming:
         base_index = self.get_base_part_index()
         real_name_index = self.get_real_name_part_index()
         
+        # 기본 문자열 목록 가져오기
+        base_values = []
+        for part in self._nameParts:
+            if part.get_name() == "Base":
+                base_values = part.get_predefined_values()
+                break
+                
         # 기본 문자열이 있는지 확인
         found = False
-        for item in self._baseStrArray:
+        for item in base_values:
             if item in name_array:
                 found = True
                 break
@@ -781,9 +701,16 @@ class Naming:
         type_index = self.get_type_part_index()
         real_name_index = self.get_real_name_part_index()
         
+        # 유형 문자열 목록 가져오기
+        type_values = []
+        for part in self._nameParts:
+            if part.get_name() == "Type":
+                type_values = part.get_predefined_values()
+                break
+                
         # 유형 문자열이 있는지 확인
         found = False
-        for item in self._typeStrArray:
+        for item in type_values:
             if item in name_array:
                 found = True
                 break
@@ -821,9 +748,16 @@ class Naming:
         front_back_index = self.get_front_back_part_index()
         real_name_index = self.get_real_name_part_index()
         
+        # 앞/뒤 문자열 목록 가져오기
+        front_back_values = []
+        for part in self._nameParts:
+            if part.get_name() == "FrontBack":
+                front_back_values = part.get_predefined_values()
+                break
+                
         # 앞/뒤 문자열이 있는지 확인
         found = False
-        for item in self._frontBackStrArray:
+        for item in front_back_values:
             if item in name_array:
                 found = True
                 break
@@ -1724,39 +1658,60 @@ class Naming:
             # 현재 설정으로 NamingConfig 객체 생성
             config = namingConfig.NamingConfig()
             
+            # NamePart 객체에서 데이터 추출
+            namePartsArray = []
+            sideStrArray = []
+            frontBackStrArray = []
+            typeStrArray = []
+            baseStrArray = []
+            
+            for part in self._nameParts:
+                name = part.get_name()
+                namePartsArray.append(name)
+                
+                if name == "Side":
+                    sideStrArray = part.get_predefined_values()
+                elif name == "FrontBack":
+                    frontBackStrArray = part.get_predefined_values()
+                elif name == "Type":
+                    typeStrArray = part.get_predefined_values()
+                elif name == "Base":
+                    baseStrArray = part.get_predefined_values()
+            
             # 현재 설정 반영
-            config.configData["nameParts"] = self._nameParts.copy()
+            config.configData["nameParts"] = namePartsArray
             config.configData["paddingNum"] = self._paddingNum
             config.configData["nubStr"] = self._nubStr
-            config.configData["sideStrArray"] = self._sideStrArray.copy()
-            config.configData["frontBackStrArray"] = self._frontBackStrArray.copy()
+            config.configData["sideStrArray"] = sideStrArray
+            config.configData["frontBackStrArray"] = frontBackStrArray
+            config.configData["typeStrArray"] = typeStrArray
+            config.configData["baseStrArray"] = baseStrArray
+            
             # 각 유형 문자열 설정
-            if len(self._typeStrArray) > 0:
-                config.configData["parentStr"] = self._typeStrArray[0]
+            if len(typeStrArray) > 0:
+                config.configData["parentStr"] = typeStrArray[0]
             else:
                 config.configData["parentStr"] = ""
                 
-            if len(self._typeStrArray) > 1:
-                config.configData["dummyStr"] = self._typeStrArray[1]
+            if len(typeStrArray) > 1:
+                config.configData["dummyStr"] = typeStrArray[1]
             else:
                 config.configData["dummyStr"] = ""
                 
-            if len(self._typeStrArray) > 2:
-                config.configData["exposeTmStr"] = self._typeStrArray[2]
+            if len(typeStrArray) > 2:
+                config.configData["exposeTmStr"] = typeStrArray[2]
             else:
                 config.configData["exposeTmStr"] = ""
                 
-            if len(self._typeStrArray) > 3:
-                config.configData["ikStr"] = self._typeStrArray[3]
+            if len(typeStrArray) > 3:
+                config.configData["ikStr"] = typeStrArray[3]
             else:
                 config.configData["ikStr"] = ""
                 
-            if len(self._typeStrArray) > 4:
-                config.configData["targetStr"] = self._typeStrArray[4]
+            if len(typeStrArray) > 4:
+                config.configData["targetStr"] = typeStrArray[4]
             else:
                 config.configData["targetStr"] = ""
-            config.configData["typeStrArray"] = self._typeStrArray.copy()
-            config.configData["baseStrArray"] = self._baseStrArray.copy()
             
             # 설정 저장
             save_result = config.save_config(savePath)
@@ -1788,38 +1743,59 @@ class Naming:
         """
         config = namingConfig.NamingConfig()
         
+        # NamePart 객체에서 데이터 추출
+        namePartsArray = []
+        sideStrArray = []
+        frontBackStrArray = []
+        typeStrArray = []
+        baseStrArray = []
+        
+        for part in self._nameParts:
+            name = part.get_name()
+            namePartsArray.append(name)
+            
+            if name == "Side":
+                sideStrArray = part.get_predefined_values()
+            elif name == "FrontBack":
+                frontBackStrArray = part.get_predefined_values()
+            elif name == "Type":
+                typeStrArray = part.get_predefined_values()
+            elif name == "Base":
+                baseStrArray = part.get_predefined_values()
+        
         # 현재 설정 반영
-        config.configData["nameParts"] = self._nameParts.copy()
+        config.configData["nameParts"] = namePartsArray
         config.configData["paddingNum"] = self._paddingNum
         config.configData["nubStr"] = self._nubStr
-        config.configData["sideStrArray"] = self._sideStrArray.copy()
-        config.configData["frontBackStrArray"] = self._frontBackStrArray.copy()
+        config.configData["sideStrArray"] = sideStrArray
+        config.configData["frontBackStrArray"] = frontBackStrArray
+        config.configData["typeStrArray"] = typeStrArray
+        config.configData["baseStrArray"] = baseStrArray
+        
         # 각 유형 문자열 설정
-        if len(self._typeStrArray) > 0:
-            config.configData["parentStr"] = self._typeStrArray[0]
+        if len(typeStrArray) > 0:
+            config.configData["parentStr"] = typeStrArray[0]
         else:
             config.configData["parentStr"] = ""
             
-        if len(self._typeStrArray) > 1:
-            config.configData["dummyStr"] = self._typeStrArray[1]
+        if len(typeStrArray) > 1:
+            config.configData["dummyStr"] = typeStrArray[1]
         else:
             config.configData["dummyStr"] = ""
             
-        if len(self._typeStrArray) > 2:
-            config.configData["exposeTmStr"] = self._typeStrArray[2]
+        if len(typeStrArray) > 2:
+            config.configData["exposeTmStr"] = typeStrArray[2]
         else:
             config.configData["exposeTmStr"] = ""
             
-        if len(self._typeStrArray) > 3:
-            config.configData["ikStr"] = self._typeStrArray[3]
+        if len(typeStrArray) > 3:
+            config.configData["ikStr"] = typeStrArray[3]
         else:
             config.configData["ikStr"] = ""
             
-        if len(self._typeStrArray) > 4:
-            config.configData["targetStr"] = self._typeStrArray[4]
+        if len(typeStrArray) > 4:
+            config.configData["targetStr"] = typeStrArray[4]
         else:
             config.configData["targetStr"] = ""
-        config.configData["typeStrArray"] = self._typeStrArray.copy()
-        config.configData["baseStrArray"] = self._baseStrArray.copy()
         
         return config

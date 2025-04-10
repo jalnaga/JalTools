@@ -418,45 +418,69 @@ class NamingConfig:
             적용 성공 여부 (True/False)
         """
         try:
-            # nameParts 설정
-            namingInstance.set_name_parts_order(self.configData["nameParts"])
-            
-            # paddingNum 설정
-            namingInstance.set_padding_num(self.configData["paddingNum"])
-            
-            # 각 문자열 설정
-            if "nubStr" in self.configData:
-                namingInstance.set_nub_str(self.configData["nubStr"])
-            
-            if "parentStr" in self.configData:
-                namingInstance.set_parent_str(self.configData["parentStr"])
-            
-            if "dummyStr" in self.configData:
-                namingInstance.set_dummy_str(self.configData["dummyStr"])
-            
-            if "exposeTmStr" in self.configData:
-                namingInstance.set_expose_tm_str(self.configData["exposeTmStr"])
-            
-            if "targetStr" in self.configData:
-                namingInstance.set_target_str(self.configData["targetStr"])
-            
-            if "ikStr" in self.configData:
-                namingInstance.set_ik_str(self.configData["ikStr"])
-            
-            # 각 배열 설정
-            if "baseStrArray" in self.configData:
-                namingInstance.set_base_str(self.configData["baseStrArray"])
-            
-            if "typeStrArray" in self.configData:
-                namingInstance.set_type_str(self.configData["typeStrArray"])
-            
-            if "sideStrArray" in self.configData and len(self.configData["sideStrArray"]) >= 2:
-                namingInstance.set_left_str(self.configData["sideStrArray"][0])
-                namingInstance.set_right_str(self.configData["sideStrArray"][1])
-            
-            if "frontBackStrArray" in self.configData and len(self.configData["frontBackStrArray"]) >= 2:
-                namingInstance.set_front_str(self.configData["frontBackStrArray"][0])
-                namingInstance.set_back_str(self.configData["frontBackStrArray"][1])
+            # 설정 적용을 위해 새로운 NamePart 객체 배열 생성
+            if "nameParts" in self.configData:
+                nameParts = []
+                
+                # paddingNum 설정
+                if "paddingNum" in self.configData:
+                    namingInstance._paddingNum = self.configData["paddingNum"]
+                
+                # nubStr 설정
+                if "nubStr" in self.configData:
+                    namingInstance._nubStr = self.configData["nubStr"]
+                
+                # 사전 정의 값들 준비
+                baseStrArray = self.configData.get("baseStrArray", ["b", "Bip001"])
+                
+                # typeStrArray 설정
+                if "typeStrArray" in self.configData:
+                    typeStrArray = self.configData["typeStrArray"]
+                else:
+                    # typeStrArray가 없지만 개별 설정이 있는 경우
+                    typeStrArray = []
+                    
+                    if "parentStr" in self.configData:
+                        typeStrArray.append(self.configData["parentStr"])
+                    else:
+                        typeStrArray.append("")
+                        
+                    if "dummyStr" in self.configData:
+                        typeStrArray.append(self.configData["dummyStr"])
+                    if "exposeTmStr" in self.configData:
+                        typeStrArray.append(self.configData["exposeTmStr"])
+                    if "ikStr" in self.configData:
+                        typeStrArray.append(self.configData["ikStr"])
+                    if "targetStr" in self.configData:
+                        typeStrArray.append(self.configData["targetStr"])
+                
+                sideStrArray = self.configData.get("sideStrArray", ["L", "R"])
+                frontBackStrArray = self.configData.get("frontBackStrArray", ["F", "B"])
+                
+                # 각 NamePart 객체 생성 및 설정
+                for name in self.configData["nameParts"]:
+                    if name == "Base":
+                        nameParts.append(namePart.NamePart(name, baseStrArray))
+                    elif name == "Type":
+                        nameParts.append(namePart.NamePart(name, typeStrArray))
+                    elif name == "Side":
+                        nameParts.append(namePart.NamePart(name, sideStrArray))
+                    elif name == "FrontBack":
+                        nameParts.append(namePart.NamePart(name, frontBackStrArray))
+                    elif name == "RealName":
+                        nameParts.append(namePart.NamePart(name))
+                    elif name == "Index":
+                        nameParts.append(namePart.NamePart(name, [namingInstance._nubStr]))
+                    else:
+                        # 기타 사용자 정의 부분
+                        dictKey = f"{name.lower()}StrArray"
+                        if dictKey in self.configData:
+                            nameParts.append(namePart.NamePart(name, self.configData[dictKey]))
+                        else:
+                            nameParts.append(namePart.NamePart(name))
+                
+                # 모든 NamePart 객체 설정 완료 후 namingInstance._nameParts에 할당
+                namingInstance._nameParts = nameParts
             
             return True
         except Exception as e:
