@@ -470,7 +470,11 @@ class NamingConfig:
                     elif name == "RealName":
                         nameParts.append(namePart.NamePart(name))
                     elif name == "Index":
-                        nameParts.append(namePart.NamePart(name, [namingInstance._nubStr]))
+                        nameParts.append(namePart.NamePart(name))
+                    elif name == "Nub":
+                        # Nub는 nubStr 값을 사용
+                        nubStr = self.configData.get("nubStr", "Nub")
+                        nameParts.append(namePart.NamePart(name, [nubStr]))
                     else:
                         # 기타 사용자 정의 부분
                         dictKey = f"{name.lower()}StrArray"
