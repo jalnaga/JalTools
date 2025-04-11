@@ -50,10 +50,10 @@ class Naming:
                           {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
         
         # Side 부분 - 의미론적 매핑 및 가중치
-        side_part = NamePart("Side", ["L", "R"], {"L": "left", "R": "right", "L": 10, "R": 5})
+        side_part = NamePart("Side", ["L", "R"], {"L": 10, "R": 5})
         
         # FrontBack 부분 - 의미론적 매핑 및 가중치
-        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": "front", "B": "back", "F": 10, "B": 5})
+        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": 10, "B": 5})
         
         real_name_part = NamePart("RealName")
         index_part = NamePart("Index")
@@ -1468,108 +1468,6 @@ class Naming:
             print(f"설정 파일 로드 중 오류 발생: {e}")
             return False
     
-    def save_to_config_file(self, configPath=None):
-        """
-        현재 설정을 JSON 설정 파일로 저장
-        
-        Args:
-            configPath: 저장할 파일 경로 (기본값: None, 이전에 로드한 파일 경로 사용)
-            
-        Returns:
-            저장 성공 여부 (True/False)
-        """
-        # 저장 경로가 지정되지 않은 경우 이전 경로 사용
-        savePath = configPath or self._configPath
-        
-        if not savePath:
-            print("저장할 설정 파일 경로가 지정되지 않았습니다.")
-            return False
-        
-        try:
-            # 현재 설정으로 NamingConfig 객체 생성
-            config = namingConfig.NamingConfig()
-            
-            # NamePart 객체에서 데이터 추출
-            namePartsArray = []
-            sideStrArray = []
-            frontBackStrArray = []
-            typeStrArray = []
-            baseStrArray = []
-            
-            # 의미론적 매핑 또는 가중치 정보 추출
-            sideSemantics = {}
-            frontBackSemantics = {}
-            typeSemantics = {}
-            baseSemantics = {}
-            
-            for part in self._nameParts:
-                name = part.get_name()
-                namePartsArray.append(name)
-                
-                if name == "Side":
-                    sideStrArray = part.get_predefined_values()
-                    sideSemantics = part.get_semantic_mapping()
-                elif name == "FrontBack":
-                    frontBackStrArray = part.get_predefined_values()
-                    frontBackSemantics = part.get_semantic_mapping()
-                elif name == "Type":
-                    typeStrArray = part.get_predefined_values()
-                    typeSemantics = part.get_semantic_mapping()
-                elif name == "Base":
-                    baseStrArray = part.get_predefined_values()
-                    baseSemantics = part.get_semantic_mapping()
-            
-            # 현재 설정 반영
-            config.configData["nameParts"] = namePartsArray
-            config.configData["paddingNum"] = self._paddingNum
-            config.configData["sideStrArray"] = sideStrArray
-            config.configData["frontBackStrArray"] = frontBackStrArray
-            config.configData["typeStrArray"] = typeStrArray
-            config.configData["baseStrArray"] = baseStrArray
-            
-            # 의미론적 매핑 또는 가중치 정보 저장
-            config.configData["sideSemantics"] = sideSemantics
-            config.configData["frontBackSemantics"] = frontBackSemantics
-            config.configData["typeSemantics"] = typeSemantics
-            config.configData["baseSemantics"] = baseSemantics
-            
-            # 각 유형 문자열 설정
-            if len(typeStrArray) > 0:
-                config.configData["parentStr"] = typeStrArray[0]
-            else:
-                config.configData["parentStr"] = ""
-                
-            if len(typeStrArray) > 1:
-                config.configData["dummyStr"] = typeStrArray[1]
-            else:
-                config.configData["dummyStr"] = ""
-                
-            if len(typeStrArray) > 2:
-                config.configData["exposeTmStr"] = typeStrArray[2]
-            else:
-                config.configData["exposeTmStr"] = ""
-                
-            if len(typeStrArray) > 3:
-                config.configData["ikStr"] = typeStrArray[3]
-            else:
-                config.configData["ikStr"] = ""
-                
-            if len(typeStrArray) > 4:
-                config.configData["targetStr"] = typeStrArray[4]
-            else:
-                config.configData["targetStr"] = ""
-            
-            # 설정 저장
-            save_result = config.save_config(savePath)
-            
-            if save_result:
-                self._configPath = savePath
-                
-            return save_result
-            
-        except Exception as e:
-            print(f"설정 저장 중 오류 발생: {e}")
-            return False
     
     def get_config_path(self):
         """

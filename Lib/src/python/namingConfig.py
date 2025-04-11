@@ -32,12 +32,13 @@ class NamingConfig:
             # 의미론적 매핑 및 가중치 정보 추가
             "baseSemantics": {"b": 10, "Bip001": 5},
             "typeSemantics": {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2},
-            "sideSemantics": {"L": "left", "R": "right", "L": 10, "R": 5},
-            "frontBackSemantics": {"F": "front", "B": "back", "F": 10, "B": 5}
+            "sideSemantics": {"L": 10, "R": 5},
+            "frontBackSemantics": {"F": 10, "B": 5},
+            "nubSemantics": {"Nub": 10}
         }
         
         # 필수 namePart 정의 (삭제 불가능)
-        self.requiredParts = ["Base", "Type", "Side", "FrontBack", "RealName", "Index", "Nub"]
+        self.requiredParts = ["RealName"]
         
         # 설정 파일 경로 및 기본 파일명
         self.configFilePath = ""
@@ -533,18 +534,20 @@ class NamingConfig:
                 if not sideSemantics and len(sideStrArray) >= 2:
                     sideSemantics = {
                         sideStrArray[0]: "left",
-                        sideStrArray[1]: "right",
-                        sideStrArray[0]: 10,
-                        sideStrArray[1]: 5
+                        sideStrArray[1]: "right"
                     }
+                    # 가중치 추가
+                    sideSemantics[sideStrArray[0]] = 10
+                    sideSemantics[sideStrArray[1]] = 5
                     
                 if not frontBackSemantics and len(frontBackStrArray) >= 2:
                     frontBackSemantics = {
                         frontBackStrArray[0]: "front",
-                        frontBackStrArray[1]: "back",
-                        frontBackStrArray[0]: 10,
-                        frontBackStrArray[1]: 5
+                        frontBackStrArray[1]: "back"
                     }
+                    # 가중치 추가
+                    frontBackSemantics[frontBackStrArray[0]] = 10
+                    frontBackSemantics[frontBackStrArray[1]] = 5
                     
                 # 각 NamePart 객체 생성 및 설정
                 for name in self.configData["nameParts"]:
@@ -643,8 +646,12 @@ def main():
     config.set_specific_string("nubStr", "Nub")
     
     # 의미론적 매핑 설정
-    config.set_semantic_mapping("Side", {"L": "left", "R": "right", "L": 10, "R": 5})
-    config.set_semantic_mapping("FrontBack", {"F": "front", "B": "back", "F": 10, "B": 5})
+    config.set_semantic_mapping("Side", {"L": "left", "R": "right"})
+    config.set_semantic_mapping("Side", {"L": 10, "R": 5})
+    
+    config.set_semantic_mapping("FrontBack", {"F": "front", "B": "back"})
+    config.set_semantic_mapping("FrontBack", {"F": 10, "B": 5})
+    
     config.set_semantic_mapping("Base", {"b": 10, "Bip001": 5})
     config.set_semantic_mapping("Type", {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
     
