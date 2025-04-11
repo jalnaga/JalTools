@@ -30,28 +30,9 @@ from namePart import NamePart
 
 # 테스트에 사용할 이름 목록 - 사용자가 수정하기 쉽도록 전역 변수로 정의
 TEST_NAMES = [
-    "Bip001 R UpperArm",
-    "Bip001 Spine1",
-    "Bip001 Dum Thigh 001",
     "b_P_L_R_SkirtA_02",
     "b_Exp_R_F_SkirtArmor_A",
-    "Box001",
-    "Sphere",
     "b_L_F_Target_Nub"
-]
-
-# 이름 변환 테스트용 이름 목록 - 측면, 앞/뒤 등 다양한 속성을 가진 이름들
-TRANSFORM_TEST_NAMES = [
-    "Bip001 R UpperArm",
-    "b_P_L_R_SkirtA_02",
-    "b_Exp_R_F_SkirtArmor_A"
-]
-
-# 이름 생성 테스트용 이름 목록
-GENERATION_TEST_NAMES = [
-    "Bip001 R UpperArm",
-    "Bip001 Spine1",
-    "b_P_L_R_SkirtA_02"
 ]
 
 jalNaming = Naming()

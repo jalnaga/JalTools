@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-네이밍 모듈 - 3ds Max용 이름 처리 기능 제공
-원본 MAXScript의 string.ms와 name.ms를 Python으로 변환하여 통합
+네이밍 모듈
 """
 
 import re
 import os
 import json
-# from pymxs import runtime as rt
 
 # 모듈 임포트
 try:
@@ -572,39 +570,7 @@ class Naming:
         Returns:
             측면 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        return_str = ""
-        
-        side_index = self.get_side_part_index()
-        real_name_index = self.get_real_name_part_index()
-        
-        # 측면 문자열 목록 가져오기
-        side_part = self.get_name_part("Side")
-        side_values = side_part.get_predefined_values() if side_part else []
-                
-        # 측면 문자열이 있는지 확인
-        found = False
-        for item in side_values:
-            if item in name_array:
-                found = True
-                break
-                
-        if found:
-            if side_index < real_name_index:
-                # 측면 부분이 실제 이름 앞에 있는 경우
-                for i in range(min(side_index + 1, len(name_array))):
-                    if self.is_side_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-            else:
-                # 측면 부분이 실제 이름 뒤에 있는 경우
-                for i in range(len(name_array) - 1, max(len(name_array) - side_index - 1, -1), -1):
-                    if self.is_side_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-                        
-        return return_str
+        return self.get_name("Side", inStr)
 
     def get_base(self, inStr):
         """
@@ -616,39 +582,7 @@ class Naming:
         Returns:
             기본 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        return_str = ""
-        
-        base_index = self.get_base_part_index()
-        real_name_index = self.get_real_name_part_index()
-        
-        # 기본 문자열 목록 가져오기
-        base_part = self.get_name_part("Base")
-        base_values = base_part.get_predefined_values() if base_part else []
-                
-        # 기본 문자열이 있는지 확인
-        found = False
-        for item in base_values:
-            if item in name_array:
-                found = True
-                break
-                
-        if found:
-            if base_index < real_name_index:
-                # 기본 부분이 실제 이름 앞에 있는 경우
-                for i in range(min(base_index + 1, len(name_array))):
-                    if self.is_base_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-            else:
-                # 기본 부분이 실제 이름 뒤에 있는 경우
-                for i in range(len(name_array) - 1, max(len(name_array) - base_index - 1, -1), -1):
-                    if self.is_base_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-                        
-        return return_str
+        return self.get_name("Base", inStr)
 
     def get_type(self, inStr):
         """
@@ -660,39 +594,7 @@ class Naming:
         Returns:
             유형 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        return_str = ""
-        
-        type_index = self.get_type_part_index()
-        real_name_index = self.get_real_name_part_index()
-        
-        # 유형 문자열 목록 가져오기
-        type_part = self.get_name_part("Type")
-        type_values = type_part.get_predefined_values() if type_part else []
-                
-        # 유형 문자열이 있는지 확인
-        found = False
-        for item in type_values:
-            if item in name_array:
-                found = True
-                break
-                
-        if found:
-            if type_index < real_name_index:
-                # 유형 부분이 실제 이름 앞에 있는 경우
-                for i in range(min(type_index + 1, len(name_array))):
-                    if self.is_type_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-            else:
-                # 유형 부분이 실제 이름 뒤에 있는 경우
-                for i in range(len(name_array) - 1, max(len(name_array) - type_index - 1, -1), -1):
-                    if self.is_type_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-                        
-        return return_str
+        return self.get_name("Type", inStr)
 
     def get_front_back(self, inStr):
         """
@@ -704,28 +606,55 @@ class Naming:
         Returns:
             앞/뒤 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
+        return self.get_name("FrontBack", inStr)
+        
+    def get_name(self, namePart, inStr):
+        """
+        지정된 namePart에 해당하는 부분을 문자열에서 추출
+        
+        Args:
+            namePart: 추출할 namePart 이름 ("Base", "Type", "Side" 등)
+            inStr: 처리할 문자열
+            
+        Returns:
+            지정된 namePart에 해당하는 문자열
+        """
         name_array = self._split_to_array(inStr)
         return_str = ""
         
-        # 앞/뒤 문자열 목록 가져오기
-        front_back_part = self.get_name_part("FrontBack")
-        front_back_values = front_back_part.get_predefined_values() if front_back_part else []
-                
-        # 앞/뒤 문자열이 있는지 확인하고 전체 이름 배열을 검색
-        for item in name_array:
-            if self.is_front_back_char(item):
-                return_str = item
-                break
+        # namePart 인덱스와 RealName 인덱스 가져오기
+        part_index = self.get_name_part_index(namePart)
+        real_name_index = self.get_real_name_part_index()
         
-        # 독립된 F나 B를 못 찾았다면 F_나 B_로 시작하는 부분이 있는지 확인
-        if not return_str and fil_char:
-            parts = inStr.split(fil_char)
-            for part in parts:
-                for fb_value in front_back_values:
-                    if part.startswith(fb_value + fil_char) or part == fb_value:
-                        return fb_value
-                    
+        # namePart가 유효하지 않으면 빈 문자열 반환
+        if part_index < 0:
+            return return_str
+        
+        # namePart 문자열 목록 가져오기
+        part_obj = self.get_name_part(namePart)
+        part_values = part_obj.get_predefined_values() if part_obj else []
+                
+        # namePart 문자열이 있는지 확인
+        found = False
+        for item in name_array:
+            if item in part_values:
+                found = True
+                break
+                
+        if found:
+            if part_index < real_name_index:
+                # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
+                for i in range(len(name_array)):
+                    if name_array[i] in part_values:
+                        return_str = name_array[i]
+                        break
+            else:
+                # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
+                for i in range(len(name_array) - 1, -1, -1):
+                    if name_array[i] in part_values:
+                        return_str = name_array[i]
+                        break
+        
         return return_str
 
     def get_index(self, inStr):
@@ -738,35 +667,7 @@ class Naming:
         Returns:
             인덱스 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        return_str = ""
-        
-        index_index = self.get_index_part_index()
-        real_name_index = self.get_real_name_part_index()
-        
-        # 인덱스 문자열이 있는지 확인
-        found = False
-        for item in name_array:
-            if self.is_index_char(item):
-                found = True
-                break
-                
-        if found:
-            if index_index < real_name_index:
-                # 인덱스 부분이 실제 이름 앞에 있는 경우
-                for i in range(min(index_index + 1, len(name_array))):
-                    if self.is_index_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-            else:
-                # 인덱스 부분이 실제 이름 뒤에 있는 경우
-                for i in range(len(name_array) - 1, max(len(name_array) - index_index - 1, -1), -1):
-                    if self.is_index_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-                        
-        return return_str
+        return self.get_name("Index", inStr)
 
     def get_nub(self, inStr):
         """
@@ -778,39 +679,7 @@ class Naming:
         Returns:
             넙 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        return_str = ""
-        
-        nub_index = self.get_nub_part_index()
-        real_name_index = self.get_real_name_part_index()
-        
-        # 넙 문자열 목록 가져오기
-        nub_part = self.get_name_part("Nub")
-        nub_values = nub_part.get_predefined_values() if nub_part else []
-                
-        # 넙 문자열이 있는지 확인
-        found = False
-        for item in nub_values:
-            if item in name_array:
-                found = True
-                break
-                
-        if found:
-            if nub_index < real_name_index:
-                # 넙 부분이 실제 이름 앞에 있는 경우
-                for i in range(min(nub_index + 1, len(name_array))):
-                    if self.is_nub_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-            else:
-                # 넙 부분이 실제 이름 뒤에 있는 경우
-                for i in range(len(name_array) - 1, max(len(name_array) - nub_index - 1, -1), -1):
-                    if self.is_nub_char(name_array[i]):
-                        return_str = name_array[i]
-                        break
-                        
-        return return_str
+        return self.get_name("Nub", inStr)
 
     def get_real_name(self, inStr):
         """
@@ -826,40 +695,13 @@ class Naming:
         name_array = self._split_to_array(inStr)
         real_name_array = []
         
-        # 최초로 이름 배열을 더 상세하게 분할
-        # F_SkirtArmor_A와 같은 이름에서 F를 분리
-        detailed_name_array = []
-        front_back_part = self.get_name_part("FrontBack")
-        front_back_values = front_back_part.get_predefined_values() if front_back_part else []
-        
-        for item in name_array:
-            # 항목이 "F_"나 "B_"로 시작하는지 확인
-            found_prefix = False
-            for fb in front_back_values:
-                if item.startswith(fb + "_"):
-                    # F와 나머지 부분 분리
-                    detailed_name_array.append(fb)
-                    detailed_name_array.append(item[len(fb) + 1:])
-                    found_prefix = True
-                    break
-            
-            if not found_prefix:
-                detailed_name_array.append(item)
-        
-        # 이제 더 상세히 분할된 배열을 기반으로 처리
-        name_array = detailed_name_array
-        
         # 모든 nameParts 중 RealName이 아닌 것들의 값을 수집
         non_real_name_array = []
         for part in self._nameParts:
-            part_name = part.get_name()
-            if part_name != "RealName":
-                # 각 부분에 해당하는 값 가져오기
-                part_method_name = f"get_{part_name.lower()}"
-                if hasattr(self, part_method_name):
-                    part_value = getattr(self, part_method_name)(inStr)
-                    if part_value:
-                        non_real_name_array.append(part_value)
+            partName = part.get_name()
+            if partName != "RealName":
+                foundName = self.get_name(partName, inStr)
+                non_real_name_array.append(foundName)
         
         # 이름 배열에서 실제 이름이 아닌 부분 제외
         for item in name_array:
@@ -881,7 +723,7 @@ class Naming:
         """
         return_array = [""] * len(self._nameParts)
         
-        # 각 namePart에 대해 동적으로 처리
+        # 각 namePart에 대해 처리
         for i, part in enumerate(self._nameParts):
             part_name = part.get_name()
             
@@ -890,11 +732,9 @@ class Naming:
                 real_name_index = i
                 continue
                 
-            # 각 부분에 해당하는 getter 메소드를 동적으로 호출
-            method_name = f"get_{part_name.lower()}"
-            if hasattr(self, method_name):
-                part_value = getattr(self, method_name)(inStr)
-                return_array[i] = part_value
+            # get_name 메소드를 사용하여 해당 부분 추출
+            part_value = self.get_name(part_name, inStr)
+            return_array[i] = part_value
         
         # 마지막으로 RealName 처리 (다른 모든 부분을 찾은 후에 수행해야 함)
         if 'real_name_index' in locals():
@@ -916,7 +756,7 @@ class Naming:
         """
         return_dict = {}
         
-        # 각 namePart에 대해 동적으로 처리
+        # 각 namePart에 대해 처리
         for part in self._nameParts:
             part_name = part.get_name()
             
@@ -924,11 +764,9 @@ class Naming:
             if part_name == "RealName":
                 continue
                 
-            # 각 부분에 해당하는 getter 메소드를 동적으로 호출
-            method_name = f"get_{part_name.lower()}"
-            if hasattr(self, method_name):
-                part_value = getattr(self, method_name)(inStr)
-                return_dict[part_name] = part_value
+            # get_name 메소드를 사용하여 해당 부분 추출
+            part_value = self.get_name(part_name, inStr)
+            return_dict[part_name] = part_value
         
         # 마지막으로 RealName 처리 (다른 모든 부분을 찾은 후에 수행해야 함)
         real_name_str = self.get_real_name(inStr)
@@ -1500,28 +1338,6 @@ class Naming:
         """
         return self.replace_base(inStr, "")
 
-    def gen_unique_name(self, inStr):
-        """
-        고유한 이름 생성
-        
-        Args:
-            inStr: 기준 이름 문자열
-            
-        Returns:
-            고유한 이름 문자열
-        """
-        pattern_str = self.replace_index(inStr, "*")
-        
-        # pymxs를 사용하여 객체 이름을 패턴과 매칭하여 검색
-        matched_objects = []
-        
-        # 모든 객체 중에서 패턴과 일치하는 이름 찾기
-        # for obj in rt.objects:
-        #     if rt.matchPattern(obj.name, pattern=pattern_str):
-        #         matched_objects.append(obj)
-                
-        return self.replace_index(inStr, str(len(matched_objects) + 1))
-
     def gen_mirroring_name(self, inStr, axis=1):
         """
         미러링된 이름 생성 (측면 또는 앞/뒤 변경)
@@ -1546,11 +1362,6 @@ class Naming:
                 return_name = self.replace_front_back(inStr, self.get_back_str())
             elif self.is_back(inStr):
                 return_name = self.replace_front_back(inStr, self.get_front_str())
-                
-        # 이름이 변경되지 않았다면 고유한 이름 생성
-        # pymxs를 사용하므로 테스트 중에는 이 부분을 건너뜀
-        # if return_name == inStr:
-        #     return_name = self.gen_unique_name(inStr)
             
         return return_name
 
@@ -1593,37 +1404,6 @@ class Naming:
             sorted_name_array.append(inNameArray[struct.ori_index])
             
         return sorted_name_array
-
-    def compare_name(self, inObjA, inObjB):
-        """
-        두 객체의 이름 비교 (정렬용)
-        
-        Args:
-            inObjA: 첫 번째 객체
-            inObjB: 두 번째 객체
-            
-        Returns:
-            비교 결과 (inObjA.name < inObjB.name: 음수, inObjA.name == inObjB.name: 0, inObjA.name > inObjB.name: 양수)
-        """
-        # Python에서는 대소문자 구분 없는 비교를 위해 lower() 사용
-        # 현재는 pymxs 객체를 이용하므로 테스트 중에는 주석 처리
-        # return 1 if inObjA.name.lower() > inObjB.name.lower() else -1 if inObjA.name.lower() < inObjB.name.lower() else 0
-        return 0
-
-    def sort_by_name(self, inArray):
-        """
-        객체 배열을 이름 기준으로 정렬
-        
-        Args:
-            inArray: 정렬할 객체 배열
-            
-        Returns:
-            이름 기준으로 정렬된 객체 배열
-        """
-        # Python의 sorted 함수와 key를 사용하여 이름 기준 정렬
-        # 현재는 pymxs 객체를 이용하므로 테스트 중에는 주석 처리
-        # return sorted(inArray, key=lambda obj: obj.name.lower())
-        return inArray
 
     def load_default_config(self):
         """
