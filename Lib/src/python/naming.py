@@ -247,7 +247,7 @@ class Naming:
         """
         return [item for item in inArray if item]
 
-    def _combine(self, inArray, filChar=" "):
+    def _combine(self, inArray, inFilChar=" "):
         """
         문자열 배열을 하나의 문자열로 결합
         
@@ -295,7 +295,7 @@ class Naming:
         """
         return self._paddingNum
 
-    def get_name_part(self, namePart):
+    def get_name_part(self, inNamePart):
         """
         namePart 이름으로 NamePart 객체 가져오기
         
@@ -310,7 +310,7 @@ class Naming:
                 return part
         return None
         
-    def get_name_part_index(self, namePart):
+    def get_name_part_index(self, inNamePart):
         """
         namePart 이름으로 인덱스 가져오기
         
@@ -608,7 +608,7 @@ class Naming:
         """
         return self.get_name("FrontBack", inStr)
         
-    def get_name(self, namePart, inStr):
+    def get_name(self, inNamePart, inStr):
         """
         지정된 namePart에 해당하는 부분을 문자열에서 추출
         
@@ -623,35 +623,35 @@ class Naming:
         return_str = ""
         
         # namePart 인덱스와 RealName 인덱스 가져오기
-        part_index = self.get_name_part_index(namePart)
-        real_name_index = self.get_real_name_part_index()
+        partIndex = self.get_name_part_index(inNamePart)
+        realNameIndex = self.get_real_name_part_index()
         
         # namePart가 유효하지 않으면 빈 문자열 반환
-        if part_index < 0:
+        if partIndex < 0:
             return return_str
         
         # namePart 문자열 목록 가져오기
-        part_obj = self.get_name_part(namePart)
-        part_values = part_obj.get_predefined_values() if part_obj else []
+        partObj = self.get_name_part(inNamePart)
+        partValues = partObj.get_predefined_values() if partObj else []
                 
         # namePart 문자열이 있는지 확인
         found = False
         for item in name_array:
-            if item in part_values:
+            if item in partValues:
                 found = True
                 break
                 
         if found:
-            if part_index < real_name_index:
+            if partIndex < realNameIndex:
                 # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
                 for i in range(len(name_array)):
-                    if name_array[i] in part_values:
+                    if name_array[i] in partValues:
                         return_str = name_array[i]
                         break
             else:
                 # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
                 for i in range(len(name_array) - 1, -1, -1):
-                    if name_array[i] in part_values:
+                    if name_array[i] in partValues:
                         return_str = name_array[i]
                         break
         
@@ -691,25 +691,25 @@ class Naming:
         Returns:
             실제 이름 부분 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self._split_to_array(inStr)
-        real_name_array = []
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self._split_to_array(inStr)
+        realNameArray = []
         
         # 모든 nameParts 중 RealName이 아닌 것들의 값을 수집
-        non_real_name_array = []
+        nonRealNameArray = []
         for part in self._nameParts:
             partName = part.get_name()
             if partName != "RealName":
                 foundName = self.get_name(partName, inStr)
-                non_real_name_array.append(foundName)
+                nonRealNameArray.append(foundName)
         
         # 이름 배열에서 실제 이름이 아닌 부분 제외
-        for item in name_array:
-            if item not in non_real_name_array:
-                real_name_array.append(item)
+        for item in nameArray:
+            if item not in nonRealNameArray:
+                realNameArray.append(item)
                 
         # 구분자로 결합
-        return self._combine(real_name_array, fil_char)
+        return self._combine(realNameArray, filChar)
 
     def convert_name_to_array(self, inStr):
         """
@@ -721,27 +721,27 @@ class Naming:
         Returns:
             이름 부분 배열 (Base, Type, Side, FrontBack, RealName, Index, Nub 등)
         """
-        return_array = [""] * len(self._nameParts)
+        returnArray = [""] * len(self._nameParts)
         
         # 각 namePart에 대해 처리
         for i, part in enumerate(self._nameParts):
-            part_name = part.get_name()
+            partName = part.get_name()
             
             # 특수 케이스인 RealName은 마지막에 처리하기 위해 저장
-            if part_name == "RealName":
-                real_name_index = i
+            if partName == "RealName":
+                realNameIndex = i
                 continue
                 
             # get_name 메소드를 사용하여 해당 부분 추출
-            part_value = self.get_name(part_name, inStr)
-            return_array[i] = part_value
+            partValue = self.get_name(partName, inStr)
+            returnArray[i] = partValue
         
         # 마지막으로 RealName 처리 (다른 모든 부분을 찾은 후에 수행해야 함)
-        if 'real_name_index' in locals():
-            real_name_str = self.get_real_name(inStr)
-            return_array[real_name_index] = real_name_str
+        if 'realNameIndex' in locals():
+            realNameStr = self.get_real_name(inStr)
+            returnArray[realNameIndex] = realNameStr
         
-        return return_array
+        return returnArray
         
     def convert_to_dictionary(self, inStr):
         """
@@ -754,25 +754,25 @@ class Naming:
             이름 부분 딕셔너리 (키: namePart 이름, 값: 추출된 값)
             예: {"Base": "b", "Type": "P", "Side": "L", "RealName": "Arm", ...}
         """
-        return_dict = {}
+        returnDict = {}
         
         # 각 namePart에 대해 처리
         for part in self._nameParts:
-            part_name = part.get_name()
+            partName = part.get_name()
             
             # 특수 케이스인 RealName은 마지막에 처리하기 위해 저장
-            if part_name == "RealName":
+            if partName == "RealName":
                 continue
                 
             # get_name 메소드를 사용하여 해당 부분 추출
-            part_value = self.get_name(part_name, inStr)
-            return_dict[part_name] = part_value
+            partValue = self.get_name(partName, inStr)
+            returnDict[partName] = partValue
         
         # 마지막으로 RealName 처리 (다른 모든 부분을 찾은 후에 수행해야 함)
-        real_name_str = self.get_real_name(inStr)
-        return_dict["RealName"] = real_name_str
+        realNameStr = self.get_real_name(inStr)
+        returnDict["RealName"] = realNameStr
         
-        return return_dict
+        return returnDict
 
     def is_nub(self, inStr):
         """
@@ -819,15 +819,15 @@ class Naming:
         Returns:
             인덱스가 제외된 이름 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        index_order = self.get_index_part_index()
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        indexOrder = self.get_index_part_index()
         
         # 인덱스 부분 제거
-        return_name_array = name_array.copy()
-        return_name_array[index_order] = ""
+        returnNameArray = nameArray.copy()
+        returnNameArray[indexOrder] = ""
         
-        return self._combine(return_name_array, fil_char)
+        return self._combine(returnNameArray, filChar)
 
     def set_index_as_nub(self, inStr):
         """
@@ -839,16 +839,16 @@ class Naming:
         Returns:
             넙이 추가되고 인덱스가 제거된 이름 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        nub_order = self.get_nub_part_index()
-        index_order = self.get_index_part_index()
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        nubOrder = self.get_nub_part_index()
+        indexOrder = self.get_index_part_index()
         
         # 인덱스 제거하고 넙 추가
-        name_array[index_order] = ""
-        name_array[nub_order] = self.get_nub_str()
+        nameArray[indexOrder] = ""
+        nameArray[nubOrder] = self.get_nub_str()
         
-        return self._combine(name_array, fil_char)
+        return self._combine(nameArray, filChar)
 
     def is_left(self, inStr):
         """
@@ -936,14 +936,14 @@ class Naming:
         Returns:
             실제 이름이 제외된 이름 문자열
         """
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        real_name_index = self.get_real_name_part_index()
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        realNameIndex = self.get_real_name_part_index()
         
-        name_array[real_name_index] = ""
-        return self._combine(name_array, fil_char)
+        nameArray[realNameIndex] = ""
+        return self._combine(nameArray, filChar)
 
-    def combine(self, parts_dict={}, inFilChar=" "):
+    def combine(self, inPartsDict={}, inFilChar=" "):
         """
         namingConfig에서 정의된 nameParts와 그 순서에 따라 이름 부분들을 조합하여 완전한 이름 생성
         
@@ -955,19 +955,19 @@ class Naming:
             조합된 이름 문자열
         """
         # 결과 배열 초기화 (빈 문자열로)
-        combined_name_array = [""] * len(self._nameParts)
+        combinedNameArray = [""] * len(self._nameParts)
         
         # 각 namePart에 대해
         for i, part in enumerate(self._nameParts):
-            part_name = part.get_name()
+            partName = part.get_name()
             # 딕셔너리에서 해당 부분의 값 가져오기 (없으면 빈 문자열 사용)
-            if part_name in parts_dict:
-                combined_name_array[i] = parts_dict[part_name]
+            if partName in inPartsDict:
+                combinedNameArray[i] = inPartsDict[partName]
                 
         # 배열을 문자열로 결합
-        return self._combine(combined_name_array, inFilChar)
+        return self._combine(combinedNameArray, inFilChar)
 
-    def add_fix(self, inStr, inPart, inFix, pos="prefix"):
+    def add_fix(self, inStr, inPart, inFix, inPos="prefix"):
         """
         이름의 특정 부분에 접두사 또는 접미사 추가
         
@@ -980,22 +980,22 @@ class Naming:
         Returns:
             수정된 이름 문자열
         """
-        return_str = inStr
+        returnStr = inStr
         
         if inFix:
-            fil_char = self._get_filtering_char(inStr)
-            name_array = self.convert_name_to_array(inStr)
-            part_index = self.get_name_part_index(inPart)
+            filChar = self._get_filtering_char(inStr)
+            nameArray = self.convert_name_to_array(inStr)
+            partIndex = self.get_name_part_index(inPart)
                 
-            if part_index >= 0:
-                if pos == "prefix":
-                    name_array[part_index] = inFix + name_array[part_index]
-                elif pos == "suffix":
-                    name_array[part_index] = name_array[part_index] + inFix
+            if partIndex >= 0:
+                if inPos == "prefix":
+                    nameArray[partIndex] = inFix + nameArray[partIndex]
+                elif inPos == "suffix":
+                    nameArray[partIndex] = nameArray[partIndex] + inFix
                     
-                return_str = self._combine(name_array, fil_char)
+                returnStr = self._combine(nameArray, filChar)
                 
-        return return_str
+        return returnStr
 
     def add_prefix_to_real_name(self, inStr, inPrefix):
         """
@@ -1037,16 +1037,16 @@ class Naming:
         if inPaddingNum is None:
             inPaddingNum = self._paddingNum
             
-        digit_num = 0
+        digitNum = 0
         
         if isinstance(inDigit, int):
-            digit_num = inDigit
+            digitNum = inDigit
         elif isinstance(inDigit, str):
             if self._is_digit(inDigit):
-                digit_num = int(inDigit)
+                digitNum = int(inDigit)
                 
         # Python의 문자열 포맷팅을 사용하여 패딩
-        return f"{digit_num:0{inPaddingNum}d}"
+        return f"{digitNum:0{inPaddingNum}d}"
 
     def set_index_padding_num(self, inStr, inPaddingNum=None):
         """
@@ -1062,16 +1062,16 @@ class Naming:
         if inPaddingNum is None:
             inPaddingNum = self._paddingNum
             
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        index_index = self.get_index_part_index()
-        index_str = self.get_index(inStr)
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        indexIndex = self.get_index_part_index()
+        indexStr = self.get_index(inStr)
         
-        if index_str and not self.is_nub(inStr):
-            index_str = self.convert_digit_into_padding_string(index_str, inPaddingNum)
-            name_array[index_index] = index_str
+        if indexStr and not self.is_nub(inStr):
+            indexStr = self.convert_digit_into_padding_string(indexStr, inPaddingNum)
+            nameArray[indexIndex] = indexStr
             
-        return self._combine(name_array, fil_char)
+        return self._combine(nameArray, filChar)
 
     def get_index_padding_num(self, inStr):
         """
@@ -1101,43 +1101,43 @@ class Naming:
         Returns:
             인덱스가 증가된 이름 문자열
         """
-        new_name = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        index_index = self.get_index_part_index()
-        nub_index = self.get_nub_part_index()
+        newName = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        indexIndex = self.get_index_part_index()
+        nubIndex = self.get_nub_part_index()
         
-        if index_index >= 0:
-            index_str = ""
-            index_padding_num = self._paddingNum
-            index_num = -9999
+        if indexIndex >= 0:
+            indexStr = ""
+            indexPaddingNum = self._paddingNum
+            indexNum = -9999
             
-            if not name_array[index_index]:
-                index_num = -1
+            if not nameArray[indexIndex]:
+                indexNum = -1
             elif self.is_nub(inStr):
-                index_num = -9999999
+                indexNum = -9999999
             else:
                 try:
-                    index_num = int(name_array[index_index])
-                    index_padding_num = len(name_array[index_index])
+                    indexNum = int(nameArray[indexIndex])
+                    indexPaddingNum = len(nameArray[indexIndex])
                 except ValueError:
                     pass
             
-            index_num += inAmount
+            indexNum += inAmount
             
-            if index_num > -1:
+            if indexNum > -1:
                 # Python의 문자열 포맷팅을 사용하여 패딩
-                index_str = f"{index_num:0{index_padding_num}d}"
-                name_array[index_index] = index_str
-                name_array[nub_index] = ""
+                indexStr = f"{indexNum:0{indexPaddingNum}d}"
+                nameArray[indexIndex] = indexStr
+                nameArray[nubIndex] = ""
             else:
-                name_array[index_index] = ""
-                name_array[nub_index] = self.get_nub_str()
+                nameArray[indexIndex] = ""
+                nameArray[nubIndex] = self.get_nub_str()
                 
-            name_array[index_index] = index_str
-            new_name = self._combine(name_array, fil_char)
+            nameArray[indexIndex] = indexStr
+            newName = self._combine(nameArray, filChar)
             
-        return new_name
+        return newName
 
     def replace_filtering_char(self, inStr, inNewFilChar):
         """
@@ -1150,8 +1150,8 @@ class Naming:
         Returns:
             구분자가 변경된 이름 문자열
         """
-        name_array = self.convert_name_to_array(inStr)
-        return self._combine(name_array, inNewFilChar)
+        nameArray = self.convert_name_to_array(inStr)
+        return self._combine(nameArray, inNewFilChar)
 
     def replace_base(self, inStr, inNewBase):
         """
@@ -1164,16 +1164,16 @@ class Naming:
         Returns:
             기본 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        base_index = self.get_base_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        baseIndex = self.get_base_part_index()
         
-        if base_index >= 0:
-            name_array[base_index] = inNewBase
-            return_val = self._combine(name_array, fil_char)
+        if baseIndex >= 0:
+            nameArray[baseIndex] = inNewBase
+            returnVal = self._combine(nameArray, filChar)
             
-        return return_val
+        return returnVal
 
     def replace_type(self, inStr, inNewType):
         """
@@ -1186,16 +1186,16 @@ class Naming:
         Returns:
             유형 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        type_index = self.get_type_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        typeIndex = self.get_type_part_index()
         
-        if type_index >= 0:
-            name_array[type_index] = inNewType
-            return_val = self._combine(name_array, fil_char)
+        if typeIndex >= 0:
+            nameArray[typeIndex] = inNewType
+            returnVal = self._combine(nameArray, filChar)
             
-        return return_val
+        return returnVal
 
     def replace_side(self, inStr, inNewSide):
         """
@@ -1208,16 +1208,16 @@ class Naming:
         Returns:
             측면 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        side_index = self.get_side_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        sideIndex = self.get_side_part_index()
         
-        if side_index >= 0:
-            name_array[side_index] = inNewSide
-            return_val = self._combine(name_array, fil_char)
+        if sideIndex >= 0:
+            nameArray[sideIndex] = inNewSide
+            returnVal = self._combine(nameArray, filChar)
             
-        return return_val
+        return returnVal
 
     def replace_front_back(self, inStr, inNewFrontBack):
         """
@@ -1230,18 +1230,18 @@ class Naming:
         Returns:
             앞/뒤 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        front_back_index = self.get_front_back_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        frontBackIndex = self.get_front_back_part_index()
         
-        if front_back_index >= 0:
-            name_array[front_back_index] = inNewFrontBack
-            return_val = self._combine(name_array, fil_char)
+        if frontBackIndex >= 0:
+            nameArray[frontBackIndex] = inNewFrontBack
+            returnVal = self._combine(nameArray, filChar)
             
-        return return_val
+        return returnVal
 
-    def replace_index(self, inStr, inNewIndex, keepPadding=True):
+    def replace_index(self, inStr, inNewIndex, inKeepPadding=True):
         """
         이름의 인덱스 부분 교체
         
@@ -1253,20 +1253,20 @@ class Naming:
         Returns:
             인덱스 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        index_index = self.get_index_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        indexIndex = self.get_index_part_index()
         
-        if index_index >= 0:
-            name_array[index_index] = inNewIndex
-            return_val = self._combine(name_array, fil_char)
+        if indexIndex >= 0:
+            nameArray[indexIndex] = inNewIndex
+            returnVal = self._combine(nameArray, filChar)
             
-            if keepPadding:
-                index_padding_num = self.get_index_padding_num(inStr)
-                return_val = self.set_index_padding_num(return_val, index_padding_num)
+            if inKeepPadding:
+                indexPaddingNum = self.get_index_padding_num(inStr)
+                returnVal = self.set_index_padding_num(returnVal, indexPaddingNum)
                 
-        return return_val
+        return returnVal
 
     def replace_real_name(self, inStr, inNewRealName):
         """
@@ -1279,16 +1279,16 @@ class Naming:
         Returns:
             실제 이름 부분이 교체된 이름 문자열
         """
-        return_val = inStr
-        fil_char = self._get_filtering_char(inStr)
-        name_array = self.convert_name_to_array(inStr)
-        real_name_index = self.get_real_name_part_index()
+        returnVal = inStr
+        filChar = self._get_filtering_char(inStr)
+        nameArray = self.convert_name_to_array(inStr)
+        realNameIndex = self.get_real_name_part_index()
         
-        if real_name_index >= 0:
-            name_array[real_name_index] = inNewRealName
-            return_val = self._combine(name_array, fil_char)
+        if realNameIndex >= 0:
+            nameArray[realNameIndex] = inNewRealName
+            returnVal = self._combine(nameArray, filChar)
             
-        return return_val
+        return returnVal
 
     def remove_type(self, inStr):
         """
@@ -1338,32 +1338,46 @@ class Naming:
         """
         return self.replace_base(inStr, "")
 
-    def gen_mirroring_name(self, inStr, axis=1):
+    def gen_mirroring_name(self, inStr):
         """
         미러링된 이름 생성 (측면 또는 앞/뒤 변경)
         
+        이름에서 Side와 FrontBack namePart를 자동으로 검색하고,
+        발견된 값의 semanticmapping weight와 가장 차이가 큰 값으로 교체합니다.
+        
         Args:
             inStr: 처리할 이름 문자열
-            axis: 축 (1: 측면 변경, 2: 앞/뒤 변경)
             
         Returns:
             미러링된 이름 문자열
         """
-        return_name = inStr
+        returnName = inStr
         
-        if self.has_side(inStr) and axis == 1:
-            if self.is_left(inStr):
-                return_name = self.replace_side(inStr, self.get_right_str())
-            elif self.is_right(inStr):
-                return_name = self.replace_side(inStr, self.get_left_str())
-                
-        if self.has_front_back(inStr) and axis == 2:
-            if self.is_front(inStr):
-                return_name = self.replace_front_back(inStr, self.get_back_str())
-            elif self.is_back(inStr):
-                return_name = self.replace_front_back(inStr, self.get_front_str())
+        # Side 부분 처리
+        if self.has_side(inStr):
+            sidePart = self.get_name_part("Side")
+            currentSide = self.get_side(inStr)
             
-        return return_name
+            # 가중치 차이가 가장 큰 값 찾기
+            oppositeSide = sidePart.get_most_different_weight_value(currentSide)
+            
+            if oppositeSide:
+                # 값 교체
+                returnName = self.replace_side(returnName, oppositeSide)
+        
+        # FrontBack 부분 처리
+        if self.has_front_back(inStr):
+            frontbackPart = self.get_name_part("FrontBack")
+            currentFb = self.get_front_back(inStr)
+            
+            # 가중치 차이가 가장 큰 값 찾기
+            oppositeFb = frontbackPart.get_most_different_weight_value(currentFb)
+            
+            if oppositeFb:
+                # 값 교체
+                returnName = self.replace_front_back(returnName, oppositeFb)
+        
+        return returnName
 
     def sort_by_index(self, inNameArray):
         """
@@ -1380,30 +1394,30 @@ class Naming:
             
         # 정렬을 위한 보조 클래스 정의
         class IndexSorting:
-            def __init__(self, ori_index, new_index):
-                self.ori_index = ori_index
-                self.new_index = new_index
+            def __init__(self, inOriIndex, inNewIndex):
+                self.oriIndex = inOriIndex
+                self.newIndex = inNewIndex
                 
         # 각 이름의 인덱스를 추출하여 정렬 정보 생성
-        struct_array = []
+        structArray = []
         
         for i, name in enumerate(inNameArray):
-            temp_index = self.get_index_as_digit(name)
+            tempIndex = self.get_index_as_digit(name)
             
-            if temp_index is False:
-                struct_array.append(IndexSorting(i, 0))
+            if tempIndex is False:
+                structArray.append(IndexSorting(i, 0))
             else:
-                struct_array.append(IndexSorting(i, temp_index))
+                structArray.append(IndexSorting(i, tempIndex))
                 
         # 인덱스 기준으로 정렬
-        struct_array.sort(key=lambda x: x.new_index)
+        structArray.sort(key=lambda x: x.newIndex)
         
         # 정렬된 순서로 결과 배열 생성
-        sorted_name_array = []
-        for struct in struct_array:
-            sorted_name_array.append(inNameArray[struct.ori_index])
+        sortedNameArray = []
+        for struct in structArray:
+            sortedNameArray.append(inNameArray[struct.oriIndex])
             
-        return sorted_name_array
+        return sortedNameArray
 
     def load_default_config(self):
         """
@@ -1647,34 +1661,4 @@ class Naming:
         
         return config
         
-    # 새로 추가된 유틸리티 메서드들
-        
-    def get_primary_value(self, partName):
-        """
-        특정 부분의 가장 중요한 값(가중치가 가장 높은 값)을 가져옵니다.
-        
-        Args:
-            partName: 부분 이름 ("Base", "Type", "Side" 등)
-            
-        Returns:
-            가장 중요한 값, 없으면 빈 문자열
-        """
-        part = self.get_name_part(partName)
-        if part:
-            return part.get_value_by_weight(0)
-        return ""
-        
-    def get_sorted_values(self, partName):
-        """
-        특정 부분의 값을 가중치 순으로 정렬하여 가져옵니다.
-        
-        Args:
-            partName: 부분 이름 ("Base", "Type", "Side" 등)
-            
-        Returns:
-            가중치 순으로 정렬된 값 목록
-        """
-        part = self.get_name_part(partName)
-        if part:
-            return part.get_sorted_values_by_weight()
-        return []
+    # 유틸리티 메서드들은 NamePart 클래스에서 직접 구현

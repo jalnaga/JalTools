@@ -89,18 +89,20 @@ class Name:
         # Python의 sorted 함수와 key를 사용하여 이름 기준 정렬
         return sorted(inArray, key=lambda obj: obj.name.lower())
         
-    def gen_mirroring_name(self, inStr, axis=1):
+    def gen_mirroring_name(self, inStr):
         """
         미러링된 이름 생성 (측면 또는 앞/뒤 변경)
         
+        이름에서 Side와 FrontBack namePart를 자동으로 검색하고,
+        발견된 값의 semanticmapping weight와 가장 차이가 큰 값으로 교체합니다.
+        
         Args:
             inStr: 처리할 이름 문자열
-            axis: 축 (1: 측면 변경, 2: 앞/뒤 변경)
             
         Returns:
             미러링된 이름 문자열
         """
-        return_name = self.naming.gen_mirroring_name(inStr, axis)
+        return_name = self.naming.gen_mirroring_name(inStr)
         
         # 이름이 변경되지 않았다면 고유한 이름 생성
         if return_name == inStr:
