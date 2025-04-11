@@ -3,7 +3,7 @@
 
 """
 namingConfig 모듈 - Naming 클래스의 설정을 관리하는 기능 제공
-JSON 파일을 통해 네이밍 설정을 저장하고 불러오는 기능 구현
+NamePart 객체를 기반으로 네이밍 설정을 저장하고 불러오는 기능 구현
 """
 
 import json
@@ -11,625 +11,482 @@ import os
 import copy
 from typing import List, Dict, Any, Optional, Union
 
+# NamePart 클래스 임포트
+try:
+    from .namePart import NamePart
+except ImportError:
+    # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
+    from namePart import NamePart
+
 
 class NamingConfig:
     """
     Naming 클래스의 설정을 관리하는 클래스.
-    설정을 JSON 파일로 저장하고 불러오며, namePart와 사전 문자열을 관리합니다.
+    NamePart 객체 리스트를 관리하고 JSON 파일로 저장/불러오기 기능 제공.
     """
     
     def __init__(self):
         """클래스 초기화 및 기본 설정값 정의"""
-        # 기본 설정값 정의 (프로퍼티는 카멜 케이스 사용)
-        self.configData = {
-            "nameParts": ["Base", "Type", "Side", "FrontBack", "RealName", "Index", "Nub"],
-            "paddingNum": 2,
-            "typeStrArray": ["P", "Dum", "Exp", "IK", "T"],
-            "baseStrArray": ["b", "Bip001"],
-            "sideStrArray": ["L", "R"],
-            "frontBackStrArray": ["F", "B"],
-            "nubStr": "Nub",
-            # 의미론적 매핑 및 가중치 정보 추가
-            "baseSemantics": {"b": 10, "Bip001": 5},
-            "typeSemantics": {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2},
-            "sideSemantics": {"L": 10, "R": 5},
-            "frontBackSemantics": {"F": 10, "B": 5},
-            "nubSemantics": {"Nub": 10}
-        }
+        # NamePart 객체 리스트
+        self.name_parts = []
+        
+        # 추가 설정
+        self.padding_num = 2
         
         # 필수 namePart 정의 (삭제 불가능)
-        self.requiredParts = ["RealName"]
+        self.required_parts = ["RealName"]
         
         # 설정 파일 경로 및 기본 파일명
-        self.configFilePath = ""
-        self.defaultFileName = "namingConfig.json"
+        self.config_file_path = ""
+        self.default_file_name = "namingConfig.json"
         
         # 스크립트 디렉토리 기준 기본 경로 설정
-        scriptDir = os.path.dirname(os.path.abspath(__file__))
-        self.defaultFilePath = os.path.join(scriptDir, self.defaultFileName)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.default_file_path = os.path.join(script_dir, self.default_file_name)
+        
+        # 기본 NamePart 초기화
+        self._initialize_default_parts()
     
-    def save_config(self, inFilePath: Optional[str] = None) -> bool:
+    def _initialize_default_parts(self):
+        """기본 NamePart 객체들 초기화"""
+        # Base 부분
+        base_part = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10})
+        self.name_parts.append(base_part)
+        
+        # Type 부분
+        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
+                             {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25})
+        self.name_parts.append(type_part)
+        
+        # Side 부분
+        side_part = NamePart("Side", ["L", "R"], {"L": 5, "R": 10})
+        self.name_parts.append(side_part)
+        
+        # FrontBack 부분
+        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10})
+        self.name_parts.append(front_back_part)
+        
+        # RealName 부분
+        real_name_part = NamePart("RealName")
+        self.name_parts.append(real_name_part)
+        
+        # Index 부분
+        index_part = NamePart("Index")
+        self.name_parts.append(index_part)
+        
+        # Nub 부분
+        nub_part = NamePart("Nub", ["Nub"], {"Nub": 5})
+        self.name_parts.append(nub_part)
+    
+    def get_part_names(self) -> List[str]:
         """
-        현재 설정을 JSON 파일로 저장
+        모든 NamePart 이름 목록 반환
+        
+        Returns:
+            NamePart 이름 목록
+        """
+        return [part.get_name() for part in self.name_parts]
+    
+    def get_part(self, name: str) -> Optional[NamePart]:
+        """
+        이름으로 NamePart 객체 가져오기
         
         Args:
-            inFilePath: 저장할 파일 경로 (기본값: self.defaultFilePath)
+            name: NamePart 이름
             
         Returns:
-            저장 성공 여부 (True/False)
+            NamePart 객체, 없으면 None
         """
-        savePath = inFilePath or self.defaultFilePath
-        
-        try:
-            with open(savePath, 'w', encoding='utf-8') as f:
-                json.dump(self.configData, f, indent=4, ensure_ascii=False)
-            
-            self.configFilePath = savePath
-            return True
-        except Exception as e:
-            print(f"설정 저장 중 오류 발생: {e}")
-            return False
+        for part in self.name_parts:
+            if part.get_name() == name:
+                return part
+        return None
     
-    def load_config(self, inFilePath: Optional[str] = None) -> bool:
+    def add_part(self, name: str) -> bool:
         """
-        JSON 파일에서 설정 불러오기
+        새 NamePart 객체 추가
         
         Args:
-            inFilePath: 불러올 파일 경로 (기본값: self.defaultFilePath)
-            
-        Returns:
-            로드 성공 여부 (True/False)
-        """
-        loadPath = inFilePath or self.defaultFilePath
-        
-        try:
-            if os.path.exists(loadPath):
-                with open(loadPath, 'r', encoding='utf-8') as f:
-                    loadedData = json.load(f)
-                
-                # 필수 키가 있는지 확인
-                requiredKeys = ["nameParts", "paddingNum"]
-                for key in requiredKeys:
-                    if key not in loadedData:
-                        print(f"경고: 설정 파일에 필수 키 '{key}'가 없습니다.")
-                        return False
-                
-                # 필수 namePart가 포함되어 있는지 확인
-                for part in self.requiredParts:
-                    if part not in loadedData["nameParts"]:
-                        print(f"경고: 필수 namePart '{part}'가 설정에 포함되어 있지 않습니다.")
-                        return False
-                
-                self.configData = loadedData
-                self.configFilePath = loadPath
-                return True
-            else:
-                print(f"설정 파일을 찾을 수 없습니다: {loadPath}")
-                return False
-        except Exception as e:
-            print(f"설정 로드 중 오류 발생: {e}")
-            return False
-    
-    def add_name_part(self, inPartName: str) -> bool:
-        """
-        새로운 namePart 추가
-        
-        Args:
-            inPartName: 추가할 namePart 이름
+            name: 추가할 NamePart 이름
             
         Returns:
             추가 성공 여부 (True/False)
         """
-        if not inPartName:
-            print("오류: 유효한 namePart 이름을 입력하세요.")
+        if not name:
+            print("오류: 유효한 NamePart 이름을 입력하세요.")
             return False
         
         # 이미 존재하는지 확인
-        if inPartName in self.configData["nameParts"]:
-            print(f"오류: '{inPartName}' namePart가 이미 존재합니다.")
+        if self.get_part(name) is not None:
+            print(f"오류: '{name}' NamePart가 이미 존재합니다.")
             return False
         
-        # namePart 추가
-        self.configData["nameParts"].append(inPartName)
-        
-        # 해당 namePart에 대한 사전 배열도 추가 (빈 배열로 초기화)
-        dictKey = f"{inPartName.lower()}StrArray"
-        if dictKey not in self.configData:
-            self.configData[dictKey] = []
-            
-        # 의미론적 매핑 또는 가중치도 추가 (빈 딕셔너리로 초기화)
-        semanticsKey = f"{inPartName.lower()}Semantics"
-        if semanticsKey not in self.configData:
-            self.configData[semanticsKey] = {}
-        
+        # 새 NamePart 추가
+        new_part = NamePart(name)
+        self.name_parts.append(new_part)
         return True
     
-    def remove_name_part(self, inPartName: str) -> bool:
+    def remove_part(self, name: str) -> bool:
         """
-        namePart 제거 (필수 부분은 제거 불가)
+        NamePart 객체 제거 (필수 부분은 제거 불가)
         
         Args:
-            inPartName: 제거할 namePart 이름
+            name: 제거할 NamePart 이름
             
         Returns:
             제거 성공 여부 (True/False)
         """
         # 필수 부분은 제거 불가능
-        if inPartName in self.requiredParts:
-            print(f"오류: 필수 namePart '{inPartName}'는 제거할 수 없습니다.")
+        if name in self.required_parts:
+            print(f"오류: 필수 NamePart '{name}'는 제거할 수 없습니다.")
             return False
         
-        # 존재하는지 확인
-        if inPartName not in self.configData["nameParts"]:
-            print(f"오류: '{inPartName}' namePart가 존재하지 않습니다.")
-            return False
+        # 찾아서 제거
+        for i, part in enumerate(self.name_parts):
+            if part.get_name() == name:
+                del self.name_parts[i]
+                return True
         
-        # namePart 제거
-        self.configData["nameParts"].remove(inPartName)
-        
-        # 관련 사전 배열도 제거
-        dictKey = f"{inPartName.lower()}StrArray"
-        if dictKey in self.configData:
-            del self.configData[dictKey]
-            
-        # 의미론적 매핑 또는 가중치도 제거
-        semanticsKey = f"{inPartName.lower()}Semantics"
-        if semanticsKey in self.configData:
-            del self.configData[semanticsKey]
-        
-        return True
+        print(f"오류: '{name}' NamePart가 존재하지 않습니다.")
+        return False
     
-    def reorder_name_parts(self, inNewOrder: List[str]) -> bool:
+    def reorder_parts(self, new_order: List[str]) -> bool:
         """
-        namePart 순서 변경
+        NamePart 순서 변경
         
         Args:
-            inNewOrder: 새로운 namePart 순서 배열
+            new_order: 새로운 NamePart 이름 순서 배열
             
         Returns:
             변경 성공 여부 (True/False)
         """
         # 배열 길이 확인
-        if len(inNewOrder) != len(self.configData["nameParts"]):
-            print("오류: 새 순서의 항목 수가 기존 nameParts와 일치하지 않습니다.")
+        if len(new_order) != len(self.name_parts):
+            print("오류: 새 순서의 항목 수가 기존 NamePart와 일치하지 않습니다.")
             return False
         
         # 모든 필수 부분이 포함되어 있는지 확인
-        for part in self.requiredParts:
-            if part not in inNewOrder:
-                print(f"오류: 필수 namePart '{part}'가 새 순서에 포함되어 있지 않습니다.")
+        for part in self.required_parts:
+            if part not in new_order:
+                print(f"오류: 필수 NamePart '{part}'가 새 순서에 포함되어 있지 않습니다.")
                 return False
         
-        # 모든 요소가 동일한지 확인 (순서만 다른지)
-        currentSet = set(self.configData["nameParts"])
-        newSet = set(inNewOrder)
+        # 모든 이름이 현재 존재하는지 확인
+        current_names = self.get_part_names()
+        for name in new_order:
+            if name not in current_names:
+                print(f"오류: '{name}' NamePart가 존재하지 않습니다.")
+                return False
         
-        if currentSet != newSet:
-            print("오류: 새 순서에 기존 nameParts와 다른 항목이 포함되어 있습니다.")
-            return False
+        # 순서 변경을 위한 새 리스트 생성
+        reordered_parts = []
+        for name in new_order:
+            part = self.get_part(name)
+            if part:
+                reordered_parts.append(part)
         
-        # 순서 변경
-        self.configData["nameParts"] = inNewOrder
+        # 새 순서로 업데이트
+        self.name_parts = reordered_parts
         return True
     
-    def set_padding_num(self, inPaddingNum: int) -> bool:
+    def set_padding_num(self, padding_num: int) -> bool:
         """
         인덱스 자릿수 설정
         
         Args:
-            inPaddingNum: 설정할 패딩 자릿수
+            padding_num: 설정할 패딩 자릿수
             
         Returns:
             설정 성공 여부 (True/False)
         """
-        if not isinstance(inPaddingNum, int) or inPaddingNum < 1:
+        if not isinstance(padding_num, int) or padding_num < 1:
             print("오류: 패딩 자릿수는 1 이상의 정수여야 합니다.")
             return False
         
-        self.configData["paddingNum"] = inPaddingNum
+        self.padding_num = padding_num
         return True
     
-    def _get_part_dictionary_key(self, inPartName: str) -> Union[str, None]:
+    def set_part_values(self, part_name: str, values: List[str]) -> bool:
         """
-        부분 이름에 해당하는 사전 키 반환하는 내부 헬퍼 메서드
+        특정 NamePart의 사전 정의 값 설정
         
         Args:
-            inPartName: 부분 이름 ("Base", "Type", "Side" 등)
+            part_name: NamePart 이름
+            values: 설정할 사전 정의 값 리스트
             
         Returns:
-            사전 키 문자열, 존재하지 않으면 None
+            설정 성공 여부 (True/False)
         """
-        if inPartName == "RealName":
-            print("오류: RealName 부분은 사전 문자열이 없습니다.")
-            return None
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
+            return False
         
-        if inPartName == "Base":
-            return "baseStrArray"
-        elif inPartName == "Type":
-            return "typeStrArray"
-        elif inPartName == "Side":
-            return "sideStrArray"
-        elif inPartName == "FrontBack":
-            return "frontBackStrArray"
-        elif inPartName == "Index":
-            return "nubStr"  # 특수 케이스: 단일 문자열
-        else:
-            return f"{inPartName.lower()}StrArray"
+        if part_name == "RealName":
+            print("오류: RealName 부분은 사전 정의 값을 설정할 수 없습니다.")
+            return False
+        
+        if not values:
+            print(f"오류: {part_name} 부분의 사전 정의 값은 적어도 하나 이상 있어야 합니다.")
+            return False
+        
+        part.set_predefined_values(values)
+        
+        # semantics 자동 설정 (5씩 증가)
+        semantics = {}
+        for i, value in enumerate(values, 1):
+            semantics[value] = i * 5  # 첫 번째 값: 5, 두 번째 값: 10, 세 번째 값: 15, ...
+        
+        part.set_semantic_mapping(semantics)
+        return True
     
-    def _get_part_semantics_key(self, inPartName: str) -> Union[str, None]:
+    def add_part_value(self, part_name: str, value: str) -> bool:
         """
-        부분 이름에 해당하는 의미론적 매핑 키 반환하는 내부 헬퍼 메서드
+        특정 NamePart에 사전 정의 값 추가 (semantics 자동 설정)
         
         Args:
-            inPartName: 부분 이름 ("Base", "Type", "Side" 등)
+            part_name: NamePart 이름
+            value: 추가할 사전 정의 값
             
-        Returns:
-            의미론적 매핑 키 문자열, 존재하지 않으면 None
-        """
-        if inPartName == "RealName":
-            print("오류: RealName 부분은 의미론적 매핑이 없습니다.")
-            return None
-        
-        if inPartName == "Base":
-            return "baseSemantics"
-        elif inPartName == "Type":
-            return "typeSemantics"
-        elif inPartName == "Side":
-            return "sideSemantics"
-        elif inPartName == "FrontBack":
-            return "frontBackSemantics"
-        elif inPartName == "Nub":
-            return "nubSemantics"
-        else:
-            return f"{inPartName.lower()}Semantics"
-    
-    def add_part_dictionary(self, inPartName: str, inValue: Union[str, List[str]]) -> bool:
-        """
-        특정 부분의 사전 문자열에 값 추가
-        
-        Args:
-            inPartName: 편집할 부분 이름 ("Base", "Type", "Side" 등)
-            inValue: 추가할 문자열 또는 문자열 배열
-                   
         Returns:
             추가 성공 여부 (True/False)
         """
-        dictKey = self._get_part_dictionary_key(inPartName)
-        if dictKey is None:
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return False
         
-        # 인덱스가 특수 케이스인지 확인
-        if inPartName == "Index":
-            print("오류: Index 부분은 추가 동작을 지원하지 않습니다.")
+        if part_name == "RealName":
+            print("오류: RealName 부분은 사전 정의 값을 추가할 수 없습니다.")
             return False
         
-        valuesToAdd = [inValue] if isinstance(inValue, str) else inValue
+        # 값 추가
+        if part.add_predefined_value(value):
+            # 성공적으로 추가되었을 경우 semantics 자동 설정
+            # (기존 값 수) * 5 = 새 값의 semantics
+            current_values = part.get_predefined_values()
+            semantic_value = len(current_values) * 5  # 새로 추가된 값의 semantics
+            part.add_semantic_mapping(value, semantic_value)
+            return True
         
-        for val in valuesToAdd:
-            if val not in self.configData[dictKey]:
-                self.configData[dictKey].append(val)
-        
-        return True
+        return False
     
-    def remove_part_dictionary(self, inPartName: str, inValue: Union[str, List[str]]) -> bool:
+    def remove_part_value(self, part_name: str, value: str) -> bool:
         """
-        특정 부분의 사전 문자열에서 값 제거
+        특정 NamePart에서 사전 정의 값 제거
         
         Args:
-            inPartName: 편집할 부분 이름 ("Base", "Type", "Side" 등)
-            inValue: 제거할 문자열 또는 문자열 배열
-                   
+            part_name: NamePart 이름
+            value: 제거할 사전 정의 값
+            
         Returns:
             제거 성공 여부 (True/False)
         """
-        dictKey = self._get_part_dictionary_key(inPartName)
-        if dictKey is None:
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return False
         
-        # 인덱스가 특수 케이스인지 확인
-        if inPartName == "Index":
-            print("오류: Index 부분은 제거 동작을 지원하지 않습니다.")
+        if part_name == "RealName":
+            print("오류: RealName 부분은 사전 정의 값을 제거할 수 없습니다.")
             return False
         
-        valuesToRemove = [inValue] if isinstance(inValue, str) else inValue
-        
-        newArray = [item for item in self.configData[dictKey] if item not in valuesToRemove]
-        
-        if not newArray:
-            print(f"오류: 모든 항목을 제거할 수 없습니다. {inPartName} 부분의 사전 문자열은 적어도 하나 이상 있어야 합니다.")
-            return False
-        
-        self.configData[dictKey] = newArray
-        return True
-    
-    def modify_part_dictionary(self, inPartName: str, inOldValue: str, inNewValue: str) -> bool:
-        """
-        특정 부분의 사전 문자열 수정
-        
-        Args:
-            inPartName: 편집할 부분 이름 ("Base", "Type", "Side" 등)
-            inOldValue: 기존 값
-            inNewValue: 새 값
-                   
-        Returns:
-            수정 성공 여부 (True/False)
-        """
-        dictKey = self._get_part_dictionary_key(inPartName)
-        if dictKey is None:
-            return False
-        
-        # 인덱스가 특수 케이스인지 확인
-        isIndexCase = (inPartName == "Index")
-        
-        if isIndexCase:
-            if inOldValue == self.configData[dictKey]:
-                self.configData[dictKey] = inNewValue
-                return True
-            else:
-                print(f"오류: 현재 '{dictKey}' 값과 일치하지 않습니다.")
+        # 값이 존재하는지 확인하고 제거
+        if part.contains_value(value):
+            # 마지막 값인지 확인
+            if part.get_value_count() <= 1:
+                print(f"오류: {part_name} 부분의 사전 정의 값은 적어도 하나 이상 있어야 합니다.")
                 return False
-        else:
-            if inOldValue in self.configData[dictKey]:
-                idx = self.configData[dictKey].index(inOldValue)
-                self.configData[dictKey][idx] = inNewValue
-                return True
-            else:
-                print(f"오류: '{inOldValue}'을(를) 찾을 수 없습니다.")
-                return False
-    
-    def set_part_dictionary(self, inPartName: str, inValue: Union[str, List[str]]) -> bool:
-        """
-        특정 부분의 사전 문자열 설정 (기존 값 교체)
-        
-        Args:
-            inPartName: 편집할 부분 이름 ("Base", "Type", "Side" 등)
-            inValue: 새로 설정할 문자열 또는 문자열 배열
-                   
-        Returns:
-            설정 성공 여부 (True/False)
-        """
-        dictKey = self._get_part_dictionary_key(inPartName)
-        if dictKey is None:
-            return False
-        
-        # 인덱스가 특수 케이스인지 확인
-        isIndexCase = (inPartName == "Index")
-        
-        if isIndexCase:
-            if isinstance(inValue, str):
-                self.configData[dictKey] = inValue
-                return True
-            else:
-                print("오류: Index의 nubStr 설정은 문자열이어야 합니다.")
-                return False
-        else:
-            if isinstance(inValue, list):
-                if not inValue:
-                    print(f"오류: {inPartName} 부분의 사전 문자열은 적어도 하나 이상 있어야 합니다.")
-                    return False
-                
-                self.configData[dictKey] = copy.deepcopy(inValue)
-                return True
-            else:
-                print("오류: set 동작은 문자열 배열이 필요합니다.")
-                return False
-    
-    def get_part_dictionary(self, inPartName: str) -> Union[List[str], str, None]:
-        """
-        특정 부분의 사전 문자열 배열 반환
-        
-        Args:
-            inPartName: 문자열 배열을 조회할 부분 이름 ("Base", "Type", "Side" 등)
             
-        Returns:
-            사전 문자열 배열 또는 문자열, 존재하지 않으면 None
-        """
-        if inPartName == "RealName":
-            print("정보: RealName 부분은 사전 문자열이 없습니다.")
-            return None
-        
-        dictKey = ""
-        if inPartName == "Base":
-            dictKey = "baseStrArray"
-        elif inPartName == "Type":
-            dictKey = "typeStrArray"
-        elif inPartName == "Side":
-            dictKey = "sideStrArray"
-        elif inPartName == "FrontBack":
-            dictKey = "frontBackStrArray"
-        elif inPartName == "Index":
-            dictKey = "nubStr"  # 특수 케이스: 단일 문자열
-            return self.configData.get(dictKey)
+            return part.remove_predefined_value(value)
         else:
-            dictKey = f"{inPartName.lower()}StrArray"
-        
-        return self.configData.get(dictKey, None)
+            print(f"오류: '{value}'가 {part_name} 부분의 사전 정의 값에 존재하지 않습니다.")
+            return False
     
-    def set_semantic_mapping(self, inPartName: str, inValueToMappingDict: Dict[str, Union[str, int, float]]) -> bool:
+    def set_part_semantics(self, part_name: str, semantics: Dict[str, Union[str, int, float]]) -> bool:
         """
-        특정 부분의 값에 대한 의미론적 매핑 설정
+        특정 NamePart의 의미론적 매핑 설정
         
         Args:
-            inPartName: 부분 이름 ("Side", "FrontBack" 등)
-            inValueToMappingDict: 값-매핑 쌍의 딕셔너리 (예: {"L": "left", "R": "right"})
+            part_name: NamePart 이름
+            semantics: 설정할 의미론적 매핑 딕셔너리
             
         Returns:
             설정 성공 여부 (True/False)
         """
-        # 해당 부분이 존재하는지 확인
-        if inPartName not in self.configData["nameParts"]:
-            print(f"오류: '{inPartName}' namePart가 존재하지 않습니다.")
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return False
-            
-        # 매핑 키 생성
-        mappingKey = self._get_part_semantics_key(inPartName)
-        if mappingKey is None:
+        
+        if part_name == "RealName":
+            print("오류: RealName 부분은 의미론적 매핑을 설정할 수 없습니다.")
             return False
-            
-        # 이미 매핑이 있으면 병합
-        if mappingKey in self.configData:
-            self.configData[mappingKey].update(inValueToMappingDict)
-        else:
-            # 새 매핑 설정
-            self.configData[mappingKey] = inValueToMappingDict.copy()
-            
+        
+        part.set_semantic_mapping(semantics)
         return True
     
-    def get_semantic_mapping(self, inPartName: str) -> Dict[str, Union[str, int, float]]:
+    def add_part_semantic(self, part_name: str, key: str, value: Union[str, int, float]) -> bool:
         """
-        특정 부분의 의미론적 매핑 가져오기
+        특정 NamePart의 의미론적 매핑에 항목 추가
         
         Args:
-            inPartName: 부분 이름 ("Side", "FrontBack" 등)
+            part_name: NamePart 이름
+            key: 매핑할 키(값 이름)
+            value: 의미 또는 가중치
+            
+        Returns:
+            추가 성공 여부 (True/False)
+        """
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
+            return False
+        
+        if part_name == "RealName":
+            print("오류: RealName 부분은 의미론적 매핑을 추가할 수 없습니다.")
+            return False
+        
+        return part.add_semantic_mapping(key, value)
+    
+    def get_part_semantics(self, part_name: str) -> Dict[str, Union[str, int, float]]:
+        """
+        특정 NamePart의 의미론적 매핑 가져오기
+        
+        Args:
+            part_name: NamePart 이름
             
         Returns:
             의미론적 매핑 딕셔너리
         """
-        semanticsKey = self._get_part_semantics_key(inPartName)
-        if semanticsKey is None:
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return {}
-            
-        return self.configData.get(semanticsKey, {})
+        
+        return part.get_semantic_mapping()
     
-    def apply_config_to_naming(self, inNamingInstance) -> bool:
+    def get_part_values(self, part_name: str) -> List[str]:
+        """
+        특정 NamePart의 사전 정의 값 목록 가져오기
+        
+        Args:
+            part_name: NamePart 이름
+            
+        Returns:
+            사전 정의 값 목록
+        """
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
+            return []
+        
+        return part.get_predefined_values()
+    
+    def save(self, file_path: Optional[str] = None) -> bool:
+        """
+        현재 설정을 JSON 파일로 저장
+        
+        Args:
+            file_path: 저장할 파일 경로 (기본값: self.default_file_path)
+            
+        Returns:
+            저장 성공 여부 (True/False)
+        """
+        save_path = file_path or self.default_file_path
+        
+        try:
+            # 저장할 데이터 준비
+            save_data = {
+                "paddingNum": self.padding_num,
+                "nameParts": []
+            }
+            
+            # 각 NamePart 객체를 딕셔너리로 변환하여 추가
+            for part in self.name_parts:
+                save_data["nameParts"].append(part.to_dict())
+            
+            # JSON 파일로 저장
+            with open(save_path, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, indent=4, ensure_ascii=False)
+            
+            self.config_file_path = save_path
+            return True
+        except Exception as e:
+            print(f"설정 저장 중 오류 발생: {e}")
+            return False
+    
+    def load(self, file_path: Optional[str] = None) -> bool:
+        """
+        JSON 파일에서 설정 불러오기
+        
+        Args:
+            file_path: 불러올 파일 경로 (기본값: self.default_file_path)
+            
+        Returns:
+            로드 성공 여부 (True/False)
+        """
+        load_path = file_path or self.default_file_path
+        
+        try:
+            if os.path.exists(load_path):
+                with open(load_path, 'r', encoding='utf-8') as f:
+                    loaded_data = json.load(f)
+                
+                # 필수 키가 있는지 확인
+                if "nameParts" not in loaded_data:
+                    print("경고: 설정 파일에 필수 키 'nameParts'가 없습니다.")
+                    return False
+                
+                # paddingNum 불러오기
+                if "paddingNum" in loaded_data:
+                    self.padding_num = loaded_data["paddingNum"]
+                
+                # NamePart 객체 리스트 생성
+                new_parts = []
+                for part_data in loaded_data["nameParts"]:
+                    part = NamePart.from_dict(part_data)
+                    new_parts.append(part)
+                
+                # 필수 NamePart가 포함되어 있는지 확인
+                part_names = [part.get_name() for part in new_parts]
+                for required_name in self.required_parts:
+                    if required_name not in part_names:
+                        print(f"경고: 필수 NamePart '{required_name}'가 설정에 포함되어 있지 않습니다.")
+                        return False
+                
+                # 모든 확인이 통과되면 데이터 업데이트
+                self.name_parts = new_parts
+                self.config_file_path = load_path
+                return True
+            else:
+                print(f"설정 파일을 찾을 수 없습니다: {load_path}")
+                return False
+        except Exception as e:
+            print(f"설정 로드 중 오류 발생: {e}")
+            return False
+    
+    def apply_to_naming(self, naming_instance) -> bool:
         """
         설정을 Naming 인스턴스에 적용
         
         Args:
-            inNamingInstance: 설정을 적용할 Naming 클래스 인스턴스
+            naming_instance: 설정을 적용할 Naming 클래스 인스턴스
             
         Returns:
             적용 성공 여부 (True/False)
         """
         try:
-            # 필요한 모듈 임포트
-            try:
-                from .namePart import NamePart
-            except ImportError:
-                # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
-                import namePart
-                from namePart import NamePart
+            # NamePart 객체 리스트 복사하여 적용
+            naming_instance._nameParts = copy.deepcopy(self.name_parts)
             
-            # 설정 적용을 위해 새로운 NamePart 객체 배열 생성
-            if "nameParts" in self.configData:
-                nameParts = []
-                
-                # paddingNum 설정
-                if "paddingNum" in self.configData:
-                    inNamingInstance._paddingNum = self.configData["paddingNum"]
-                
-                # 사전 정의 값들 준비
-                baseStrArray = self.configData.get("baseStrArray", ["b", "Bip001"])
-                typeStrArray = self.configData.get("typeStrArray", ["P", "Dum", "Exp", "IK", "T"])
-                sideStrArray = self.configData.get("sideStrArray", ["L", "R"])
-                frontBackStrArray = self.configData.get("frontBackStrArray", ["F", "B"])
-                
-                # 의미론적 매핑 또는 가중치 준비
-                baseSemantics = self.configData.get("baseSemantics", {})
-                typeSemantics = self.configData.get("typeSemantics", {})
-                sideSemantics = self.configData.get("sideSemantics", {})
-                frontBackSemantics = self.configData.get("frontBackSemantics", {})
-                
-                # 기본 의미론적 매핑 설정 (없는 경우)
-                if not sideSemantics and len(sideStrArray) >= 2:
-                    sideSemantics = {
-                        sideStrArray[0]: "left",
-                        sideStrArray[1]: "right"
-                    }
-                    # 가중치 추가
-                    sideSemantics[sideStrArray[0]] = 10
-                    sideSemantics[sideStrArray[1]] = 5
-                    
-                if not frontBackSemantics and len(frontBackStrArray) >= 2:
-                    frontBackSemantics = {
-                        frontBackStrArray[0]: "front",
-                        frontBackStrArray[1]: "back"
-                    }
-                    # 가중치 추가
-                    frontBackSemantics[frontBackStrArray[0]] = 10
-                    frontBackSemantics[frontBackStrArray[1]] = 5
-                    
-                # 각 NamePart 객체 생성 및 설정
-                for name in self.configData["nameParts"]:
-                    if name == "Base":
-                        nameParts.append(NamePart(name, baseStrArray, baseSemantics))
-                    elif name == "Type":
-                        nameParts.append(NamePart(name, typeStrArray, typeSemantics))
-                    elif name == "Side":
-                        nameParts.append(NamePart(name, sideStrArray, sideSemantics))
-                    elif name == "FrontBack":
-                        nameParts.append(NamePart(name, frontBackStrArray, frontBackSemantics))
-                    elif name == "RealName":
-                        nameParts.append(NamePart(name))
-                    elif name == "Index":
-                        nameParts.append(NamePart(name))
-                    elif name == "Nub":
-                        # Nub는 nubStr 값을 사용
-                        nubStr = self.configData.get("nubStr", "Nub")
-                        nubSemantics = self.configData.get("nubSemantics", {nubStr: 10})
-                        nameParts.append(NamePart(name, [nubStr], nubSemantics))
-                    else:
-                        # 기타 사용자 정의 부분
-                        dictKey = f"{name.lower()}StrArray"
-                        semanticsKey = f"{name.lower()}Semantics"
-                        
-                        values = self.configData.get(dictKey, [])
-                        semantics = self.configData.get(semanticsKey, {})
-                        
-                        nameParts.append(NamePart(name, values, semantics))
-                
-                # 모든 NamePart 객체 설정 완료 후 inNamingInstance._nameParts에 할당
-                inNamingInstance._nameParts = nameParts
+            # paddingNum 설정
+            naming_instance._paddingNum = self.padding_num
             
             return True
         except Exception as e:
             print(f"설정 적용 중 오류 발생: {e}")
             return False
-    
-    def set_specific_string(self, inStrType: str, inValue: str) -> bool:
-        """
-        특정 문자열 설정 (parentStr, dummyStr 등)
-        
-        Args:
-            inStrType: 설정할 문자열 타입 ("parentStr", "dummyStr", "exposeTmStr", "targetStr", "ikStr", "nubStr")
-            inValue: 설정할 값
-            
-        Returns:
-            설정 성공 여부 (True/False)
-        """
-        validTypes = ["parentStr", "dummyStr", "exposeTmStr", "targetStr", "ikStr", "nubStr"]
-        
-        if inStrType not in validTypes:
-            print(f"오류: 잘못된 문자열 타입입니다. {validTypes} 중 하나를 사용하세요.")
-            return False
-        
-        if not isinstance(inValue, str):
-            print("오류: 값은 문자열이어야 합니다.")
-            return False
-        
-        self.configData[inStrType] = inValue
-        
-        # Type 관련 문자열인 경우 typeStrArray도 업데이트
-        if inStrType in ["parentStr", "dummyStr", "exposeTmStr", "targetStr", "ikStr"]:
-            typeStrArray = self.configData.get("typeStrArray", [])
-            
-            # 이전 값 찾기
-            oldValue = None
-            for t in ["parentStr", "dummyStr", "exposeTmStr", "targetStr", "ikStr"]:
-                if t == inStrType and t in self.configData:
-                    oldValue = self.configData[t]
-                    break
-            
-            # typeStrArray 업데이트
-            if oldValue and oldValue in typeStrArray:
-                idx = typeStrArray.index(oldValue)
-                typeStrArray[idx] = inValue
-            elif inValue not in typeStrArray:
-                typeStrArray.append(inValue)
-            
-            self.configData["typeStrArray"] = typeStrArray
-        
-        return True
 
 
 # 메인 함수: namingConfig.json 파일 생성 예제
@@ -637,28 +494,33 @@ def main():
     """namingConfig.json 파일 생성 예제"""
     config = NamingConfig()
     
-    # 설정 예시 (필요에 따라 수정)
+    # 설정 예시
     config.set_padding_num(3)
-    config.set_part_dictionary("Base", ["b", "Bip001"])
-    config.set_part_dictionary("Type", ["P", "Dum", "Exp", "IK", "T"])
-    config.set_part_dictionary("Side", ["L", "R"])
-    config.set_part_dictionary("FrontBack", ["F", "B"])
-    config.set_specific_string("nubStr", "Nub")
     
-    # 의미론적 매핑 설정
-    config.set_semantic_mapping("Side", {"L": "left", "R": "right"})
-    config.set_semantic_mapping("Side", {"L": 10, "R": 5})
+    # Base 부분 설정
+    config.set_part_values("Base", ["b", "Bip001"])
+    # semantics는 자동으로 설정됨: {"b": 5, "Bip001": 10}
     
-    config.set_semantic_mapping("FrontBack", {"F": "front", "B": "back"})
-    config.set_semantic_mapping("FrontBack", {"F": 10, "B": 5})
+    # Type 부분 설정
+    config.set_part_values("Type", ["P", "Dum", "Exp", "IK", "T"])
+    # semantics는 자동으로 설정됨: {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25}
     
-    config.set_semantic_mapping("Base", {"b": 10, "Bip001": 5})
-    config.set_semantic_mapping("Type", {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
+    # Side 부분 설정
+    config.set_part_values("Side", ["L", "R"])
+    # semantics는 자동으로 설정됨: {"L": 5, "R": 10}
+    
+    # FrontBack 부분 설정
+    config.set_part_values("FrontBack", ["F", "B"])
+    # semantics는 자동으로 설정됨: {"F": 5, "B": 10}
+    
+    # Nub 부분 설정
+    config.set_part_values("Nub", ["Nub"])
+    # semantics는 자동으로 설정됨: {"Nub": 5}
     
     # JSON 파일 저장
-    success = config.save_config()
+    success = config.save()
     if success:
-        print(f"namingConfig.json 파일이 성공적으로 생성되었습니다: {config.configFilePath}")
+        print(f"namingConfig.json 파일이 성공적으로 생성되었습니다: {config.config_file_path}")
     else:
         print("namingConfig.json 파일 생성에 실패했습니다.")
 

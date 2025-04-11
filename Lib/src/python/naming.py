@@ -43,24 +43,24 @@ class Naming:
         self._nameParts = []
         
         # Base 부분 - "b"는 기본값으로 더 높은 가중치 부여
-        base_part = NamePart("Base", ["b", "Bip001"], {"b": 10, "Bip001": 5})
+        basePart = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10})
         
         # Type 부분 - 각 유형에 가중치 부여
-        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
-                          {"P": 10, "Dum": 8, "Exp": 6, "IK": 4, "T": 2})
+        typePart = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
+                          {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25})
         
         # Side 부분 - 의미론적 매핑 및 가중치
-        side_part = NamePart("Side", ["L", "R"], {"L": 10, "R": 5})
+        sidePart = NamePart("Side", ["L", "R"], {"L": 5, "R": 10})
         
         # FrontBack 부분 - 의미론적 매핑 및 가중치
-        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": 10, "B": 5})
+        frontBackPart = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10})
         
-        real_name_part = NamePart("RealName")
-        index_part = NamePart("Index")
-        nub_part = NamePart("Nub", ["Nub"], {"Nub": 10})
+        realNamePart = NamePart("RealName")
+        indexPart = NamePart("Index")
+        nubPart = NamePart("Nub", ["Nub"], {"Nub": 5})
         
         # 기본 순서대로 설정
-        self._nameParts = [base_part, type_part, side_part, front_back_part, real_name_part, index_part, nub_part]
+        self._nameParts = [basePart, typePart, sidePart, frontBackPart, realNamePart, indexPart, nubPart]
         
         # 설정 파일이 제공된 경우 로드
         if configPath:
@@ -332,9 +332,9 @@ class Naming:
         Returns:
             넙 문자열
         """
-        nub_part = self.get_name_part("Nub")
-        if nub_part:
-            values = nub_part.get_predefined_values()
+        nubPart = self.get_name_part("Nub")
+        if nubPart:
+            values = nubPart.get_predefined_values()
             if values and len(values) > 0:
                 return values[0]
         return ""
@@ -346,9 +346,9 @@ class Naming:
         Returns:
             왼쪽 구분자
         """
-        side_part = self.get_name_part("Side")
-        if side_part:
-            return side_part.get_value_by_semantic("left")
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return sidePart.get_value_by_semantic("left")
         return ""
 
     def get_right_str(self):
@@ -358,9 +358,9 @@ class Naming:
         Returns:
             오른쪽 구분자
         """
-        side_part = self.get_name_part("Side")
-        if side_part:
-            return side_part.get_value_by_semantic("right")
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return sidePart.get_value_by_semantic("right")
         return ""
 
     def get_front_str(self):
@@ -370,9 +370,9 @@ class Naming:
         Returns:
             앞 구분자
         """
-        front_back_part = self.get_name_part("FrontBack")
-        if front_back_part:
-            return front_back_part.get_value_by_semantic("front")
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return frontBackPart.get_value_by_semantic("front")
         return ""
 
     def get_back_str(self):
@@ -382,9 +382,9 @@ class Naming:
         Returns:
             뒤 구분자
         """
-        front_back_part = self.get_name_part("FrontBack")
-        if front_back_part:
-            return front_back_part.get_value_by_semantic("back")
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return frontBackPart.get_value_by_semantic("back")
         return ""
 
     def get_base_part_index(self):
@@ -460,9 +460,9 @@ class Naming:
         Returns:
             측면 문자이면 True, 아니면 False
         """
-        side_part = self.get_name_part("Side")
-        if side_part:
-            return inChar in side_part.get_predefined_values()
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return inChar in sidePart.get_predefined_values()
         return False
 
     def is_front_back_char(self, inChar):
@@ -475,9 +475,9 @@ class Naming:
         Returns:
             앞/뒤 문자이면 True, 아니면 False
         """
-        front_back_part = self.get_name_part("FrontBack")
-        if front_back_part:
-            return inChar in front_back_part.get_predefined_values()
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return inChar in frontBackPart.get_predefined_values()
         return False
 
     def is_type_char(self, inChar):
@@ -490,9 +490,9 @@ class Naming:
         Returns:
             유형 문자이면 True, 아니면 False
         """
-        type_part = self.get_name_part("Type")
-        if type_part:
-            return inChar in type_part.get_predefined_values()
+        typePart = self.get_name_part("Type")
+        if typePart:
+            return inChar in typePart.get_predefined_values()
         return False
 
     def is_base_char(self, inChar):
@@ -505,9 +505,9 @@ class Naming:
         Returns:
             기본 문자이면 True, 아니면 False
         """
-        base_part = self.get_name_part("Base")
-        if base_part:
-            return inChar in base_part.get_predefined_values()
+        basePart = self.get_name_part("Base")
+        if basePart:
+            return inChar in basePart.get_predefined_values()
         return False
 
     def is_index_char(self, inChar):
@@ -532,9 +532,9 @@ class Naming:
         Returns:
             넙 문자이면 True, 아니면 False
         """
-        nub_part = self.get_name_part("Nub")
-        if nub_part:
-            return inChar in nub_part.get_predefined_values()
+        nubPart = self.get_name_part("Nub")
+        if nubPart:
+            return inChar in nubPart.get_predefined_values()
         return False
 
     def get_char_type(self, inChar):
@@ -553,10 +553,10 @@ class Naming:
             
         # _nameParts에서 문자 유형 찾기
         for part in self._nameParts:
-            part_name = part.get_name()
-            if part_name != "Index" and part_name != "RealName":  # Index는 이미 처리
+            partName = part.get_name()
+            if partName != "Index" and partName != "RealName":  # Index는 이미 처리
                 if inChar in part.get_predefined_values():
-                    return part_name
+                    return partName
         
         return None
 
@@ -619,8 +619,8 @@ class Naming:
         Returns:
             지정된 namePart에 해당하는 문자열
         """
-        name_array = self._split_to_array(inStr)
-        return_str = ""
+        nameArray = self._split_to_array(inStr)
+        returnStr = ""
         
         # namePart 인덱스와 RealName 인덱스 가져오기
         partIndex = self.get_name_part_index(inNamePart)
@@ -628,7 +628,7 @@ class Naming:
         
         # namePart가 유효하지 않으면 빈 문자열 반환
         if partIndex < 0:
-            return return_str
+            return returnStr
         
         # namePart 문자열 목록 가져오기
         partObj = self.get_name_part(inNamePart)
@@ -636,7 +636,7 @@ class Naming:
                 
         # namePart 문자열이 있는지 확인
         found = False
-        for item in name_array:
+        for item in nameArray:
             if item in partValues:
                 found = True
                 break
@@ -644,18 +644,18 @@ class Naming:
         if found:
             if partIndex < realNameIndex:
                 # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
-                for i in range(len(name_array)):
-                    if name_array[i] in partValues:
-                        return_str = name_array[i]
+                for i in range(len(nameArray)):
+                    if nameArray[i] in partValues:
+                        returnStr = nameArray[i]
                         break
             else:
                 # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
-                for i in range(len(name_array) - 1, -1, -1):
-                    if name_array[i] in partValues:
-                        return_str = name_array[i]
+                for i in range(len(nameArray) - 1, -1, -1):
+                    if nameArray[i] in partValues:
+                        returnStr = nameArray[i]
                         break
         
-        return return_str
+        return returnStr
 
     def get_index(self, inStr):
         """
@@ -799,11 +799,11 @@ class Naming:
         if self.is_nub(inStr):
             return -1
             
-        index_str = self.get_index(inStr)
+        indexStr = self.get_index(inStr)
             
-        if index_str:
+        if indexStr:
             try:
-                return int(index_str)
+                return int(indexStr)
             except ValueError:
                 pass
                 
@@ -860,8 +860,8 @@ class Naming:
         Returns:
             왼쪽이면 True, 아니면 False
         """
-        side_char = self.get_side(inStr)
-        return side_char and side_char == self.get_left_str()
+        sideChar = self.get_side(inStr)
+        return sideChar and sideChar == self.get_left_str()
 
     def is_right(self, inStr):
         """
@@ -873,8 +873,8 @@ class Naming:
         Returns:
             오른쪽이면 True, 아니면 False
         """
-        side_char = self.get_side(inStr)
-        return side_char and side_char == self.get_right_str()
+        sideChar = self.get_side(inStr)
+        return sideChar and sideChar == self.get_right_str()
 
     def is_front(self, inStr):
         """
@@ -886,8 +886,8 @@ class Naming:
         Returns:
             앞쪽이면 True, 아니면 False
         """
-        front_back_char = self.get_front_back(inStr)
-        return front_back_char and front_back_char == self.get_front_str()
+        frontBackChar = self.get_front_back(inStr)
+        return frontBackChar and frontBackChar == self.get_front_str()
 
     def is_back(self, inStr):
         """
@@ -899,8 +899,8 @@ class Naming:
         Returns:
             뒤쪽이면 True, 아니면 False
         """
-        front_back_char = self.get_front_back(inStr)
-        return front_back_char and front_back_char == self.get_back_str()
+        frontBackChar = self.get_front_back(inStr)
+        return frontBackChar and frontBackChar == self.get_back_str()
 
     def has_side(self, inStr):
         """
@@ -1083,10 +1083,10 @@ class Naming:
         Returns:
             인덱스 패딩 자릿수
         """
-        index = self.get_index(inStr)
+        indexVal = self.get_index(inStr)
         
-        if not self.is_nub(inStr) and index:
-            return len(index)
+        if not self.is_nub(inStr) and indexVal:
+            return len(indexVal)
             
         return 1
 
@@ -1456,8 +1456,8 @@ class Naming:
         try:
             config = namingConfig.NamingConfig()
             
-            if config.load_config(configPath):
-                config.apply_config_to_naming(self)
+            if config.load(configPath):
+                config.apply_to_naming(self)
                 self._configPath = configPath
                 return True
             else:
