@@ -6,160 +6,180 @@ Helper 모듈 - 헬퍼 객체 생성 및 관리 기능
 원본 MAXScript의 helper.ms에서 변환됨
 """
 
+from pymxs import runtime as rt
+from .name import Name
+from . import configPaths
+
 
 class Helper:
     """
     헬퍼 객체 관련 기능을 위한 클래스
     MAXScript의 _Helper 구조체를 Python 클래스로 변환
     
-    참고: 일부 3ds Max 고유 기능은 Python에서 동등한 구현이 불가능하므로,
-    해당 메서드들은 패스 함수로 구현되거나 주석으로 처리되었습니다.
+    pymxs 모듈을 통해 3ds Max의 기능을 직접 접근합니다.
     """
     
     def __init__(self):
         """초기화 함수"""
-        # name 속성은 외부에서 주입됨 (JalLib 초기화 시)
-        self.name = None
+        # Name 인스턴스 생성 (중앙 관리되는 설정 파일 경로 사용)
+        self.name = Name(configPaths.get_naming_config_path())
     
-    def create_point(self, in_name, size=2, box_toggle=False, cross_toggle=True, point_color=(14, 255, 2), pos=(0, 0, 0)):
+    def create_point(self, inName, size=2, boxToggle=False, crossToggle=True, pointColor=(14, 255, 2), pos=(0, 0, 0)):
         """
         포인트 헬퍼 생성
         
         Args:
-            in_name: 헬퍼 이름
+            inName: 헬퍼 이름
             size: 헬퍼 크기
-            box_toggle: 박스 표시 여부
-            cross_toggle: 십자 표시 여부
-            point_color: 색상
+            boxToggle: 박스 표시 여부
+            crossToggle: 십자 표시 여부
+            pointColor: 색상
             pos: 위치
             
         Returns:
             생성된 포인트 헬퍼
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # local returnPoint
-        # returnPoint = point()
-        # returnPoint.size = size
-        # returnPoint.box = boxToggle
-        # returnPoint.cross = crossToggle
-        # returnPoint.wireColor = pointColor
-        # returnPoint.name = inName
-        # returnPoint.pos = pos
-        # returnPoint.centermarker = off
-        # returnPoint.axistripod = off
-        # return returnPoint
+        # Point 객체 생성
+        returnPoint = rt.Point()
+        rt.setProperty(returnPoint, "size", size)
+        rt.setProperty(returnPoint, "box", boxToggle)
+        rt.setProperty(returnPoint, "cross", crossToggle)
         
-        # Python 더미 구현:
-        class DummyPoint:
-            def __init__(self):
-                self.name = in_name
-                self.size = size
-                self.box = box_toggle
-                self.cross = cross_toggle
-                self.wireColor = point_color
-                self.pos = pos
-                self.centermarker = False
-                self.axistripod = False
-                self.transform = None
+        # 색상 설정 (MAXScript의 color를 Point3로 변환)
+        rt.setProperty(returnPoint, "wirecolor", rt.Color(pointColor[0], pointColor[1], pointColor[2]))
         
-        return DummyPoint()
+        # 이름과 위치 설정
+        rt.setProperty(returnPoint, "position", rt.Point3(pos[0], pos[1], pos[2]))
+        rt.setProperty(returnPoint, "name", inName)
+        
+        # 추가 속성 설정
+        returnPoint.centermarker = False
+        returnPoint.axistripod = False
+        rt.setProperty(returnPoint, "centermarker", False)
+        rt.setProperty(returnPoint, "axistripod", False)
+        
+        return returnPoint
     
-    def create_empty_point(self, in_name):
+    def create_empty_point(self, inName):
         """
         빈 포인트 헬퍼 생성
         
         Args:
-            in_name: 헬퍼 이름
+            inName: 헬퍼 이름
             
         Returns:
             생성된 빈 포인트 헬퍼
         """
-        # MAXScript 원본:
-        # local returnPoint = create_point inName size:0 crossToggle:off
-        # returnPoint.centermarker = off
-        # returnPoint.axistripod = off
-        # freeze returnPoint
-        # return returnPoint
+        # 빈 포인트 생성 (size:0, crossToggle:off)
+        returnPoint = self.create_point(inName, size=0, crossToggle=False)
+        rt.setProperty(returnPoint, "centermarker", False)
+        rt.setProperty(returnPoint, "axistripod", False)
         
-        return_point = self.create_point(in_name, size=0, cross_toggle=False)
-        return_point.centermarker = False
-        return_point.axistripod = False
-        # freeze 함수는 Python에서는 생략
+        # MAXScript의 freeze 기능 구현
+        rt.freeze(returnPoint)
         
-        return return_point
+        return returnPoint
     
-    def gen_helper_name_from_obj(self, in_obj, make_two=False, is_exp=False):
+    def get_name_by_type(self, helperType):
+        """
+        헬퍼 타입 패턴에 따라 Type namePart 값 찾기
+        
+        Args:
+            helperType: 헬퍼 타입 문자열 ("Dummy", "IK", "Target", "Parent", "ExposeTm")
+            
+        Returns:
+            찾은 Type namePart 값
+        """
+        typePart = self.name.get_name_part("Type")
+        predefinedValues = typePart.get_predefined_values()
+        firstTypeValue = typePart.get_sorted_values_by_weight()[0]
+        
+        
+        # 헬퍼 타입 패턴 정의
+        helperNamePatterns = {
+            "Dummy": ["dum", "Dum", "Dummy", "Helper", "Hpr", "Dmy"],
+            "IK": ["ik", "IK", "Ik"],
+            "Target": ["Tgt", "Target", "TG", "Tg", "T"],
+            "Parent": ["Prn", "PRN", "Parent", "P"],
+            "ExposeTm": ["Exp", "Etm", "EXP", "ETM"]
+        }
+        
+        # 타입 패턴 가져오기
+        patterns = helperNamePatterns.get(helperType, [])
+        if not patterns:
+            return firstTypeValue
+        
+        # 패턴과 일치하는 값 찾기
+        for value in predefinedValues:
+            if value in patterns:
+                return value
+        
+        # 일치하는 값이 없으면 기본값 반환
+        return firstTypeValue
+    
+    def gen_helper_name_from_obj(self, inObj, make_two=False, is_exp=False):
         """
         객체로부터 헬퍼 이름 생성
         
         Args:
-            in_obj: 원본 객체
+            inObj: 원본 객체
             make_two: 두 개의 이름 생성 여부
             is_exp: ExposeTM 타입 여부
             
         Returns:
             생성된 헬퍼 이름 배열 [포인트 이름, 타겟 이름]
         """
-        point_name = ""
-        target_name = ""
+        pointName = ""
+        targetName = ""
         
         # 타입 설정
-        type_name = self.name.get_dummy_str()
+        typeName = self.get_name_by_type("Dummy")
         if is_exp:
-            type_name = self.name.get_expose_tm_str()
+            typeName = self.get_name_by_type("ExposeTm")
         
         # 이름 생성
-        temp_name = self.name.replace_type(in_obj.name, type_name)
-        if self.name.get_type(in_obj.name) == type_name:
-            temp_name = self.name.increase_index(temp_name, 1)
+        tempName = self.name.replace_type(inObj.name, typeName)
+        if self.name.get_type(inObj.name) == typeName:
+            tempName = self.name.increase_index(tempName, 1)
         
-        point_name = temp_name
+        pointName = tempName
         
         # 타겟 이름 생성
         if make_two:
-            target_name = self.name.add_sufix_to_real_name(temp_name, "Tgt")
+            targetName = self.name.add_sufix_to_real_name(tempName, self.get_name_by_type("Target"))
         
-        return [point_name, target_name]
+        return [pointName, targetName]
     
-    def gen_helper_shape_from_obj(self, in_obj):
+    def gen_helper_shape_from_obj(self, inObj):
         """
         객체로부터 헬퍼 형태 생성
         
         Args:
-            in_obj: 원본 객체
+            inObj: 원본 객체
             
         Returns:
             [헬퍼 크기, 십자 표시 여부, 박스 표시 여부]
         """
-        # 3ds Max 전용 기능 - Python에서는 일부 구현 생략
-        # MAXScript 원본:
-        # local helperSize = 2.0
-        # local crossToggle = false
-        # local boxToggle = true
-        # if (classOf inObj) == BoneGeometry then helperSize = amax #(inObj.width, inObj.height)
-        # if ((classOf inObj) == Point) or ((classOf inObj) == ExposeTm) then (
-        #     ...
-        # )
+        helperSize = 2.0
+        crossToggle = False
+        boxToggle = True
         
-        helper_size = 2.0
-        cross_toggle = False
-        box_toggle = True
-        
-        # 클래스 체크는 Python에서 다르게 구현해야 함
-        # 여기서는 간단하게 속성 검사로 구현
+        # BoneGeometry 타입 처리
+        if rt.classOf(inObj) == rt.BoneGeometry:
+            # amax 함수를 사용하여 width, height 중 큰 값 선택
+            helperSize = max(inObj.width, inObj.height)
         
         # Point나 ExposeTm 타입 처리
-        if hasattr(in_obj, 'size') and hasattr(in_obj, 'cross') and hasattr(in_obj, 'box'):
-            helper_size = in_obj.size + 0.5
-            if in_obj.cross:
-                cross_toggle = False
-                box_toggle = True
-            if in_obj.box:
-                cross_toggle = True
-                box_toggle = False
+        if rt.classOf(inObj) == rt.Point or rt.classOf(inObj) == rt.ExposeTm:
+            helperSize = inObj.size + 0.5
+            if inObj.cross:
+                crossToggle = False
+                boxToggle = True
+            if inObj.box:
+                crossToggle = True
+                boxToggle = False
         
-        return [helper_size, cross_toggle, box_toggle]
+        return [helperSize, crossToggle, boxToggle]
     
     def create_helper(self, make_two=False):
         """
@@ -171,35 +191,110 @@ class Helper:
         Returns:
             생성된 헬퍼 배열
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # local createdHelperArray = #()
-        # if selection.count > 0 then (
-        #     ...
-        # )
-        # else (
-        #     local genPoint = Point wirecolor:(color 14 255 2)
-        #     append createdHelperArray genPoint
-        # )
-        # select createdHelperArray
-        # return createdHelperArray
+        createdHelperArray = []
         
-        # Python 더미 구현:
-        created_helper_array = []
-        # 실제 구현은 생략
-        return created_helper_array
+        # 선택된 객체가 있는 경우
+        if rt.selection.count > 0:
+            selArray = rt.getCurrentSelection()
+            
+            for item in selArray:
+                # 헬퍼 크기 및 형태 설정
+                helperShapeArray = self.gen_helper_shape_from_obj(item)
+                helperSize = helperShapeArray[0]
+                crossToggle = helperShapeArray[1]
+                boxToggle = helperShapeArray[2]
+                
+                # 헬퍼 이름 설정
+                helperNameArray = self.gen_helper_name_from_obj(item, make_two=make_two)
+                pointName = helperNameArray[0]
+                targetName = helperNameArray[1]
+                
+                # 두 개의 헬퍼 생성 (포인트와 타겟)
+                if make_two:
+                    # 타겟 포인트 생성
+                    targetPoint = self.create_point(
+                        targetName, 
+                        size=helperSize, 
+                        boxToggle=False, 
+                        crossToggle=True, 
+                        point_color=(14, 255, 2), 
+                        pos=(0, 0, 0)
+                    )
+                    rt.setProperty(targetPoint, "transform", rt.getProperty(item, "transform"))
+                    
+                    # 메인 포인트 생성
+                    genPint = self.create_point(
+                        pointName, 
+                        size=helperSize, 
+                        boxToggle=True, 
+                        crossToggle=False, 
+                        point_color=(14, 255, 2), 
+                        pos=(0, 0, 0)
+                    )
+                    rt.setProperty(genPoint, "transform", rt.getProperty(item, "transform"))
+                    
+                    # 배열에 추가
+                    createdHelperArray.append(targetPoint)
+                    createdHelperArray.append(genPint)
+                else:
+                    # 단일 포인트 생성
+                    genPint = self.create_point(
+                        pointName, 
+                        size=helperSize, 
+                        boxToggle=boxToggle, 
+                        crossToggle=crossToggle, 
+                        point_color=(14, 255, 2), 
+                        pos=(0, 0, 0)
+                    )
+                    rt.setProperty(genPint, "transform", rt.getProperty(item, "transform"))
+                    createdHelperArray.append(genPint)
+        else:
+            # 선택된 객체가 없는 경우 기본 포인트 생성
+            genPint = rt.Point(wirecolor=rt.Color(14, 255, 2))
+            createdHelperArray.append(genPint)
+        
+        # 생성된 헬퍼들 선택
+        rt.select(createdHelperArray)
+        return createdHelperArray
     
     def create_parent_helper(self):
         """
         부모 헬퍼 생성
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if selection.count > 0 then (
-        #     local selArray = getCurrentSelection()
-        #     ...
-        # )
-        pass
+        # 선택된 객체가 있는 경우에만 처리
+        if rt.selection.count > 0:
+            selArray = rt.getCurrentSelection()
+            
+            for item in selArray:
+                # 헬퍼 크기 및 형태 설정
+                helperShapeArray = self.gen_helper_shape_from_obj(item)
+                helperSize = helperShapeArray[0]
+                crossToggle = helperShapeArray[1]
+                boxToggle = helperShapeArray[2]
+                
+                # 헬퍼 이름 설정
+                helperNameArray = self.gen_helper_name_from_obj(item)
+                pointName = helperNameArray[0]
+                targetName = helperNameArray[1]
+                
+                # 부모 헬퍼 생성
+                genPoint = self.create_point(
+                    pointName,
+                    size=helperSize,
+                    boxToggle=True,
+                    crossToggle=False,
+                    pointColor=(14, 255, 2),
+                    pos=(0, 0, 0)
+                )
+                
+                # 트랜스폼 및 부모 설정
+                rt.setProperty(genPoint, "transform", rt.getProperty(item.transform))
+                rt.setProperty(genPoint, "parent", rt.getProperty(item.parent))
+                rt.setProperty(item, "parent", genPoint)
+                
+                # 부모 헬퍼로 이름 변경
+                finalName = self.name.replace_type(genPoint.name, self.get_name_by_type("Parent"))
+                rt.setProperty(genPoint, "name", finalName)
     
     def create_exp_tm(self):
         """
@@ -208,158 +303,129 @@ class Helper:
         Returns:
             생성된 ExposeTM 헬퍼 배열
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # local createdHelperArray = #()
-        # if selection.count > 0 then (
-        #     ...
-        # )
-        # else (
-        #     local genPoint = exposeTM wirecolor:(color 14 255 2)
-        #     append createdHelperArray genPoint
-        # )
-        # select createdHelperArray
-        # return createdHelperArray
+        createdHelperArray = []
         
-        # Python 더미 구현:
-        created_helper_array = []
-        # 실제 구현은 생략
-        return created_helper_array
+        # 선택된 객체가 있는 경우
+        if rt.selection.count > 0:
+            selArray = rt.getCurrentSelection()
+            
+            for item in selArray:
+                # 헬퍼 크기 및 형태 설정
+                helperShapeArray = self.gen_helper_shape_from_obj(item)
+                helperSize = helperShapeArray[0]
+                crossToggle = helperShapeArray[1]
+                boxToggle = helperShapeArray[2]
+                
+                # 헬퍼 이름 설정 (ExposeTM 용)
+                helperNameArray = self.gen_helper_name_from_obj(item, make_two=False, is_exp=True)
+                pointName = helperNameArray[0]
+                
+                # ExposeTM 객체 생성
+                genPoint = rt.ExposeTM(
+                    name=pointName,
+                    size=helperSize,
+                    box=boxToggle,
+                    cross=crossToggle,
+                    wirecolor=rt.Color(14, 255, 2),
+                    pos=rt.Point3(0, 0, 0)
+                )
+                rt.setProperty(genPoint, "transform", rt.getProperty(item, "transform"))
+                createdHelperArray.append(genPoint)
+        else:
+            # 선택된 객체가 없는 경우 기본 ExposeTM 생성
+            genPoint = rt.ExposeTM(wirecolor=rt.Color(14, 255, 2))
+            createdHelperArray.append(genPoint)
+        
+        # 생성된 헬퍼 객체들 선택
+        rt.select(createdHelperArray)
+        return createdHelperArray
     
-    def set_size(self, in_obj, in_new_size):
+    def set_size(self, inObj, inNewSize):
         """
         헬퍼 크기 설정
         
         Args:
-            in_obj: 대상 객체
-            in_new_size: 새 크기
+            inObj: 대상 객체
+            inNewSize: 새 크기
             
         Returns:
             설정된 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if superClassOf inObj == helper then (
-        #     inObj.size = inNewSize
-        #     inObj
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'size'):
-            in_obj.size = in_new_size
-        return in_obj
+        # 헬퍼 클래스 타입인 경우에만 처리
+        if rt.superClassOf(inObj) == rt.Helper:
+            rt.setProperty(inObj, "size", inNewSize)
+            return inObj
+        return None
     
-    def add_size(self, in_obj, in_add_size):
+    def add_size(self, inObj, inAddSize):
         """
         헬퍼 크기 증가
         
         Args:
-            in_obj: 대상 객체
-            in_add_size: 증가할 크기
+            inObj: 대상 객체
+            inAddSize: 증가할 크기
             
         Returns:
             설정된 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if superClassOf inObj == helper then (
-        #     inObj.size += inAddSize
-        #     inObj
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'size'):
-            in_obj.size += in_add_size
-        return in_obj
+        # 헬퍼 클래스 타입인 경우에만 처리
+        if rt.superClassOf(inObj) == rt.Helper:
+            inObj.size += inAddSize
+            return inObj
+        return None
     
-    def set_shape_to_center(self, in_obj):
+    def set_shape_to_center(self, inObj):
         """
         형태를 센터 마커로 설정
         
         Args:
-            in_obj: 대상 객체
+            inObj: 대상 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if (classOf inObj == ExposeTm) or (classOf inObj == Point) then (
-        #     inObj.centermarker = true
-        #     inObj.box = true
-        #     inObj.axistripod = false
-        #     inObj.cross = false
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'centermarker') and hasattr(in_obj, 'box'):
-            in_obj.centermarker = True
-            in_obj.box = True
-            in_obj.axistripod = False
-            in_obj.cross = False
+        # Point 또는 ExposeTm 클래스인 경우에만 처리
+        if rt.classOf(inObj) == rt.ExposeTm or rt.classOf(inObj) == rt.Point:
+            inObj.centermarker = True
+            inObj.box = True
+            inObj.axistripod = False
+            inObj.cross = False
     
-    def set_shape_to_axis(self, in_obj):
+    def set_shape_to_axis(self, inObj):
         """
         형태를 축 마커로 설정
         
         Args:
-            in_obj: 대상 객체
+            inObj: 대상 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if (classOf inObj == ExposeTm) or (classOf inObj == Point) then (
-        #     inObj.axistripod = true
-        #     inObj.centermarker = false
-        #     inObj.box = false
-        #     inObj.cross = false
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'axistripod'):
-            in_obj.axistripod = True
-            in_obj.centermarker = False
-            in_obj.box = False
-            in_obj.cross = False
+        # Point 또는 ExposeTm 클래스인 경우에만 처리
+        if rt.classOf(inObj) == rt.ExposeTm or rt.classOf(inObj) == rt.Point:
+            inObj.axistripod = True
+            inObj.centermarker = False
+            inObj.box = False
+            inObj.cross = False
     
-    def set_shape_to_cross(self, in_obj):
+    def set_shape_to_cross(self, inObj):
         """
         형태를 십자 마커로 설정
         
         Args:
-            in_obj: 대상 객체
+            inObj: 대상 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if (classOf inObj == ExposeTm) or (classOf inObj == Point) then (
-        #     inObj.cross = true
-        #     inObj.box = false
-        #     inObj.centermarker = false
-        #     inObj.axistripod = false
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'cross'):
-            in_obj.cross = True
-            in_obj.box = False
-            in_obj.centermarker = False
-            in_obj.axistripod = False
+        # Point 또는 ExposeTm 클래스인 경우에만 처리
+        if rt.classOf(inObj) == rt.ExposeTm or rt.classOf(inObj) == rt.Point:
+            inObj.cross = True
+            inObj.box = False
+            inObj.centermarker = False
+            inObj.axistripod = False
     
-    def set_shape_to_box(self, in_obj):
+    def set_shape_to_box(self, inObj):
         """
         형태를 박스 마커로 설정
         
         Args:
-            in_obj: 대상 객체
+            inObj: 대상 객체
         """
-        # 3ds Max 전용 기능 - Python에서는 구현 생략
-        # MAXScript 원본:
-        # if (classOf inObj == ExposeTm) or (classOf inObj == Point) then (
-        #     inObj.box = true
-        #     inObj.centermarker = false
-        #     inObj.axistripod = false
-        #     inObj.cross = false
-        # )
-        
-        # Python 더미 구현:
-        if hasattr(in_obj, 'box'):
-            in_obj.box = True
-            in_obj.centermarker = False
-            in_obj.axistripod = False
-            in_obj.cross = False
+        # Point 또는 ExposeTm 클래스인 경우에만 처리
+        if rt.classOf(inObj) == rt.ExposeTm or rt.classOf(inObj) == rt.Point:
+            inObj.box = True
+            inObj.centermarker = False
+            inObj.axistripod = False
+            inObj.cross = False

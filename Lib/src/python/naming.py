@@ -266,7 +266,7 @@ class Naming:
         if len(refinedArray) == 1:
             return refinedArray[0]
             
-        return filChar.join(refinedArray)
+        return inFilChar.join(refinedArray)
 
     def _find_and_replace(self, inStr, inTargetStr, inNewStr):
         """
@@ -306,7 +306,7 @@ class Naming:
             해당 NamePart 객체, 존재하지 않으면 None
         """
         for part in self._nameParts:
-            if part.get_name() == namePart:
+            if part.get_name() == inNamePart:
                 return part
         return None
         
@@ -321,7 +321,7 @@ class Naming:
             해당 NamePart의 인덱스, 존재하지 않으면 -1
         """
         for i, part in enumerate(self._nameParts):
-            if part.get_name() == namePart:
+            if part.get_name() == inNamePart:
                 return i
         return -1
     
@@ -348,7 +348,7 @@ class Naming:
         """
         sidePart = self.get_name_part("Side")
         if sidePart:
-            return sidePart.get_value_by_semantic("left")
+            return sidePart.get_value_by_weight(inRank=5)
         return ""
 
     def get_right_str(self):
@@ -360,7 +360,7 @@ class Naming:
         """
         sidePart = self.get_name_part("Side")
         if sidePart:
-            return sidePart.get_value_by_semantic("right")
+            return sidePart.get_value_by_weight(inRank=10)
         return ""
 
     def get_front_str(self):
@@ -372,7 +372,7 @@ class Naming:
         """
         frontBackPart = self.get_name_part("FrontBack")
         if frontBackPart:
-            return frontBackPart.get_value_by_semantic("front")
+            return frontBackPart.get_value_by_weight(inRank=5)
         return ""
 
     def get_back_str(self):
@@ -384,7 +384,7 @@ class Naming:
         """
         frontBackPart = self.get_name_part("FrontBack")
         if frontBackPart:
-            return frontBackPart.get_value_by_semantic("back")
+            return frontBackPart.get_value_by_weight(inRank=10)
         return ""
 
     def get_base_part_index(self):
